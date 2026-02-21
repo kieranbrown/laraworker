@@ -1,0 +1,34 @@
+{
+    "name": "kieranbrown/laraworker",
+    "description": "Run Laravel on Cloudflare Workers via php-cgi-wasm",
+    "keywords": [
+        "laravel",
+        "cloudflare",
+        "workers",
+        "wasm",
+        "php-wasm"
+    ],
+    "license": "MIT",
+    "require": {
+        "php": "^8.2",
+        "illuminate/console": "^12.0",
+        "illuminate/support": "^12.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Laraworker\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Laraworker\\LaraworkerServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

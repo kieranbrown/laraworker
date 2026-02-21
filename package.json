@@ -1,0 +1,30 @@
+{
+    "$schema": "https://www.schemastore.org/package.json",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vite build",
+        "dev": "vite",
+        "build:worker": "bun run .cloudflare/build-app.mjs",
+        "dev:worker": "bun run build:worker && cd .cloudflare && bunx wrangler dev",
+        "deploy:worker": "bun run build:worker && cd .cloudflare && bunx wrangler deploy"
+    },
+    "devDependencies": {
+        "@tailwindcss/vite": "^4.0.0",
+        "axios": "^1.11.0",
+        "binaryen": "^125.0.0",
+        "concurrently": "^9.0.1",
+        "laravel-vite-plugin": "^2.0.0",
+        "php-cgi-wasm": "^0.0.9-alpha-32",
+        "php-wasm": "^0.0.9-alpha-32",
+        "tailwindcss": "^4.0.0",
+        "vite": "^7.0.7",
+        "wrangler": "^4.66.0"
+    },
+    "dependencies": {
+        "php-wasm-mbstring": "^0.0.0-c",
+        "php-wasm-openssl": "^0.0.9-k",
+        "php-wasm-sqlite": "^0.0.9-x",
+        "php-wasm-zlib": "^0.0.9-h"
+    }
+}
