@@ -79,6 +79,117 @@ const EXCLUDE_PATTERNS = [...defaultPatterns, ...userPatterns];
 const EXTENSIONS = config.extensions ?? { mbstring: true, openssl: true };
 
 /**
+ * Generate PHP stub functions for missing extensions.
+ * These stubs provide minimal implementations when extensions are not enabled.
+ */
+function generatePhpStubs(extensions) {
+  const stubs = [];
+
+  // umask fix for MEMFS - always needed
+  stubs.push(`
+// Fix for MEMFS umask issue
+if (!function_exists('umask')) {
+    function umask($mask = null) {
+        return 0022;
+    }
+}`);
+
+  // iconv stubs - only if iconv extension is not enabled
+  if (!extensions.iconv) {
+    stubs.push(`
+// iconv stub functions
+if (!function_exists('iconv')) {
+    function iconv($from_encoding, $to_encoding, $string) {
+        return $string;
+    }
+}
+if (!function_exists('iconv_strlen')) {
+    function iconv_strlen($string, $encoding = null) {
+        return strlen($string);
+    }
+}
+if (!function_exists('iconv_substr')) {
+    function iconv_substr($string, $offset, $length = null, $encoding = null) {
+        return substr($string, $offset, $length);
+    }
+}
+if (!function_exists('iconv_strpos')) {
+    function iconv_strpos($haystack, $needle, $offset = 0, $encoding = null) {
+        return strpos($haystack, $needle, $offset);
+    }
+}`);
+  }
+
+  // mbstring stubs - only if mbstring extension is not enabled
+  if (!extensions.mbstring) {
+    stubs.push(`
+// mbstring stub functions
+if (!function_exists('mb_split')) {
+    function mb_split($pattern, $string, $limit = -1) {
+        return preg_split('/' . $pattern . '/', $string, $limit);
+    }
+}
+if (!function_exists('mb_strlen')) {
+    function mb_strlen($string, $encoding = null) {
+        return strlen($string);
+    }
+}
+if (!function_exists('mb_substr')) {
+    function mb_substr($string, $start, $length = null, $encoding = null) {
+        return substr($string, $start, $length);
+    }
+}
+if (!function_exists('mb_strpos')) {
+    function mb_strpos($haystack, $needle, $offset = 0, $encoding = null) {
+        return strpos($haystack, $needle, $offset);
+    }
+}`);
+  }
+
+  // openssl stubs - only if openssl extension is not enabled
+  if (!extensions.openssl) {
+    stubs.push(`
+// openssl stub functions (NOT SECURE - for development only)
+if (!function_exists('openssl_encrypt')) {
+    function openssl_encrypt($data, $cipher_algo, $passphrase, $options = 0, $iv = '', &$tag = null, $aad = '', $tag_length = 16) {
+        // Simple XOR encryption - NOT secure, only for testing
+        $key = substr($passphrase, 0, 32);
+        $result = '';
+        for ($i = 0; $i < strlen($data); $i++) {
+            $result .= $data[$i] ^ $key[$i % strlen($key)];
+        }
+        return base64_encode($result);
+    }
+}
+if (!function_exists('openssl_decrypt')) {
+    function openssl_decrypt($data, $cipher_algo, $passphrase, $options = 0, $iv = '', $tag = null, $aad = '') {
+        // Simple XOR decryption - NOT secure, only for testing
+        $key = substr($passphrase, 0, 32);
+        $decoded = base64_decode($data);
+        $result = '';
+        for ($i = 0; $i < strlen($decoded); $i++) {
+            $result .= $decoded[$i] ^ $key[$i % strlen($key)];
+        }
+        return $result;
+    }
+}
+if (!function_exists('openssl_random_pseudo_bytes')) {
+    function openssl_random_pseudo_bytes($length, &$strong_result = null) {
+        $strong_result = false;
+        return random_bytes($length);
+    }
+}
+if (!function_exists('openssl_cipher_iv_length')) {
+    function openssl_cipher_iv_length($cipher_algo) {
+        return 16;
+    }
+}`);
+  }
+
+  return '<?php\n// Auto-generated PHP stubs for missing extensions\n// Extensions enabled: ' + JSON.stringify(extensions) + '\n' + stubs.join('\n');
+}
+
+/**
  * Collect all files from a directory recursively.
  */
 function collectFiles(dir, basePath = '') {
@@ -301,6 +412,16 @@ if (idx >= 0) {
   allFiles[idx] = { path: platformCheckPath, isDir: false, fullPath: tmpFile };
   console.log('  Disabled Composer platform check');
 }
+
+// Generate PHP stubs for missing extensions
+console.log('  Generating PHP stubs for extensions...');
+const stubsContent = generatePhpStubs(EXTENSIONS);
+const stubsFile = join(DIST_DIR, '__php_stubs.php');
+writeFileSync(stubsFile, stubsContent);
+allFiles.push({ path: 'php-stubs.php', isDir: false, fullPath: stubsFile });
+console.log(`    iconv: ${EXTENSIONS.iconv ? 'enabled (no stubs)' : 'disabled (stubs added)'}`);
+console.log(`    mbstring: ${EXTENSIONS.mbstring ? 'enabled (no stubs)' : 'disabled (stubs added)'}`);
+console.log(`    openssl: ${EXTENSIONS.openssl ? 'enabled (no stubs)' : 'disabled (stubs added)'}`);
 
 // Compute per-category stats before creating tar
 let vendorFileCount = 0;

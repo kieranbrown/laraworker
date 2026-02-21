@@ -32,6 +32,7 @@ interface PhpCgiCloudflareOptions {
   entrypoint?: string;
   rewrite?: (path: string) => string | { scriptName: string; path: string };
   env?: Record<string, string>;
+  ini?: string;
 }
 
 export class PhpCgiCloudflare extends PhpCgiBase {
@@ -42,6 +43,7 @@ export class PhpCgiCloudflare extends PhpCgiBase {
       entrypoint = 'index.php',
       rewrite,
       env = {},
+      ini = '',
     } = options;
 
     super(PHP, {
@@ -60,6 +62,7 @@ export class PhpCgiCloudflare extends PhpCgiBase {
       env: {
         ...env,
       },
+      ini,
       // Provide shared libraries as pre-compiled WebAssembly.Module objects.
       _preloadedLibs: {
         'libxml2.so': libxml2Module,
