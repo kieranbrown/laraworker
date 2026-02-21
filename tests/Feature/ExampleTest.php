@@ -1,7 +1,8 @@
 <?php
 
-test('the application returns a successful response', function () {
-    $response = $this->get('/');
+use Laraworker\LaraworkerServiceProvider;
 
-    $response->assertStatus(200);
+test('service provider is registered', function () {
+    expect($this->app->getProviders(LaraworkerServiceProvider::class))
+        ->not->toBeEmpty();
 });
