@@ -1,0 +1,31 @@
+#!/bin/bash
+set -euo pipefail
+
+# Filter staged files by extension
+PHP_FILES=()
+if [ -n "${FUEL_STAGED_FILES:-}" ]; then
+    while IFS= read -r file; do
+        [ -z "$file" ] && continue
+        case "$file" in
+            *.php) [ -e "$file" ] && PHP_FILES+=("$file") ;;
+        esac
+    done <<< "$FUEL_STAGED_FILES"
+fi
+
+# Exit early if no PHP files are staged
+[ "${#PHP_FILES[@]}" -eq 0 ] && exit 0
+
+echo "Running quality gate on ${#PHP_FILES[@]} PHP file(s)..."
+
+# Auto-fix formatting with Pint
+echo "→ Running Pint (auto-fix)..."
+./vendor/bin/pint "${PHP_FILES[@]}"
+
+# Restage auto-fixed files so commit includes fixes
+git add -- "${PHP_FILES[@]}"
+
+# Run tests with Pest
+echo "→ Running Pest tests..."
+./vendor/bin/pest --compact "${PHP_FILES[@]}"
+
+echo "✓ Quality gate passed"
