@@ -132,12 +132,19 @@ Ideas:
 - **Smaller tar format**: Current tar has 5,392 entries. Can we merge PHP files into fewer, larger chunks?
 - **Parallel initialization**: Start PHP WASM instantiation and tar fetch simultaneously (already done via module scope + lazy init)
 
-### Task 3.5: PHP stubs optimization
+### Task 3.5: PHP stubs optimization ✅ COMPLETED
 Current stubs include iconv, mb_split, openssl_* shims. With custom WASM build (no extensions), these are all needed. But:
 - The openssl stubs use XOR encryption — not secure. Consider if cookie middleware can use `hash_hmac` instead
 - If user enables mbstring extension in npm mode, remove mb_split stub
 - If user enables openssl extension, remove openssl stubs
 - Make stubs conditional based on config
+
+**Implementation:**
+- `stubs/build-app.mjs:generatePhpStubs()` generates conditional PHP stubs based on `config.extensions`
+- Stubs file included in tar as `/app/php-stubs.php`
+- `worker.ts` passes `ini: 'auto_prepend_file=/app/php-stubs.php'` to PhpCgiCloudflare
+- `php.ts.stub` updated to accept and pass through `ini` option to parent constructor
+- Stubs conditionally included: umask (always), iconv (if !iconv), mbstring (if !mbstring), openssl (if !openssl)
 
 ## Phase 4: Inertia SSR in Workers (Breakthrough Feature)
 
