@@ -1,4 +1,4 @@
 <?php
 
 pest()->extend(Tests\TestCase::class)
-    ->in('Feature');
+    ->in('Feature', 'Unit');
