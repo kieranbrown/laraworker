@@ -7,6 +7,7 @@ use Laraworker\Console\BuildCommand;
 use Laraworker\Console\DeployCommand;
 use Laraworker\Console\DevCommand;
 use Laraworker\Console\InstallCommand;
+use Laraworker\Console\StatusCommand;
 
 class LaraworkerServiceProvider extends ServiceProvider
 {
@@ -27,6 +28,7 @@ class LaraworkerServiceProvider extends ServiceProvider
                 BuildCommand::class,
                 DevCommand::class,
                 DeployCommand::class,
+                StatusCommand::class,
             ]);
         }
     }
