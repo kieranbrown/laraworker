@@ -4,6 +4,9 @@
  * On cold start: initializes PHP, fetches app.tar from Static Assets,
  * unpacks into Emscripten MEMFS, and caches the PHP instance.
  * Each request is routed through php.request(request).
+ *
+ * Static assets are served by Cloudflare Static Assets (run_worker_first = false)
+ * before the worker is invoked, so this worker only handles PHP routing.
  */
 
 // Must be imported before any Emscripten module to shim document/window
@@ -92,41 +95,9 @@ export default {
     try {
       const instance = await ensureInitialized(env);
 
-      const url = new URL(request.url);
-
-      // Serve static assets from Vite build via Static Assets
-      if (url.pathname.startsWith('/build/')) {
-        const assetResponse = await env.ASSETS.fetch(request);
-        if (assetResponse.ok) {
-          return assetResponse;
-        }
-      }
-
-      // Serve favicon and other public static files via Static Assets
-      const staticExtensions = [
-        '.ico',
-        '.png',
-        '.jpg',
-        '.jpeg',
-        '.gif',
-        '.svg',
-        '.css',
-        '.js',
-        '.woff',
-        '.woff2',
-        '.ttf',
-      ];
-      if (staticExtensions.some((ext) => url.pathname.endsWith(ext))) {
-        const assetResponse = await env.ASSETS.fetch(request);
-        if (assetResponse.ok) {
-          return assetResponse;
-        }
-      }
-
-      // Route everything else through PHP
-      const response = await instance.request(request);
-
-      return response;
+      // All requests go through PHP - static assets are served
+      // by Cloudflare Static Assets before the worker is invoked
+      return await instance.request(request);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Unknown error';
