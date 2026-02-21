@@ -58,6 +58,23 @@ test('config can be overridden at runtime', function () {
     expect(config('laraworker.extensions.openssl'))->toBeTrue();
 });
 
+test('config has inertia ssr settings', function () {
+    $inertia = config('laraworker.inertia');
+
+    expect($inertia)
+        ->toBeArray()
+        ->toHaveKey('ssr')
+        ->toHaveKey('framework');
+});
+
+test('config inertia ssr is disabled by default', function () {
+    expect(config('laraworker.inertia.ssr'))->toBeFalse();
+});
+
+test('config inertia framework defaults to vue', function () {
+    expect(config('laraworker.inertia.framework'))->toBe('vue');
+});
+
 test('config exclude patterns are valid regex', function () {
     $patterns = config('laraworker.exclude_patterns');
 

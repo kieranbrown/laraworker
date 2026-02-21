@@ -77,4 +77,30 @@ return [
         '/\\/phpunit\\.xml$/',
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Inertia SSR
+    |--------------------------------------------------------------------------
+    |
+    | Enable inline Inertia server-side rendering within the Cloudflare Worker.
+    | When enabled, HTML responses containing Inertia page data are intercepted
+    | and rendered using Vue/React SSR before being sent to the client.
+    |
+    | This eliminates the need for a separate SSR server — the worker performs
+    | SSR inline after PHP generates the response.
+    |
+    | Requirements:
+    | - A Vite SSR build that outputs a bundle importable by the worker
+    | - The SSR bundle must export a `render(page)` function
+    | - Additional ~200-500 KiB bundle size for Vue/React SSR runtime
+    |
+    | Supported frameworks: 'vue', 'react'
+    |
+    */
+
+    'inertia' => [
+        'ssr' => env('LARAWORKER_INERTIA_SSR', false),
+        'framework' => env('LARAWORKER_INERTIA_FRAMEWORK', 'vue'),
+    ],
+
 ];
