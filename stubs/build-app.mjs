@@ -33,17 +33,48 @@ const INCLUDE_FILES = config.include_files ?? [
   'public/index.php', 'artisan', 'composer.json',
 ];
 
-const EXCLUDE_PATTERNS = (config.exclude_patterns ?? [
+// Default exclude patterns — always applied. User config patterns merge with these.
+const DEFAULT_EXCLUDE_PATTERNS = [
+  // VCS & CI
   '/\\.git\\//',
   '/\\.github\\//',
   '/\\/node_modules\\//',
-  '/\\/tests\\//',
   '/\\/\\.DS_Store$/',
-  '/\\/\\.editorconfig$/',
-  '/\\/\\.gitattributes$/',
-  '/\\/\\.gitignore$/',
-  '/\\/phpunit\\.xml$/',
-]).map(p => new RegExp(p.replace(/^\//, '').replace(/\/$/, '')));
+
+  // Vendor tests
+  '/vendor\\/[^/]+\\/[^/]+\\/tests\\//',
+  '/vendor\\/[^/]+\\/[^/]+\\/Tests\\//',
+  '/vendor\\/[^/]+\\/[^/]+\\/test\\//',
+
+  // Vendor docs & metadata
+  '/vendor\\/[^/]+\\/[^/]+\\/docs\\//',
+  '/vendor\\/[^/]+\\/[^/]+\\/[^/]+\\.md$/',
+  '/vendor\\/[^/]+\\/[^/]+\\/CHANGELOG/',
+  '/vendor\\/[^/]+\\/[^/]+\\/UPGRADE/',
+
+  // Vendor tooling configs
+  '/vendor\\/[^/]+\\/[^/]+\\/phpunit\\.xml/',
+  '/vendor\\/[^/]+\\/[^/]+\\/\\.editorconfig$/',
+  '/vendor\\/[^/]+\\/[^/]+\\/\\.gitattributes$/',
+  '/vendor\\/[^/]+\\/[^/]+\\/\\.gitignore$/',
+  '/vendor\\/[^/]+\\/[^/]+\\/phpstan/',
+  '/vendor\\/[^/]+\\/[^/]+\\/psalm/',
+  '/vendor\\/[^/]+\\/[^/]+\\/\\.php-cs-fixer/',
+  '/vendor\\/[^/]+\\/[^/]+\\/\\.php_cs/',
+  '/vendor\\/[^/]+\\/[^/]+\\/Makefile$/',
+  '/vendor\\/[^/]+\\/[^/]+\\/\\.styleci\\.yml$/',
+  '/vendor\\/[^/]+\\/[^/]+\\/docker-compose/',
+  '/vendor\\/[^/]+\\/[^/]+\\/Dockerfile$/',
+  '/vendor\\/[^/]+\\/[^/]+\\/rector\\.php$/',
+];
+
+// Allow LICENSE* files through even though *.md is excluded
+const LICENSE_PATTERN = /LICENSE/i;
+
+const toRegExp = p => new RegExp(p.replace(/^\//, '').replace(/\/$/, ''));
+const defaultPatterns = DEFAULT_EXCLUDE_PATTERNS.map(toRegExp);
+const userPatterns = (config.exclude_patterns ?? []).map(toRegExp);
+const EXCLUDE_PATTERNS = [...defaultPatterns, ...userPatterns];
 
 const EXTENSIONS = config.extensions ?? { mbstring: true, openssl: true };
 
@@ -58,7 +89,8 @@ function collectFiles(dir, basePath = '') {
     const fullPath = join(dir, entry.name);
     const relPath = basePath ? `${basePath}/${entry.name}` : entry.name;
 
-    if (EXCLUDE_PATTERNS.some(p => p.test('/' + relPath))) {
+    const testPath = '/' + relPath;
+    if (EXCLUDE_PATTERNS.some(p => p.test(testPath)) && !LICENSE_PATTERN.test(entry.name)) {
       continue;
     }
 
@@ -226,6 +258,38 @@ for (const dir of storageDirs) {
   }
 }
 
+// Strip Carbon locale files (keep only en* variants)
+const carbonLangPrefix = 'vendor/nesbot/carbon/src/Carbon/Lang/';
+const carbonRemoved = [];
+for (let i = allFiles.length - 1; i >= 0; i--) {
+  const f = allFiles[i];
+  if (!f.path.startsWith(carbonLangPrefix) || f.isDir) continue;
+  const filename = f.path.substring(carbonLangPrefix.length);
+  if (!filename.startsWith('en')) {
+    carbonRemoved.push(f.path);
+    allFiles.splice(i, 1);
+  }
+}
+if (carbonRemoved.length > 0) {
+  console.log(`  Stripped ${carbonRemoved.length} Carbon locale files (kept en* only)`);
+}
+
+// Run composer dump-autoload --classmap-authoritative if composer.json exists
+const composerJson = join(ROOT, 'composer.json');
+if (existsSync(composerJson)) {
+  try {
+    console.log('  Optimizing Composer autoloader (classmap-authoritative)...');
+    execSync('composer dump-autoload --classmap-authoritative --no-dev --quiet', {
+      cwd: ROOT,
+      stdio: 'pipe',
+      timeout: 60_000,
+    });
+    console.log('  Composer autoloader optimized');
+  } catch (err) {
+    console.warn(`  Warning: composer dump-autoload failed: ${err.message}`);
+  }
+}
+
 // Override Composer platform check — php-cgi-wasm provides PHP 8.3.11 but
 // Laravel 12 requires >= 8.4.0.
 const platformCheckPath = 'vendor/composer/platform_check.php';
@@ -238,19 +302,66 @@ if (idx >= 0) {
   console.log('  Disabled Composer platform check');
 }
 
-console.log(`  Collected ${allFiles.length} entries`);
+// Compute per-category stats before creating tar
+let vendorFileCount = 0;
+let vendorUncompressedSize = 0;
+let appFileCount = 0;
+let appUncompressedSize = 0;
+
+for (const f of allFiles) {
+  if (f.isDir) continue;
+  const size = statSync(f.fullPath).size;
+  if (f.path.startsWith('vendor/')) {
+    vendorFileCount++;
+    vendorUncompressedSize += size;
+  } else {
+    appFileCount++;
+    appUncompressedSize += size;
+  }
+}
+
+console.log(`  Collected ${allFiles.length} entries (${vendorFileCount + appFileCount} files)`);
 
 const tar = createTar(allFiles);
-const tarSizeMB = (tar.length / 1024 / 1024).toFixed(2);
-console.log(`  Tar size: ${tarSizeMB} MB (uncompressed)`);
 
 const gzipped = gzipSync(tar, { level: 9 });
 
 mkdirSync(DIST_DIR, { recursive: true });
 writeFileSync(OUTPUT, gzipped);
 
-const sizeMB = (gzipped.length / 1024 / 1024).toFixed(2);
-console.log(`  Created ${OUTPUT} (${sizeMB} MB compressed)`);
+// Compute compressed sizes per category for report
+const vendorOnlyFiles = allFiles.filter(f => !f.isDir && f.path.startsWith('vendor/'));
+const appOnlyFiles = allFiles.filter(f => !f.isDir && !f.path.startsWith('vendor/'));
+const vendorTar = createTar(vendorOnlyFiles);
+const vendorGz = gzipSync(vendorTar, { level: 9 });
+const appTar = createTar(appOnlyFiles);
+const appGz = gzipSync(appTar, { level: 9 });
+
+const fmt = (bytes) => {
+  if (bytes >= 1024 * 1024) return (bytes / 1024 / 1024).toFixed(2) + ' MB';
+  return (bytes / 1024).toFixed(0) + ' KB';
+};
+
+const totalCompressed = gzipped.length;
+const WASM_ESTIMATE_BYTES = 2.6 * 1024 * 1024; // ~2.6 MB gzipped WASM
+const totalWithWasm = totalCompressed + WASM_ESTIMATE_BYTES;
+const fitsFreeTier = totalWithWasm < 3 * 1024 * 1024;
+
+console.log('');
+console.log('  ┌─────────────────────────────────────────────────┐');
+console.log('  │              Build Report                       │');
+console.log('  ├──────────────────────┬──────────┬───────────────┤');
+console.log('  │ Category             │ Files    │ Compressed    │');
+console.log('  ├──────────────────────┼──────────┼───────────────┤');
+console.log(`  │ vendor/              │ ${String(vendorFileCount).padStart(6)} │ ${fmt(vendorGz.length).padStart(13)} │`);
+console.log(`  │ app (non-vendor)     │ ${String(appFileCount).padStart(6)} │ ${fmt(appGz.length).padStart(13)} │`);
+console.log('  ├──────────────────────┼──────────┼───────────────┤');
+console.log(`  │ Total tar entries    │ ${String(allFiles.length).padStart(6)} │ ${fmt(totalCompressed).padStart(13)} │`);
+console.log(`  │ + WASM (~2.6 MB gz)  │        │ ${fmt(totalWithWasm).padStart(13)} │`);
+console.log('  ├──────────────────────┴──────────┴───────────────┤');
+console.log(`  │ Free tier (< 3 MB total):  ${fitsFreeTier ? '✅ FITS' : '❌ EXCEEDS'}${' '.repeat(20)}│`);
+console.log('  └─────────────────────────────────────────────────┘');
+console.log('');
 
 // Copy Vite build assets if they exist
 const viteBuildDir = join(ROOT, 'public', 'build');

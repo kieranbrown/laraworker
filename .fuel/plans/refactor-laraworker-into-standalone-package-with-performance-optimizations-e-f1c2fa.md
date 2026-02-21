@@ -8,7 +8,7 @@ Laraworker runs Laravel on Cloudflare Workers via php-cgi-wasm. Currently deploy
 - Cold start ~2s, warm ~300-400ms
 - Two PHP runtime modes: custom WASM build (MAIN_MODULE=0) and npm package approach (shared libs)
 
-**Current repo structure**: Root IS the standalone Composer package `kieranbrown/laraworker`. (Restructured from Laravel app in Task 1.1)
+**Current repo structure**: Full Laravel app with `packages/laraworker/` as a path repo. Needs refactoring to be just the package.
 
 ## Key Constraints (Cloudflare Workers)
 - **Free tier**: 3MB compressed worker, 10ms CPU per request
@@ -19,18 +19,22 @@ Laraworker runs Laravel on Cloudflare Workers via php-cgi-wasm. Currently deploy
 
 ## Phase 1: Package Refactoring (Foundation)
 
-### Task 1.1: Restructure repo as standalone Composer package ✅ DONE
-Completed in commit 81c88fa. Key decisions:
-- `composer.json`: type=library, require php ^8.2 + illuminate/console ^12.0 + illuminate/support ^12.0
-- `require-dev`: orchestra/testbench ^10.0, pestphp/pest ^3.0
-- Tests use `Orchestra\Testbench\TestCase` base; `tests/Pest.php` extends it for Feature tests
-- `phpunit.xml` bootstraps via `vendor/autoload.php`
-- `.gitignore` excludes `/vendor`, `/node_modules`, `/composer.lock`, `/.cloudflare/dist/`
-- Kept: `php-wasm-build/`, `package.json`, `README.md`, `.codex/`, `.claude/`
-- Deleted: all Laravel app scaffold, `.cloudflare/` (generated output), `boost.json`, `.mcp.json`
+### Task 1.1: Restructure repo as standalone Composer package
+**Current**: Root is a Laravel app, package lives in `packages/laraworker/`
+**Target**: Root IS the package. Move `packages/laraworker/*` to root, delete Laravel app files.
 
-### Task 1.2: Update composer.json for standalone package ✅ DONE (merged into 1.1)
-Already done as part of Task 1.1 — composer.json has autoload psr-4, type: library, require-dev with testbench.
+Files to keep/restructure:
+- `src/` — PHP source (ServiceProvider, Commands)
+- `stubs/` — Worker stubs (worker.ts, shims.ts, tar.ts, build-app.mjs, php.ts.stub, wrangler.jsonc.stub)
+- `config/laraworker.php` — Package config
+- `composer.json` — Package composer (kieranbrown/laraworker)
+- `php-wasm-build/` — Custom WASM build files (.php-wasm-rc, PhpCgiBase.mjs, etc.)
+- `tests/` — Package tests
+
+Files to delete: `app/`, `bootstrap/`, `config/` (Laravel), `database/`, `routes/`, `resources/`, `public/`, `storage/`, `.env*`, root `composer.json` (Laravel), `.cloudflare/` (this becomes the generated output)
+
+### Task 1.2: Update composer.json for standalone package
+Add require-dev with orchestra/testbench for testing. Ensure autoload PSR-4 maps correctly. Add proper type: library.
 
 ### Task 1.3: Create a test Laravel app fixture (for development/testing)
 A minimal `tests/fixtures/laravel-app/` or use orchestra/testbench for integration testing the build/deploy commands.
