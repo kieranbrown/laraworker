@@ -1,0 +1,16 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "{{APP_NAME}}",
+  "main": "worker.ts",
+  "compatibility_date": "{{COMPATIBILITY_DATE}}",
+  "compatibility_flags": ["nodejs_compat"],
+  "minify": true,
+  "limits": {
+    "cpu_ms": 10000
+  },
+  "assets": {
+    "directory": "./dist/assets",
+    "binding": "ASSETS",
+    "run_worker_first": ["/build/assets/*"]
+  }
+}
