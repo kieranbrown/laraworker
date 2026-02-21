@@ -7,6 +7,10 @@
 /composer.lock
 /bun.lock
 /.cloudflare/dist/
+/stubs/dist/
+/stubs/*.wasm
+/stubs/php-cgi.mjs
+/package-lock.json
 .fuel/*
 !.fuel/reality.md
 !.fuel/plans/

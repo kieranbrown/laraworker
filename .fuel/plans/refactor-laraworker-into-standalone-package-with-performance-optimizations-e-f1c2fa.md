@@ -226,3 +226,21 @@ Worker stubs:
 Custom WASM:
 - `php-wasm-build/.php-wasm-rc` — Build config
 - `php-wasm-build/PhpCgiBase.mjs` — Stripped PHP CGI base class
+
+## Epic Review ✅ COMPLETED (2026-02-21)
+
+All 12 acceptance criteria verified:
+1. ✅ Repo root IS the Composer package (no Laravel app files)
+2. ✅ composer.json valid for kieranbrown/laraworker
+3. ✅ All 5 artisan commands registered (install, build, dev, deploy, status)
+4. ✅ InstallCommand generates .cloudflare/ files (worker.ts, php.ts, wrangler.jsonc, build-app.mjs, .env.production)
+5. ✅ BuildCommand runs config/route/view cache with path fixup, then build-app.mjs → app.tar.gz
+6. ✅ Worker.ts clean — no manual static asset routing (Cloudflare Static Assets handles it)
+7. ✅ Vite hashed assets get immutable cache-control headers via worker intercept on /build/assets/*
+8. ✅ PHP stubs conditional on extensions (iconv, mbstring, openssl) in generatePhpStubs()
+9. ✅ All 40 tests pass (110 assertions)
+10. ✅ Aggressive vendor stripping: tests, docs, markdown, tooling configs, Carbon locales, platform check disabled
+11. ✅ No hardcoded WASM hashes — php.ts.stub uses {{PHP_WASM_IMPORT}} resolved by glob
+12. ✅ Package installable via composer require (auto-discovery config present)
+
+Fix applied: Added .gitignore entries for stubs/ build artifacts (*.wasm, php-cgi.mjs, dist/).
