@@ -56,14 +56,15 @@ TS,
         $this->components->info('Installing Laraworker...');
 
         $this->publishConfig();
+        $this->updatePackageJson();
+        $this->updateGitignore();
+        $this->installNpmDependencies();
         $this->publishStubs();
         $this->generatePhpTs();
         $this->generateWranglerConfig();
         $this->generateEnvProduction();
-        $this->updatePackageJson();
-        $this->updateGitignore();
-        $this->installNpmDependencies();
         $this->runInitialBuild();
+        $this->verifyInstallation();
 
         $this->newLine();
         $this->components->info('Laraworker installed successfully!');
@@ -145,11 +146,13 @@ TS,
             $importsBlock = empty($imports) ? '' : "\n".implode("\n", $imports);
             $sharedLibsStr = implode(', ', $sharedLibs);
             $preloadedLibsBlock = implode("\n", $preloadedLibs);
+            $phpWasmImport = $this->resolvePhpWasmImport();
 
             $content = str_replace('{{EXTENSIONS_COMMENT}}', $extensionsComment, $content);
             $content = str_replace('{{EXTENSION_IMPORTS}}', $importsBlock, $content);
             $content = str_replace('{{SHARED_LIBS}}', $sharedLibsStr, $content);
             $content = str_replace('{{PRELOADED_LIBS}}', $preloadedLibsBlock, $content);
+            $content = str_replace('{{PHP_WASM_IMPORT}}', $phpWasmImport, $content);
 
             file_put_contents(base_path('.cloudflare/php.ts'), $content);
         });
@@ -241,7 +244,6 @@ TS,
         $this->components->task('Updating package.json', function () {
             $packageJsonPath = base_path('package.json');
             $packageJson = json_decode(file_get_contents($packageJsonPath), true);
-
             // Add scripts
             $packageJson['scripts'] = array_merge($packageJson['scripts'] ?? [], [
                 'build:worker' => 'php artisan laraworker:build',
@@ -249,13 +251,9 @@ TS,
                 'deploy:worker' => 'php artisan laraworker:deploy',
             ]);
 
-            // Add base dependencies
-            $packageJson['devDependencies'] = array_merge($packageJson['devDependencies'] ?? [], [
-                'php-cgi-wasm' => '^0.0.9-alpha-32',
-                'php-wasm' => '^0.0.9-alpha-32',
-                'wrangler' => '^4.66.0',
-                'binaryen' => '^125.0.0',
-            ]);
+            // Add base dependencies from versions config
+            $versions = self::npmVersions();
+            $packageJson['devDependencies'] = array_merge($packageJson['devDependencies'] ?? [], $versions);
 
             // Add extension npm packages
             /** @var array<string, bool> $extensions */
@@ -364,6 +362,83 @@ TS,
             base_path('.cloudflare/build-config.json'),
             json_encode($config, JSON_PRETTY_PRINT)."\n"
         );
+    }
+
+    private function verifyInstallation(): void
+    {
+        $this->newLine();
+        $this->components->info('Verifying installation...');
+
+        $files = [
+            '.cloudflare/worker.ts',
+            '.cloudflare/php.ts',
+            '.cloudflare/wrangler.jsonc',
+            '.cloudflare/build-app.mjs',
+            'config/laraworker.php',
+        ];
+
+        $allPresent = true;
+        foreach ($files as $file) {
+            $exists = file_exists(base_path($file));
+            $status = $exists ? '<info>✓</info>' : '<error>✗</error>';
+            $this->line("  {$status} {$file}");
+
+            if (! $exists) {
+                $allPresent = false;
+            }
+        }
+
+        if (! $allPresent) {
+            $this->components->warn('Some files are missing. Run with --force to regenerate.');
+        }
+    }
+
+    /**
+     * Resolve the WASM import path for php-cgi-wasm.
+     *
+     * Globs node_modules/php-cgi-wasm/*.wasm to find the actual filename
+     * instead of hardcoding a hash that breaks on package updates.
+     */
+    private function resolvePhpWasmImport(): string
+    {
+        $wasmDir = base_path('node_modules/php-cgi-wasm');
+        $fallback = '../node_modules/php-cgi-wasm/php-cgi.wasm';
+
+        if (! is_dir($wasmDir)) {
+            $this->components->warn('php-cgi-wasm not installed yet, using fallback WASM path.');
+
+            return $fallback;
+        }
+
+        $wasmFiles = glob($wasmDir.'/*.wasm');
+
+        if (empty($wasmFiles)) {
+            $this->components->warn('No .wasm file found in php-cgi-wasm package, using fallback path.');
+
+            return $fallback;
+        }
+
+        // Use the first (usually only) .wasm file
+        $wasmFilename = basename($wasmFiles[0]);
+
+        return "../node_modules/php-cgi-wasm/{$wasmFilename}";
+    }
+
+    /**
+     * Get the npm package versions for Laraworker dependencies.
+     *
+     * Centralizes version management so updates only need one place.
+     *
+     * @return array<string, string>
+     */
+    public static function npmVersions(): array
+    {
+        return [
+            'php-cgi-wasm' => '^0.0.9-alpha-32',
+            'php-wasm' => '^0.0.9-alpha-32',
+            'wrangler' => '^4.0.0',
+            'binaryen' => '^125.0.0',
+        ];
     }
 
     private function detectPackageManager(): string

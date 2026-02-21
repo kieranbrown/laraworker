@@ -18,7 +18,7 @@ import PHP from './php-cgi.mjs';
 // Import WASM binary directly — Cloudflare Workers supports .wasm imports
 // which produce a compiled WebAssembly.Module (no fetch needed)
 // @ts-expect-error — wasm import
-import phpWasm from '../node_modules/php-cgi-wasm/a6b86cfb60faf7f8d8e7143644223328da17002c.wasm';
+import phpWasm from '{{PHP_WASM_IMPORT}}';
 
 // Import shared libraries as pre-compiled WebAssembly.Module objects.
 // The build script copies .so → .wasm so Cloudflare pre-compiles them.
