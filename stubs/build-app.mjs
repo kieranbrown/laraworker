@@ -9,8 +9,9 @@
  */
 
 import { readdirSync, statSync, readFileSync, mkdirSync, writeFileSync, copyFileSync, existsSync, rmSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { gzipSync } from 'node:zlib';
-import { join, relative, resolve } from 'node:path';
+import { join, relative, resolve, dirname } from 'node:path';
 import { execSync } from 'node:child_process';
 
 const ROOT = resolve(import.meta.dirname, '..');
@@ -86,10 +87,50 @@ const DEFAULT_EXCLUDE_PATTERNS = [
   '/vendor\\/[^/]+\\/[^/]+\\/appveyor\\.yml$/',
   '/vendor\\/[^/]+\\/[^/]+\\/CONTRIBUTING/',
   '/vendor\\/[^/]+\\/[^/]+\\/SECURITY\\.md$/',
-];
 
-// Allow LICENSE* files through even though *.md is excluded
-const LICENSE_PATTERN = /LICENSE/i;
+  // Symfony Resources — schemas, CLI binaries, debug assets (not needed at runtime)
+  // Note: polyfill Resources/unidata/*.php and Resources/stubs/*.php ARE needed
+  '/vendor\\/symfony\\/[^/]+\\/Resources\\/schemas\\//',
+  '/vendor\\/symfony\\/[^/]+\\/Resources\\/bin\\//',
+  '/vendor\\/symfony\\/error-handler\\/Resources\\/assets\\//',
+  '/vendor\\/symfony\\/http-kernel\\/Resources\\/welcome\\.html\\.php$/',
+  '/vendor\\/symfony\\/console\\/Resources\\/bin\\//',
+
+  // Doctrine fixtures & ORM test utilities
+  '/vendor\\/fakerphp\\/faker\\/src\\/Faker\\/ORM\\//',
+  '/vendor\\/doctrine\\/[^/]+\\/docs\\//',
+
+  // LICENSE and README files in vendor (not needed at runtime)
+  '/vendor\\/[^/]+\\/[^/]+\\/LICENSE/',
+  '/vendor\\/[^/]+\\/[^/]+\\/README/',
+
+  // Schema/validation files (.xsd, .dtd) — not needed at runtime
+  '/vendor\\/.*\\.xsd$/',
+  '/vendor\\/.*\\.dtd$/',
+
+  // .txt files in vendor (changelogs, license dupes, etc.)
+  '/vendor\\/[^/]+\\/[^/]+\\/[^/]+\\.txt$/',
+
+  // Vendor metadata files (not needed at runtime)
+  '/vendor\\/[^/]+\\/[^/]+\\/composer\\.lock$/',
+  '/vendor\\/composer\\/installed\\.json$/',
+  '/vendor\\/.*package-lock\\.json$/',
+
+  // Laravel exception renderer dev resources (package.json, vite config, source files)
+  '/vendor\\/laravel\\/framework\\/src\\/Illuminate\\/Foundation\\/resources\\/exceptions\\/renderer\\/package/',
+  '/vendor\\/laravel\\/framework\\/src\\/Illuminate\\/Foundation\\/resources\\/exceptions\\/renderer\\/vite\\.config/',
+  '/vendor\\/laravel\\/framework\\/src\\/Illuminate\\/Foundation\\/resources\\/exceptions\\/renderer\\/scripts\\.js$/',
+  '/vendor\\/laravel\\/framework\\/src\\/Illuminate\\/Foundation\\/resources\\/exceptions\\/renderer\\/styles\\.css$/',
+
+  // Dev packages — these should never be in production builds
+  // Using --no-dev should exclude these, but block them explicitly as safety
+  '/vendor\\/faker\\//',
+  '/vendor\\/phpunit\\//',
+  '/vendor\\/pestphp\\//',
+  '/vendor\\/psy\\//',
+  '/vendor\\/mockery\\//',
+  '/vendor\\/phake\\//',
+];
 
 const toRegExp = p => new RegExp(p.replace(/^\//, '').replace(/\/$/, ''));
 const defaultPatterns = DEFAULT_EXCLUDE_PATTERNS.map(toRegExp);
@@ -236,6 +277,78 @@ function stripPhpFile(filePath) {
 }
 
 /**
+ * Get cache key for a file based on content hash.
+ */
+function getCacheKey(filePath) {
+  try {
+    const content = readFileSync(filePath);
+    return createHash('sha256').update(content).digest('hex');
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Strip whitespace from multiple PHP files in parallel with concurrency limit.
+ * Uses a simple cache to avoid re-processing unchanged files.
+ */
+async function stripPhpFilesParallel(files, cacheDir, { concurrency = 8 } = {}) {
+  const cacheFile = join(cacheDir, '.strip-whitespace-cache.json');
+  let cache = {};
+
+  // Load existing cache
+  if (existsSync(cacheFile)) {
+    try {
+      cache = JSON.parse(readFileSync(cacheFile, 'utf8'));
+    } catch {
+      cache = {};
+    }
+  }
+
+  const results = new Map();
+  const toProcess = [];
+
+  // Check cache for each file
+  for (const file of files) {
+    const cacheKey = getCacheKey(file.fullPath);
+    if (cacheKey && cache[file.path] && cache[file.path].hash === cacheKey) {
+      // Use cached result (stored as base64)
+      results.set(file.path, Buffer.from(cache[file.path].content, 'base64'));
+    } else {
+      toProcess.push({ file, cacheKey });
+    }
+  }
+
+  // Process files in parallel batches
+  for (let i = 0; i < toProcess.length; i += concurrency) {
+    const batch = toProcess.slice(i, i + concurrency);
+    await Promise.all(batch.map(async ({ file, cacheKey }) => {
+      const stripped = stripPhpFile(file.fullPath);
+      if (stripped) {
+        results.set(file.path, stripped);
+        // Update cache
+        if (cacheKey) {
+          cache[file.path] = {
+            hash: cacheKey,
+            content: stripped.toString('base64'),
+          };
+        }
+      }
+    }));
+  }
+
+  // Save cache
+  try {
+    mkdirSync(cacheDir, { recursive: true });
+    writeFileSync(cacheFile, JSON.stringify(cache, null, 2));
+  } catch {
+    // Ignore cache write errors
+  }
+
+  return results;
+}
+
+/**
  * Collect all files from a directory recursively.
  */
 function collectFiles(dir, basePath = '') {
@@ -247,7 +360,7 @@ function collectFiles(dir, basePath = '') {
     const relPath = basePath ? `${basePath}/${entry.name}` : entry.name;
 
     const testPath = '/' + relPath;
-    if (EXCLUDE_PATTERNS.some(p => p.test(testPath)) && !LICENSE_PATTERN.test(entry.name)) {
+    if (EXCLUDE_PATTERNS.some(p => p.test(testPath))) {
       continue;
     }
 
@@ -319,10 +432,24 @@ function createTarHeader(path, size, isDir) {
  * Create a tar archive from collected files.
  * When stripWhitespace is true, PHP files are stripped of comments/whitespace.
  */
-function createTar(files, { stripWhitespace = false } = {}) {
+async function createTar(files, { stripWhitespace = false, cacheDir = null } = {}) {
   const chunks = [];
   let strippedCount = 0;
   let bytesSaved = 0;
+
+  // Pre-process all PHP files in parallel if stripping is enabled
+  let strippedContentMap = new Map();
+  if (stripWhitespace) {
+    const phpFiles = files.filter(f =>
+      !f.isDir &&
+      f.path.endsWith('.php') &&
+      !f.path.startsWith('php-stubs')
+    );
+
+    if (phpFiles.length > 0) {
+      strippedContentMap = await stripPhpFilesParallel(phpFiles, cacheDir || DIST_DIR);
+    }
+  }
 
   for (const file of files) {
     if (file.isDir) {
@@ -330,17 +457,15 @@ function createTar(files, { stripWhitespace = false } = {}) {
     } else {
       let content = readFileSync(file.fullPath);
 
-      // Strip whitespace from PHP files (skip auto-generated files)
-      if (stripWhitespace && file.path.endsWith('.php') && !file.path.startsWith('php-stubs')) {
-        const stripped = stripPhpFile(file.fullPath);
-        if (stripped && stripped.length > 0) {
-          const saved = content.length - stripped.length;
-          if (saved > 0) {
-            bytesSaved += saved;
-            strippedCount++;
-            content = stripped;
-          }
+      // Use pre-stripped content if available
+      if (stripWhitespace && strippedContentMap.has(file.path)) {
+        const stripped = strippedContentMap.get(file.path);
+        const saved = content.length - stripped.length;
+        if (saved > 0) {
+          bytesSaved += saved;
+          strippedCount++;
         }
+        content = stripped;
       }
 
       chunks.push(createTarHeader(file.path, content.length, false));
@@ -372,6 +497,8 @@ const fmt = (bytes) => {
 };
 
 // --- Main ---
+
+(async () => {
 
 console.log('  Starting build-app.mjs...');
 console.log(`  ROOT: ${ROOT}`);
@@ -442,20 +569,21 @@ for (const dir of storageDirs) {
   }
 }
 
-// Strip Carbon locale files (keep only en* variants)
+// Strip Carbon locale files (keep only en.php and en_US.php)
 const carbonLangPrefix = 'vendor/nesbot/carbon/src/Carbon/Lang/';
+const CARBON_KEEP = new Set(['en.php', 'en_US.php']);
 const carbonRemoved = [];
 for (let i = allFiles.length - 1; i >= 0; i--) {
   const f = allFiles[i];
   if (!f.path.startsWith(carbonLangPrefix) || f.isDir) continue;
   const filename = f.path.substring(carbonLangPrefix.length);
-  if (!filename.startsWith('en')) {
+  if (!CARBON_KEEP.has(filename)) {
     carbonRemoved.push(f.path);
     allFiles.splice(i, 1);
   }
 }
 if (carbonRemoved.length > 0) {
-  console.log(`  Stripped ${carbonRemoved.length} Carbon locale files (kept en* only)`);
+  console.log(`  Stripped ${carbonRemoved.length} Carbon locale files (kept en + en_US only)`);
 }
 
 // Run composer dump-autoload --optimize if composer.json exists
@@ -463,15 +591,15 @@ const composerJson = join(ROOT, 'composer.json');
 if (existsSync(composerJson)) {
   try {
     console.log('  Optimizing Composer autoloader...');
-    // Use --optimize-autoloader (not --classmap-authoritative --no-dev) to avoid
-    // missing dev dependency classes that are referenced in config files
-    execSync('composer dump-autoload --optimize --no-scripts', {
+    // --classmap-authoritative skips filesystem checks for classes not in classmap
+    // Critical for WASM where filesystem operations are expensive
+    execSync('composer dump-autoload --no-dev --optimize --classmap-authoritative --no-scripts', {
       cwd: ROOT,
       stdio: 'inherit',
       timeout: 60_000,
       env: { ...process.env, COMPOSER_NO_INTERACTION: '1' },
     });
-    console.log('  Composer autoloader optimized');
+    console.log('  Composer autoloader optimized (no-dev, classmap-authoritative)');
   } catch (err) {
     console.warn(`  Warning: composer dump-autoload failed: ${err.message}`);
   }
@@ -668,6 +796,8 @@ if (existsSync(wasmOptBin)) {
 }
 
 console.log('Build complete.');
+
+})(); // End async IIFE
 
 function copyDirRecursive(src, dest) {
   mkdirSync(dest, { recursive: true });
