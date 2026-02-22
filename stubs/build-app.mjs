@@ -458,9 +458,10 @@ if (existsSync(composerJson)) {
   try {
     console.log('  Optimizing Composer autoloader (classmap-authoritative)...');
     // --no-scripts prevents package:discover from running with missing dev providers
-    execSync('composer dump-autoload --classmap-authoritative --no-dev --no-scripts --quiet', {
+    // Use inherit stdio to see any errors, and add COMPOSER_NO_INTERACTION to ensure it doesn't hang
+    execSync('COMPOSER_NO_INTERACTION=1 composer dump-autoload --classmap-authoritative --no-dev --no-scripts', {
       cwd: ROOT,
-      stdio: 'pipe',
+      stdio: 'inherit',
       timeout: 60_000,
     });
     console.log('  Composer autoloader optimized');
@@ -637,10 +638,12 @@ const wasmOptBin = join(ROOT, 'node_modules', '.bin', 'wasm-opt');
 if (existsSync(wasmOptBin)) {
   console.log('Optimizing WASM files with wasm-opt...');
   const wasmFiles = readdirSync(import.meta.dirname).filter(f => f.endsWith('.wasm'));
+  console.log(`  Found ${wasmFiles.length} WASM files to optimize`);
 
   for (const wasmFile of wasmFiles) {
     const wasmPath = join(import.meta.dirname, wasmFile);
     const sizeBefore = statSync(wasmPath).size;
+    console.log(`  Optimizing ${wasmFile} (${(sizeBefore / 1024).toFixed(0)} KiB)...`);
     try {
       execSync(`${wasmOptBin} -Oz --strip-debug --all-features -o ${wasmPath} ${wasmPath}`, {
         stdio: 'pipe',
@@ -648,9 +651,9 @@ if (existsSync(wasmOptBin)) {
       });
       const sizeAfter = statSync(wasmPath).size;
       const savedPct = ((1 - sizeAfter / sizeBefore) * 100).toFixed(1);
-      console.log(`  ${wasmFile}: ${(sizeBefore / 1024).toFixed(0)} KiB → ${(sizeAfter / 1024).toFixed(0)} KiB (−${savedPct}%)`);
+      console.log(`    ${wasmFile}: ${(sizeBefore / 1024).toFixed(0)} KiB → ${(sizeAfter / 1024).toFixed(0)} KiB (−${savedPct}%)`);
     } catch (err) {
-      console.warn(`  Warning: wasm-opt failed for ${wasmFile}: ${err.message}`);
+      console.warn(`    Warning: wasm-opt failed for ${wasmFile}: ${err.message}`);
     }
   }
 } else {
