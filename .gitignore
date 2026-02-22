@@ -30,6 +30,7 @@
 .fuel/.last_init_version
 .fuel/context/
 .fuel/logs/
+/playground/
 !.fuel/setup.sh
 !.fuel/teardown.sh
 !.fuel/run.yml

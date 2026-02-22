@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+PLAYGROUND_DIR="$PROJECT_ROOT/playground"
+
+if [ ! -d "$PLAYGROUND_DIR" ]; then
+    echo "Error: playground/ does not exist. Run playground-setup.sh first." >&2
+    exit 1
+fi
+
+if [ ! -d "$PLAYGROUND_DIR/.cloudflare/dist" ]; then
+    echo "Error: playground has not been built. Run playground-build.sh first." >&2
+    exit 1
+fi
+
+echo "Starting laraworker dev server..."
+php "$PLAYGROUND_DIR/artisan" laraworker:dev
