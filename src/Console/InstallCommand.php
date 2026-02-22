@@ -319,9 +319,9 @@ TS,
         $this->components->task('Installing npm dependencies', function () {
             $packageManager = $this->detectPackageManager();
             $command = match ($packageManager) {
-                'bun' => 'bun install',
-                'yarn' => 'yarn install',
-                'pnpm' => 'pnpm install',
+                'bun' => 'bun install --no-frozen-lockfile',
+                'yarn' => 'yarn install --no-frozen-lockfile',
+                'pnpm' => 'pnpm install --no-frozen-lockfile',
                 default => 'npm install',
             };
 
