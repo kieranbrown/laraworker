@@ -24,10 +24,20 @@ if (existsSync(configPath)) {
   config = JSON.parse(readFileSync(configPath, 'utf8'));
 }
 
+const VENDOR_STAGING_DIR = config.vendor_staging_dir;
+
 const INCLUDE_DIRS = config.include_dirs ?? [
   'app', 'bootstrap', 'config', 'database',
-  'routes', 'resources/views', 'vendor',
+  'routes', 'resources/views',
 ];
+
+// Use staging vendor if available (production-only, no-dev)
+if (VENDOR_STAGING_DIR && existsSync(VENDOR_STAGING_DIR)) {
+  console.log('  Using staging vendor (production-only, no-dev)...');
+} else {
+  console.warn('  Warning: No staging vendor found, using main vendor (may include dev packages)');
+  INCLUDE_DIRS.push('vendor');
+}
 
 const INCLUDE_FILES = config.include_files ?? [
   'public/index.php', 'artisan', 'composer.json',
@@ -52,6 +62,12 @@ const DEFAULT_EXCLUDE_PATTERNS = [
   '/vendor\\/[^/]+\\/[^/]+\\/CHANGELOG/',
   '/vendor\\/[^/]+\\/[^/]+\\/UPGRADE/',
 
+  // LICENSE, README, CREDITS, NOTICE files (not needed at runtime)
+  '/vendor\\/[^/]+\\/[^/]+\\/LICENSE/',
+  '/vendor\\/[^/]+\\/[^/]+\\/CREDITS/',
+  '/vendor\\/[^/]+\\/[^/]+\\/NOTICE/',
+  '/vendor\\/[^/]+\\/[^/]+\\/README/',
+
   // Vendor tooling configs
   '/vendor\\/[^/]+\\/[^/]+\\/phpunit\\.xml/',
   '/vendor\\/[^/]+\\/[^/]+\\/\\.editorconfig$/',
@@ -66,13 +82,37 @@ const DEFAULT_EXCLUDE_PATTERNS = [
   '/vendor\\/[^/]+\\/[^/]+\\/docker-compose/',
   '/vendor\\/[^/]+\\/[^/]+\\/Dockerfile$/',
   '/vendor\\/[^/]+\\/[^/]+\\/rector\\.php$/',
+  '/vendor\\/[^/]+\\/[^/]+\\/pint\\.json$/',
 
   // Vendor CLI scripts (not useful in Workers)
   '/vendor\\/bin\\//',
   '/vendor\\/[^/]+\\/[^/]+\\/bin\\//',
 
+  // Schema and validation files (not needed at runtime)
+  '/vendor\\/.*\\.xsd$/',
+  '/vendor\\/.*\\.dtd$/',
+
+  // Composer metadata (autoloader doesn't need installed.json at runtime)
+  '/vendor\\/composer\\/installed\\.json$/',
+
+  // Package manager lock files in vendor
+  '/vendor\\/.*\\/package-lock\\.json$/',
+
+  // Stub/template files (artisan make:* commands don't work in Workers)
+  '/vendor\\/.*\\.stub$/',
+
   // Symfony translation/locale resources (large, unused in typical Workers apps)
   '/vendor\\/symfony\\/[^/]+\\/Resources\\/translations\\//',
+
+  // Symfony Resources not needed at runtime
+  '/vendor\\/symfony\\/[^/]+\\/Resources\\/schemas\\//',
+  '/vendor\\/symfony\\/[^/]+\\/Resources\\/bin\\//',
+  '/vendor\\/symfony\\/http-kernel\\/Resources\\/welcome/',
+
+  // Laravel framework exception renderer build artifacts (APP_DEBUG=false in production)
+  '/vendor\\/laravel\\/framework\\/src\\/Illuminate\\/Foundation\\/resources\\/exceptions\\/renderer\\/dist\\//',
+  '/vendor\\/laravel\\/framework\\/src\\/Illuminate\\/Foundation\\/resources\\/exceptions\\/renderer\\/package/',
+  '/vendor\\/laravel\\/framework\\/src\\/Illuminate\\/Foundation\\/resources\\/exceptions\\/renderer\\/vite/',
 
   // Laravel framework testing utilities (not needed at runtime)
   '/vendor\\/laravel\\/framework\\/src\\/Illuminate\\/Testing\\//',
@@ -87,9 +127,6 @@ const DEFAULT_EXCLUDE_PATTERNS = [
   '/vendor\\/[^/]+\\/[^/]+\\/CONTRIBUTING/',
   '/vendor\\/[^/]+\\/[^/]+\\/SECURITY\\.md$/',
 ];
-
-// Allow LICENSE* files through even though *.md is excluded
-const LICENSE_PATTERN = /LICENSE/i;
 
 const toRegExp = p => new RegExp(p.replace(/^\//, '').replace(/\/$/, ''));
 const defaultPatterns = DEFAULT_EXCLUDE_PATTERNS.map(toRegExp);
@@ -247,7 +284,7 @@ function collectFiles(dir, basePath = '') {
     const relPath = basePath ? `${basePath}/${entry.name}` : entry.name;
 
     const testPath = '/' + relPath;
-    if (EXCLUDE_PATTERNS.some(p => p.test(testPath)) && !LICENSE_PATTERN.test(entry.name)) {
+    if (EXCLUDE_PATTERNS.some(p => p.test(testPath))) {
       continue;
     }
 
@@ -415,6 +452,12 @@ for (const file of INCLUDE_FILES) {
   }
 }
 
+// Add staging vendor files if available
+if (VENDOR_STAGING_DIR && existsSync(VENDOR_STAGING_DIR)) {
+  allFiles.push({ path: 'vendor/', isDir: true });
+  allFiles.push(...collectFiles(VENDOR_STAGING_DIR, 'vendor'));
+}
+
 // Copy .env.production as .env
 const envSource = join(import.meta.dirname, '.env.production');
 if (existsSync(envSource)) {
@@ -442,39 +485,56 @@ for (const dir of storageDirs) {
   }
 }
 
-// Strip Carbon locale files (keep only en* variants)
+// Strip Carbon locale files (keep only en.php — no regional variants like en_AU, en_GB)
 const carbonLangPrefix = 'vendor/nesbot/carbon/src/Carbon/Lang/';
 const carbonRemoved = [];
 for (let i = allFiles.length - 1; i >= 0; i--) {
   const f = allFiles[i];
   if (!f.path.startsWith(carbonLangPrefix) || f.isDir) continue;
   const filename = f.path.substring(carbonLangPrefix.length);
-  if (!filename.startsWith('en')) {
+  if (filename !== 'en.php') {
     carbonRemoved.push(f.path);
     allFiles.splice(i, 1);
   }
 }
 if (carbonRemoved.length > 0) {
-  console.log(`  Stripped ${carbonRemoved.length} Carbon locale files (kept en* only)`);
+  console.log(`  Stripped ${carbonRemoved.length} Carbon locale files (kept en.php only)`);
 }
 
-// Run composer dump-autoload --optimize if composer.json exists
-const composerJson = join(ROOT, 'composer.json');
-if (existsSync(composerJson)) {
-  try {
-    console.log('  Optimizing Composer autoloader...');
-    // Use --optimize-autoloader (not --classmap-authoritative --no-dev) to avoid
-    // missing dev dependency classes that are referenced in config files
-    execSync('composer dump-autoload --optimize --no-scripts', {
-      cwd: ROOT,
-      stdio: 'inherit',
-      timeout: 60_000,
-      env: { ...process.env, COMPOSER_NO_INTERACTION: '1' },
-    });
-    console.log('  Composer autoloader optimized');
-  } catch (err) {
-    console.warn(`  Warning: composer dump-autoload failed: ${err.message}`);
+// Verify no dev packages in the final bundle
+// These are packages that should ONLY be in require-dev, not transitive deps
+const DEV_PACKAGE_PATTERNS = [
+  /vendor\/fakerphp\/faker/,
+  /vendor\/phpunit\/phpunit/,
+  /vendor\/pestphp\/pest/,
+  /vendor\/mockery\/mockery/,
+  /vendor\/laravel\/sail/,
+  /vendor\/laravel\/pint/,
+  /vendor\/laravel\/dusk/,
+  /vendor\/spatie\/laravel-ignition/,
+];
+
+const devPackagesFound = [];
+for (const file of allFiles) {
+  for (const pattern of DEV_PACKAGE_PATTERNS) {
+    if (pattern.test(file.path)) {
+      devPackagesFound.push(file.path);
+      break;
+    }
   }
+}
+
+if (devPackagesFound.length > 0) {
+  console.error('  ERROR: Dev packages found in bundle:');
+  for (const pkg of devPackagesFound.slice(0, 10)) {
+    console.error(`    - ${pkg}`);
+  }
+  if (devPackagesFound.length > 10) {
+    console.error(`    ... and ${devPackagesFound.length - 10} more`);
+  }
+  process.exit(1);
+} else {
+  console.log('  ✓ No dev packages found in bundle');
 }
 
 // Override Composer platform check — php-cgi-wasm provides PHP 8.3.11 but
