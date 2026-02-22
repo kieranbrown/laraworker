@@ -97,7 +97,8 @@ const userPatterns = (config.exclude_patterns ?? []).map(toRegExp);
 const EXCLUDE_PATTERNS = [...defaultPatterns, ...userPatterns];
 
 const EXTENSIONS = config.extensions ?? { mbstring: true, openssl: true };
-const STRIP_WHITESPACE = config.strip_whitespace ?? true;
+// Default to false for initial build to avoid timeout - user can enable in build-config.json
+const STRIP_WHITESPACE = config.strip_whitespace ?? false;
 const STRIP_PROVIDERS = config.strip_providers ?? [];
 
 /**
