@@ -3,6 +3,7 @@
 namespace Laraworker\Console;
 
 use Illuminate\Console\Command;
+use Laraworker\BuildDirectory;
 use Symfony\Component\Process\Process;
 
 class DevCommand extends Command
@@ -13,12 +14,6 @@ class DevCommand extends Command
 
     public function handle(): int
     {
-        if (! is_dir(base_path('.cloudflare'))) {
-            $this->components->error('Laraworker not installed. Run: php artisan laraworker:install');
-
-            return self::FAILURE;
-        }
-
         // Run build first
         $buildExitCode = $this->call('laraworker:build');
         if ($buildExitCode !== self::SUCCESS) {
@@ -28,9 +23,11 @@ class DevCommand extends Command
         $this->components->info('Starting wrangler dev server...');
         $this->newLine();
 
+        $buildDir = new BuildDirectory;
+
         $process = new Process(
             ['npx', 'wrangler', 'dev'],
-            base_path('.cloudflare'),
+            $buildDir->path(),
             null,
             null,
             null // No timeout — long-running server

@@ -5,9 +5,9 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "build:worker": "bun run .cloudflare/build-app.mjs",
-        "dev:worker": "bun run build:worker && cd .cloudflare && bunx wrangler dev",
-        "deploy:worker": "bun run build:worker && cd .cloudflare && bunx wrangler deploy"
+        "build:worker": "bun run .laraworker/build-app.mjs",
+        "dev:worker": "bun run build:worker && cd .laraworker && bunx wrangler dev",
+        "deploy:worker": "bun run build:worker && cd .laraworker && bunx wrangler deploy"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",

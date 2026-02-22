@@ -141,4 +141,45 @@ return [
         'framework' => env('LARAWORKER_INERTIA_FRAMEWORK', 'vue'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Deployment
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for deploying your Laravel application to Cloudflare Workers.
+    | These settings are used when generating wrangler.jsonc and during the
+    | build process for production deployments.
+    |
+    */
+
+    'worker_name' => env('LARAWORKER_NAME', \Illuminate\Support\Str::slug(config('app.name', 'laravel'))),
+
+    'account_id' => env('CLOUDFLARE_ACCOUNT_ID'),
+
+    'compatibility_date' => env('LARAWORKER_COMPAT_DATE'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Routes
+    |--------------------------------------------------------------------------
+    |
+    | Custom domain routes for the Cloudflare Worker. Each entry is a route
+    | object with a `pattern` key and optional `custom_domain` flag. When
+    | set, these are included in the generated wrangler.jsonc.
+    |
+    | Example:
+    |   [['pattern' => 'example.com', 'custom_domain' => true]]
+    |
+    */
+
+    'routes' => [],
+
+    'env_overrides' => [
+        'APP_ENV' => 'production',
+        'APP_DEBUG' => 'false',
+        'LOG_CHANNEL' => 'stderr',
+        'SESSION_DRIVER' => 'array',
+        'CACHE_STORE' => 'array',
+    ],
+
 ];

@@ -21,7 +21,7 @@ Laraworker packages your Laravel app into a compressed tar archive, then runs it
 composer require kieranbrown/laraworker
 ```
 
-Then run the install command to scaffold the `.cloudflare/` directory and configure your project:
+Then run the install command to configure your project:
 
 ```bash
 php artisan laraworker:install
@@ -30,10 +30,9 @@ php artisan laraworker:install
 This will:
 - Publish the `config/laraworker.php` configuration file
 - Add build scripts and dependencies to `package.json`
-- Scaffold the `.cloudflare/` directory with Worker entry point, build scripts, and TypeScript config
-- Generate a `wrangler.jsonc` for Cloudflare Workers
+- Update `.gitignore` to exclude the `.laraworker/` build directory
 - Install npm dependencies (`php-cgi-wasm`, `wrangler`, etc.)
-- Run an initial build
+- Run an initial build into `.laraworker/`
 
 ## Configuration
 
@@ -77,7 +76,7 @@ return [
 
 ### Wrangler Configuration
 
-Customize `wrangler.jsonc` in the `.cloudflare/` directory to set your `account_id`, routes, custom domains, and other Cloudflare Workers settings.
+Deployment settings like `worker_name`, `account_id`, and `compatibility_date` are configured in `config/laraworker.php`. The `wrangler.jsonc` is auto-generated into `.laraworker/` at build time from these config values.
 
 ## Usage
 
@@ -85,7 +84,7 @@ Laraworker provides five Artisan commands:
 
 ### `laraworker:install`
 
-Scaffold the `.cloudflare/` directory and configure the project for Cloudflare Workers.
+Configure the project for Cloudflare Workers and run an initial build.
 
 ```bash
 php artisan laraworker:install
@@ -136,18 +135,7 @@ The entire bundle (WASM binary + app archive + Worker code) fits within Cloudfla
 
 ## Custom Domain Setup
 
-To serve your app from a custom domain, add routes to `.cloudflare/wrangler.jsonc`:
-
-```jsonc
-{
-  "routes": [
-    {
-      "pattern": "example.com/*",
-      "zone_name": "example.com"
-    }
-  ]
-}
-```
+To serve your app from a custom domain, configure your Cloudflare account with the domain and set up routes. The `wrangler.jsonc` is auto-generated at build time from `config/laraworker.php` — for advanced wrangler settings, you can customize the `stubs/wrangler.jsonc.stub` template.
 
 Make sure your domain is added to your Cloudflare account and DNS is configured.
 

@@ -3,6 +3,7 @@
 namespace Laraworker\Console;
 
 use Illuminate\Console\Command;
+use Laraworker\BuildDirectory;
 use Symfony\Component\Process\Process;
 
 class BuildCommand extends Command
@@ -11,21 +12,27 @@ class BuildCommand extends Command
 
     protected $description = 'Build the Laravel application for Cloudflare Workers';
 
+    private BuildDirectory $buildDirectory;
+
     public function handle(): int
     {
         $this->components->info('Building for Cloudflare Workers...');
 
-        if (! is_dir(base_path('.cloudflare'))) {
-            $this->components->error('Laraworker not installed. Run: php artisan laraworker:install');
+        $this->buildDirectory = new BuildDirectory;
 
-            return self::FAILURE;
-        }
+        $this->components->task('Preparing build directory', function () {
+            $this->buildDirectory->ensureDirectory();
+            $this->buildDirectory->copyStubs();
+            $this->buildDirectory->generatePhpTs(config('laraworker.extensions', []));
+            $this->buildDirectory->generateWranglerConfig();
+            $this->buildDirectory->generateEnvProduction();
+            $this->buildDirectory->writeBuildConfig();
 
-        $this->ensureEnvProduction();
+            return true;
+        });
 
         try {
             $this->optimizeForProduction();
-            $this->writeBuildConfig();
 
             $result = $this->runBuildScript();
         } finally {
@@ -42,70 +49,12 @@ class BuildCommand extends Command
         return self::SUCCESS;
     }
 
-    private function ensureEnvProduction(): void
-    {
-        $envProduction = base_path('.cloudflare/.env.production');
-
-        if (file_exists($envProduction)) {
-            return;
-        }
-
-        $this->components->task('Generating .env.production', function () use ($envProduction) {
-            $envPath = base_path('.env');
-            if (! file_exists($envPath)) {
-                $this->components->warn('No .env file found — cannot generate .env.production');
-
-                return false;
-            }
-
-            $env = file_get_contents($envPath);
-            $overrides = [
-                'APP_ENV' => 'production',
-                'APP_DEBUG' => 'false',
-                'LOG_CHANNEL' => 'stderr',
-                'SESSION_DRIVER' => 'array',
-                'CACHE_STORE' => 'array',
-            ];
-
-            $lines = explode("\n", $env);
-            $result = [];
-            $seen = [];
-
-            foreach ($lines as $line) {
-                $trimmed = trim($line);
-                if ($trimmed === '' || str_starts_with($trimmed, '#')) {
-                    $result[] = $line;
-
-                    continue;
-                }
-
-                $parts = explode('=', $trimmed, 2);
-                $key = $parts[0];
-
-                if (isset($overrides[$key])) {
-                    $result[] = "{$key}={$overrides[$key]}";
-                    $seen[$key] = true;
-                } else {
-                    $result[] = $line;
-                }
-            }
-
-            foreach ($overrides as $key => $value) {
-                if (! isset($seen[$key])) {
-                    $result[] = "{$key}={$value}";
-                }
-            }
-
-            file_put_contents($envProduction, implode("\n", $result));
-        });
-    }
-
     private function optimizeForProduction(): void
     {
         $this->components->info('Optimizing for production...');
 
         $basePath = base_path();
-        $envFile = base_path('.cloudflare/.env.production');
+        $envFile = $this->buildDirectory->path('.env.production');
 
         $this->components->task('Caching config', function () use ($basePath, $envFile) {
             return $this->runArtisan(['config:cache', '--env=production'], $basePath, $envFile);
@@ -376,7 +325,7 @@ class BuildCommand extends Command
     private function runBuildScript(): int
     {
         $process = new Process(
-            ['node', base_path('.cloudflare/build-app.mjs')],
+            ['node', $this->buildDirectory->path('build-app.mjs')],
             base_path(),
             null,
             null,
@@ -394,22 +343,5 @@ class BuildCommand extends Command
         }
 
         return self::SUCCESS;
-    }
-
-    private function writeBuildConfig(): void
-    {
-        $config = [
-            'extensions' => config('laraworker.extensions', []),
-            'include_dirs' => config('laraworker.include_dirs', []),
-            'include_files' => config('laraworker.include_files', []),
-            'exclude_patterns' => config('laraworker.exclude_patterns', []),
-            'strip_whitespace' => config('laraworker.strip_whitespace', false),
-            'strip_providers' => config('laraworker.strip_providers', []),
-        ];
-
-        file_put_contents(
-            base_path('.cloudflare/build-config.json'),
-            json_encode($config, JSON_PRETTY_PRINT)."\n"
-        );
     }
 }

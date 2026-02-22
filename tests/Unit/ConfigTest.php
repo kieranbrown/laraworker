@@ -85,8 +85,8 @@ test('config exclude patterns are valid regex', function () {
     }
 });
 
-test('config strip_whitespace is enabled by default', function () {
-    expect(config('laraworker.strip_whitespace'))->toBeTrue();
+test('config strip_whitespace is disabled by default', function () {
+    expect(config('laraworker.strip_whitespace'))->toBeFalse();
 });
 
 test('config has strip_providers array', function () {
