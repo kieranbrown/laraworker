@@ -15,6 +15,7 @@ Standalone Composer package (`kieranbrown/laraworker`) for running Laravel on Cl
 ## Entry Points
 - **CLI**: artisan commands `laraworker:install`, `laraworker:build`, `laraworker:dev`, `laraworker:deploy`
 - **Auto-discovery**: `extra.laravel.providers` registers `Laraworker\LaraworkerServiceProvider`
+- **CI/CD**: `.github/workflows/deploy-demo.yml` deploys a demo Laravel app to Cloudflare Workers
 
 ## Patterns
 - **Standalone package**: Root is the Composer package, no Laravel app scaffold
@@ -23,6 +24,7 @@ Standalone Composer package (`kieranbrown/laraworker`) for running Laravel on Cl
 - **PSR-4 autoload**: `Laraworker\\` → `src/`, `Tests\\` → `tests/`
 - **Extension system**: `laraworker:install` generates `php.ts` with dynamic WASM extension imports
 - **PHP stubs**: Runtime-injected via `auto_prepend_file` for functions missing from minimal WASM build
+- **Build-time optimizations** (all configurable in `config/laraworker.php`): PHP whitespace stripping via `php -w`, vendor pruning (CLI bins, translations, test utils), service provider stripping from cached config, class preloader for core Illuminate files
 
 ## Quality Gates
 | Tool | Command | Purpose |
@@ -30,5 +32,7 @@ Standalone Composer package (`kieranbrown/laraworker`) for running Laravel on Cl
 | Pest | `vendor/bin/pest --compact` | PHP test runner (Feature + Unit suites) |
 
 ## Recent Changes
+- 2026-02-22: Added build-time optimizations to `BuildCommand.php` — whitespace stripping, vendor pruning, SP stripping, class preloading (de0f23e)
+- 2026-02-22: Added GitHub Actions workflow for demo deployment (7405082)
 - Restructured from Laravel app to standalone Composer package (81c88fa)
-_Last updated: 2026-02-21_
+_Last updated: 2026-02-22_
