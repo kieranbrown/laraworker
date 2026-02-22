@@ -1,36 +1,40 @@
 <?php
 
 use Illuminate\Support\Facades\File;
+use Laraworker\BuildDirectory;
 
 beforeEach(function () {
-    $this->cloudflareDir = base_path('.cloudflare');
+    $this->buildDir = base_path(BuildDirectory::DIRECTORY);
 
-    if (is_dir($this->cloudflareDir)) {
-        File::deleteDirectory($this->cloudflareDir);
+    if (is_dir($this->buildDir)) {
+        File::deleteDirectory($this->buildDir);
     }
 });
 
 afterEach(function () {
-    if (is_dir($this->cloudflareDir)) {
-        File::deleteDirectory($this->cloudflareDir);
+    if (is_dir($this->buildDir)) {
+        File::deleteDirectory($this->buildDir);
     }
 });
 
-test('deploy fails if not installed', function () {
+test('deploy fails if build directory does not exist', function () {
     $this->artisan('laraworker:deploy')
         ->assertFailed();
 });
 
-test('deploy fails if not installed and shows error message', function () {
+test('deploy fails with warning when wrangler.jsonc is missing', function () {
+    // Create .laraworker directory but no wrangler.jsonc
+    mkdir($this->buildDir, 0755, true);
+
     $this->artisan('laraworker:deploy')
-        ->expectsOutputToContain('Laraworker not installed')
-        ->assertExitCode(1);
+        ->expectsOutputToContain('wrangler.jsonc not found')
+        ->assertFailed();
 });
 
 test('deploy calls build first', function () {
-    // Create .cloudflare with wrangler.jsonc for pre-flight checks
-    mkdir($this->cloudflareDir, 0755, true);
-    file_put_contents($this->cloudflareDir.'/wrangler.jsonc', json_encode([
+    // Create .laraworker with wrangler.jsonc for pre-flight checks
+    mkdir($this->buildDir, 0755, true);
+    file_put_contents($this->buildDir.'/wrangler.jsonc', json_encode([
         'name' => 'test',
         'account_id' => 'test-account',
     ]));
@@ -44,6 +48,6 @@ test('deploy calls build first', function () {
 test('deploy has dry-run option', function () {
     $command = $this->artisan('laraworker:deploy', ['--dry-run' => true]);
 
-    // Will fail because not installed, but the option should be accepted
+    // Will fail because build directory doesn't exist, but the option should be accepted
     $command->assertFailed();
 });

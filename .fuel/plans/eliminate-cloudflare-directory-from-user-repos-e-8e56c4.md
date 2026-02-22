@@ -56,30 +56,39 @@ Generated at build time (NOT in git):
 - Methods: `ensureDirectory()`, `copyStubs()`, `generatePhpTs()`, `generateWranglerConfig()`, `generateEnvProduction()`, `writeBuildConfig()`
 - All commands share this helper instead of duplicating path logic
 
-### 3. Refactor BuildCommand to generate .laraworker/ at build time ✅ DONE
-- ✅ Removed `.cloudflare` existence check from handle()
-- ✅ handle() now: instantiates BuildDirectory → ensureDirectory → copyStubs → generatePhpTs → generateWranglerConfig → generateEnvProduction → writeBuildConfig (all in a single "Preparing build directory" task)
-- ✅ Removed ensureEnvProduction() and writeBuildConfig() methods (delegated to BuildDirectory)
-- ✅ optimizeForProduction() uses `$this->buildDirectory->path('.env.production')` for env file
-- ✅ runBuildScript() uses `$this->buildDirectory->path('build-app.mjs')` for node script
-- ✅ Zero `.cloudflare` references remain in BuildCommand.php
-- ✅ Tests updated in tests/Feature/BuildCommandTest.php — all use BuildDirectory::DIRECTORY constant
-- ✅ Pre-existing ConfigTest failure (strip_whitespace default mismatch) is unrelated
+### 3. Refactor BuildCommand to generate .laraworker/ at build time
+- Before build: copy stubs from package → `.laraworker/`
+- Generate php.ts, wrangler.jsonc, .env.production, build-config.json into `.laraworker/`
+- Run build-app.mjs from `.laraworker/`
+- Remove check for `.cloudflare` existence (replaced by auto-generation)
 
-### 4. Simplify InstallCommand ✅ DONE
-- ✅ Removed: publishStubs(), generatePhpTs(), generateWranglerConfig(), generateEnvProduction(), writeBuildConfig(), resolvePhpWasmImport()
-- ✅ Removed private $extensionRegistry — now uses BuildDirectory::EXTENSION_REGISTRY for npm packages
-- ✅ handle() flow: publishConfig → updatePackageJson → updateGitignore → installNpmDependencies → runInitialBuild → verifyInstallation
-- ✅ runInitialBuild() now calls `$this->call('laraworker:build')` instead of `node .cloudflare/build-app.mjs`
-- ✅ updateGitignore() writes single `/.laraworker/` entry instead of multiple `.cloudflare/*` entries
-- ✅ verifyInstallation() checks config/laraworker.php + .laraworker/ directory existence only
-- ✅ detectLegacyDirectory() warns if .cloudflare/ exists
-- ✅ Tests updated in tests/Feature/InstallCommandTest.php
+### 4. Simplify InstallCommand
+- Remove stub copying (no longer needed)
+- Remove php.ts, wrangler.jsonc, .env.production generation (happens at build time)
+- Keep: config publishing, package.json updates, npm install
+- Update .gitignore to add `/.laraworker/` instead of individual `.cloudflare/*` entries
+- Add migration: detect `.cloudflare/` and inform user they can delete it
 
-### 5. Update DevCommand and DeployCommand
+### 5. Update DevCommand and DeployCommand ✓ COMPLETE
 - Change working directory from `.cloudflare` to `.laraworker`
 - DeployCommand: read wrangler config from `.laraworker/wrangler.jsonc`
 - Remove `.cloudflare` existence checks
+
+**Changes made:**
+- `src/Console/DevCommand.php`: 
+  - Removed `.cloudflare` directory check
+  - Uses `BuildDirectory::path()` for wrangler dev working directory
+  
+- `src/Console/DeployCommand.php`:
+  - Removed `.cloudflare` directory check
+  - Uses `BuildDirectory::path()` for all path references
+  - Updated `app.tar.gz` check path
+  - Updated `getBundleSize()` to use `.laraworker` paths
+  - Updated `displayDryRunInfo()` to use `.laraworker` paths  
+  - Updated `getCustomDomain()` to read from `.laraworker/wrangler.jsonc`
+  - Uses `base_path()` for `checkWranglerAuth()` (doesn't need build dir)
+  
+- `tests/Feature/DeployCommandTest.php`: Updated to use `.laraworker` directory
 
 ### 6. Update StatusCommand
 - Change all `.cloudflare` references to `.laraworker`
