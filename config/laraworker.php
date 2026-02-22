@@ -141,4 +141,29 @@ return [
         'framework' => env('LARAWORKER_INERTIA_FRAMEWORK', 'vue'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Deployment
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for deploying your Laravel application to Cloudflare Workers.
+    | These settings are used when generating wrangler.jsonc and during the
+    | build process for production deployments.
+    |
+    */
+
+    'worker_name' => env('LARAWORKER_NAME', \Illuminate\Support\Str::slug(config('app.name', 'laravel'))),
+
+    'account_id' => env('CLOUDFLARE_ACCOUNT_ID'),
+
+    'compatibility_date' => env('LARAWORKER_COMPAT_DATE'),
+
+    'env_overrides' => [
+        'APP_ENV' => 'production',
+        'APP_DEBUG' => 'false',
+        'LOG_CHANNEL' => 'stderr',
+        'SESSION_DRIVER' => 'array',
+        'CACHE_STORE' => 'array',
+    ],
+
 ];
