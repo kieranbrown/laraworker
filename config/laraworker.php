@@ -51,6 +51,7 @@ return [
         \Illuminate\Broadcasting\BroadcastServiceProvider::class,
         \Illuminate\Bus\BusServiceProvider::class,
         \Illuminate\Notifications\NotificationServiceProvider::class,
+        \Laravel\Pail\PailServiceProvider::class,
     ],
 
     /*

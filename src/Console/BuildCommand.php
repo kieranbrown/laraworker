@@ -149,18 +149,8 @@ class BuildCommand extends Command
 
         $basePath = base_path();
 
-        $this->components->task('Clearing config cache', function () use ($basePath) {
-            return $this->runArtisan(['config:clear'], $basePath);
-        });
-
-        $this->components->task('Clearing route cache', function () use ($basePath) {
-            return $this->runArtisan(['route:clear'], $basePath);
-        });
-
-        $this->components->task('Clearing view cache', function () use ($basePath) {
-            return $this->runArtisan(['view:clear'], $basePath);
-        });
-
+        // Restore autoloader FIRST before running any artisan commands
+        // This ensures dev dependencies are available when clearing caches
         $this->components->task('Restoring autoloader', function () use ($basePath) {
             $process = new Process(
                 ['composer', 'dump-autoload'],
@@ -173,6 +163,18 @@ class BuildCommand extends Command
             $process->run();
 
             return $process->isSuccessful();
+        });
+
+        $this->components->task('Clearing config cache', function () use ($basePath) {
+            return $this->runArtisan(['config:clear'], $basePath);
+        });
+
+        $this->components->task('Clearing route cache', function () use ($basePath) {
+            return $this->runArtisan(['route:clear'], $basePath);
+        });
+
+        $this->components->task('Clearing view cache', function () use ($basePath) {
+            return $this->runArtisan(['view:clear'], $basePath);
         });
 
         // Clean up generated preload file
