@@ -13,6 +13,10 @@ import { createHash } from 'node:crypto';
 import { gzipSync } from 'node:zlib';
 import { join, relative, resolve, dirname } from 'node:path';
 import { execSync } from 'node:child_process';
+import { exec } from 'node:child_process';
+import { promisify } from 'node:util';
+
+const execAsync = promisify(exec);
 
 const ROOT = resolve(import.meta.dirname, '..');
 const DIST_DIR = resolve(import.meta.dirname, 'dist', 'assets');
@@ -261,16 +265,16 @@ if (file_exists('/app/bootstrap/preload.php')) {
 }
 
 /**
- * Strip whitespace and comments from a PHP file using `php -w`.
+ * Strip whitespace and comments from a PHP file using `php -w` (async version).
  * Returns the stripped content as a Buffer, or null on failure.
  */
-function stripPhpFile(filePath) {
+async function stripPhpFile(filePath) {
   try {
-    return execSync(`php -w ${JSON.stringify(filePath)}`, {
-      stdio: ['pipe', 'pipe', 'pipe'],
+    const { stdout } = await execAsync(`php -w ${JSON.stringify(filePath)}`, {
       timeout: 10_000,
       maxBuffer: 10 * 1024 * 1024,
     });
+    return Buffer.from(stdout);
   } catch {
     return null;
   }
@@ -323,7 +327,7 @@ async function stripPhpFilesParallel(files, cacheDir, { concurrency = 8 } = {}) 
   for (let i = 0; i < toProcess.length; i += concurrency) {
     const batch = toProcess.slice(i, i + concurrency);
     await Promise.all(batch.map(async ({ file, cacheKey }) => {
-      const stripped = stripPhpFile(file.fullPath);
+      const stripped = await stripPhpFile(file.fullPath);
       if (stripped) {
         results.set(file.path, stripped);
         // Update cache
@@ -651,7 +655,7 @@ if (STRIP_WHITESPACE) {
   console.log('  Stripping PHP whitespace and comments...');
 }
 
-const { tar, strippedCount, bytesSaved } = createTar(allFiles, { stripWhitespace: STRIP_WHITESPACE });
+const { tar, strippedCount, bytesSaved } = await createTar(allFiles, { stripWhitespace: STRIP_WHITESPACE, cacheDir: DIST_DIR });
 
 if (STRIP_WHITESPACE && strippedCount > 0) {
   console.log(`  Stripped whitespace from ${strippedCount} PHP files (saved ${fmt(bytesSaved)} uncompressed)`);
@@ -665,9 +669,9 @@ writeFileSync(OUTPUT, gzipped);
 // Compute compressed sizes per category for report
 const vendorOnlyFiles = allFiles.filter(f => !f.isDir && f.path.startsWith('vendor/'));
 const appOnlyFiles = allFiles.filter(f => !f.isDir && !f.path.startsWith('vendor/'));
-const { tar: vendorTar } = createTar(vendorOnlyFiles, { stripWhitespace: STRIP_WHITESPACE });
+const { tar: vendorTar } = await createTar(vendorOnlyFiles, { stripWhitespace: STRIP_WHITESPACE });
 const vendorGz = gzipSync(vendorTar, { level: 9 });
-const { tar: appTar } = createTar(appOnlyFiles, { stripWhitespace: STRIP_WHITESPACE });
+const { tar: appTar } = await createTar(appOnlyFiles, { stripWhitespace: STRIP_WHITESPACE });
 const appGz = gzipSync(appTar, { level: 9 });
 
 const totalCompressed = gzipped.length;
