@@ -1,6 +1,6 @@
 # Laraworker
 
-[![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-777BB4?logo=php&logoColor=white)](https://php.net)
+[![PHP 8.4+](https://img.shields.io/badge/PHP-8.4%2B-777BB4?logo=php&logoColor=white)](https://php.net)
 [![Laravel 12](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)](https://laravel.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
@@ -10,7 +10,7 @@ Laraworker packages your Laravel app into a compressed tar archive, then runs it
 
 ## Requirements
 
-- PHP 8.2+
+- PHP 8.4+
 - Laravel 12
 - Node.js or [Bun](https://bun.sh)
 - A [Cloudflare](https://cloudflare.com) account

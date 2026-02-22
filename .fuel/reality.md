@@ -1,7 +1,7 @@
 # Reality
 
 ## Architecture
-Standalone Composer package (`kieranbrown/laraworker`) for running Laravel on Cloudflare Workers via PHP-WASM. Custom PHP 8.2.11 WASM binary (static-linked, MAIN_MODULE=0) with minimal extensions (ctype, filter, tokenizer). Uses orchestra/testbench for testing.
+Standalone Composer package (`kieranbrown/laraworker`) for running Laravel on Cloudflare Workers via PHP-WASM. PHP WASM binary via php-cgi-wasm (currently PHP 8.3.11 prebuilt, custom build config targets PHP 8.4 — see php-wasm-build/.php-wasm-rc). Uses orchestra/testbench for testing.
 
 ## Modules
 | Module | Purpose | Entry Point |

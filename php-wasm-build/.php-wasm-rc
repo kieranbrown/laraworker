@@ -3,7 +3,7 @@
 # Absolute minimum PHP WASM build for Cloudflare Workers.
 # No extensions — just the bare PHP interpreter.
 
-PHP_VERSION=8.2
+PHP_VERSION=8.4
 
 # Static linking only — no dynamic library support.
 # Produces a single .wasm file with everything baked in.

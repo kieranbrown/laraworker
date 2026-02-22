@@ -26,17 +26,18 @@ if (existsSync(configPath)) {
 
 const VENDOR_STAGING_DIR = config.vendor_staging_dir;
 
-const INCLUDE_DIRS = config.include_dirs ?? [
+let INCLUDE_DIRS = config.include_dirs ?? [
   'app', 'bootstrap', 'config', 'database',
-  'routes', 'resources/views',
+  'routes', 'resources/views', 'vendor',
 ];
 
 // Use staging vendor if available (production-only, no-dev)
 if (VENDOR_STAGING_DIR && existsSync(VENDOR_STAGING_DIR)) {
   console.log('  Using staging vendor (production-only, no-dev)...');
+  // Filter out vendor from include_dirs - we'll add staging vendor separately
+  INCLUDE_DIRS = INCLUDE_DIRS.filter(d => d !== 'vendor');
 } else {
   console.warn('  Warning: No staging vendor found, using main vendor (may include dev packages)');
-  INCLUDE_DIRS.push('vendor');
 }
 
 const INCLUDE_FILES = config.include_files ?? [
@@ -537,8 +538,9 @@ if (devPackagesFound.length > 0) {
   console.log('  ✓ No dev packages found in bundle');
 }
 
-// Override Composer platform check — php-cgi-wasm provides PHP 8.3.11 but
-// Laravel 12 requires >= 8.4.0.
+// Override Composer platform check — php-cgi-wasm currently provides PHP 8.3.11
+// but Laravel 12 requires >= 8.4.0. Remove this override once a custom PHP 8.4+
+// WASM binary is built (see php-wasm-build/.php-wasm-rc).
 const platformCheckPath = 'vendor/composer/platform_check.php';
 const idx = allFiles.findIndex(f => f.path === platformCheckPath);
 if (idx >= 0) {

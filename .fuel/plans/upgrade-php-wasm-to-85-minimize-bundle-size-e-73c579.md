@@ -35,10 +35,15 @@ Upgrade the custom PHP WASM binary from PHP 8.2 to PHP 8.5.3 and aggressively mi
 - Measure before/after tar.gz size
 
 ### Task 3: Enable whitespace stripping by default for production
-- Change `strip_whitespace` default to `true` in `config/laraworker.php`
-- Benchmark the build time impact
-- If build time is unacceptable (>5 min), investigate parallel stripping or caching
-- Measure tar.gz size reduction (expected 5-10%)
+- [x] Change `strip_whitespace` default to `true` in `config/laraworker.php`
+- [x] Benchmark the build time impact
+- [x] If build time is unacceptable (>5 min), investigate parallel stripping or caching
+- [ ] Measure tar.gz size reduction (expected 5-10%) — blocked by performance issue
+
+**Benchmark Results:**
+- Without stripping: ~4.5 seconds build time, 6.70 MB tar.gz
+- With stripping (sequential php -w): >5 minutes (unacceptable)
+- **Action**: Created task f-c54cf7 to optimize stripping performance via parallel processing or caching
 
 ### Task 4: Verify and optimize Composer autoloader
 - Ensure `composer install --no-dev --optimize-autoloader --classmap-authoritative` is used
