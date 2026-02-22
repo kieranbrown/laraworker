@@ -56,11 +56,15 @@ Generated at build time (NOT in git):
 - Methods: `ensureDirectory()`, `copyStubs()`, `generatePhpTs()`, `generateWranglerConfig()`, `generateEnvProduction()`, `writeBuildConfig()`
 - All commands share this helper instead of duplicating path logic
 
-### 3. Refactor BuildCommand to generate .laraworker/ at build time
-- Before build: copy stubs from package → `.laraworker/`
-- Generate php.ts, wrangler.jsonc, .env.production, build-config.json into `.laraworker/`
-- Run build-app.mjs from `.laraworker/`
-- Remove check for `.cloudflare` existence (replaced by auto-generation)
+### 3. Refactor BuildCommand to generate .laraworker/ at build time ✅ DONE
+- ✅ Removed `.cloudflare` existence check from handle()
+- ✅ handle() now: instantiates BuildDirectory → ensureDirectory → copyStubs → generatePhpTs → generateWranglerConfig → generateEnvProduction → writeBuildConfig (all in a single "Preparing build directory" task)
+- ✅ Removed ensureEnvProduction() and writeBuildConfig() methods (delegated to BuildDirectory)
+- ✅ optimizeForProduction() uses `$this->buildDirectory->path('.env.production')` for env file
+- ✅ runBuildScript() uses `$this->buildDirectory->path('build-app.mjs')` for node script
+- ✅ Zero `.cloudflare` references remain in BuildCommand.php
+- ✅ Tests updated in tests/Feature/BuildCommandTest.php — all use BuildDirectory::DIRECTORY constant
+- ✅ Pre-existing ConfigTest failure (strip_whitespace default mismatch) is unrelated
 
 ### 4. Simplify InstallCommand ✅ DONE
 - ✅ Removed: publishStubs(), generatePhpTs(), generateWranglerConfig(), generateEnvProduction(), writeBuildConfig(), resolvePhpWasmImport()
