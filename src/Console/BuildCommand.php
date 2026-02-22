@@ -12,20 +12,21 @@ class BuildCommand extends Command
 
     protected $description = 'Build the Laravel application for Cloudflare Workers';
 
+    private BuildDirectory $buildDirectory;
+
     public function handle(): int
     {
         $this->components->info('Building for Cloudflare Workers...');
 
-        $buildDir = new BuildDirectory;
+        $this->buildDirectory = new BuildDirectory;
 
-        // Generate .laraworker/ directory with all necessary files
-        $this->components->task('Preparing build directory', function () use ($buildDir) {
-            $buildDir->ensureDirectory();
-            $buildDir->copyStubs();
-            $buildDir->generatePhpTs(config('laraworker.extensions', []));
-            $buildDir->generateWranglerConfig();
-            $buildDir->generateEnvProduction();
-            $buildDir->writeBuildConfig();
+        $this->components->task('Preparing build directory', function () {
+            $this->buildDirectory->ensureDirectory();
+            $this->buildDirectory->copyStubs();
+            $this->buildDirectory->generatePhpTs(config('laraworker.extensions', []));
+            $this->buildDirectory->generateWranglerConfig();
+            $this->buildDirectory->generateEnvProduction();
+            $this->buildDirectory->writeBuildConfig();
 
             return true;
         });
@@ -33,7 +34,7 @@ class BuildCommand extends Command
         try {
             $this->optimizeForProduction();
 
-            $result = $this->runBuildScript($buildDir);
+            $result = $this->runBuildScript();
         } finally {
             $this->restoreLocalEnvironment();
         }
@@ -53,7 +54,7 @@ class BuildCommand extends Command
         $this->components->info('Optimizing for production...');
 
         $basePath = base_path();
-        $envFile = base_path('.laraworker/.env.production');
+        $envFile = $this->buildDirectory->path('.env.production');
 
         $this->components->task('Caching config', function () use ($basePath, $envFile) {
             return $this->runArtisan(['config:cache', '--env=production'], $basePath, $envFile);
@@ -321,10 +322,10 @@ class BuildCommand extends Command
         return $env;
     }
 
-    private function runBuildScript(BuildDirectory $buildDir): int
+    private function runBuildScript(): int
     {
         $process = new Process(
-            ['node', $buildDir->path('build-app.mjs')],
+            ['node', $this->buildDirectory->path('build-app.mjs')],
             base_path(),
             null,
             null,

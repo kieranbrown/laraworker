@@ -4,6 +4,7 @@ namespace Laraworker\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
+use Laraworker\BuildDirectory;
 use Symfony\Component\Process\Process;
 
 class DeployCommand extends Command
@@ -17,14 +18,16 @@ class DeployCommand extends Command
 
     private const PAID_TIER_LIMIT = 10 * 1024 * 1024; // 10MB
 
+    private BuildDirectory $buildDirectory;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->buildDirectory = new BuildDirectory;
+    }
+
     public function handle(): int
     {
-        if (! is_dir(base_path('.cloudflare'))) {
-            $this->components->error('Laraworker not installed. Run: php artisan laraworker:install');
-
-            return self::FAILURE;
-        }
-
         // Pre-flight checks
         if (! $this->runPreflightChecks()) {
             return self::FAILURE;
@@ -37,7 +40,7 @@ class DeployCommand extends Command
         }
 
         // Check app.tar.gz exists after build
-        if (! File::exists(base_path('.cloudflare/dist/assets/app.tar.gz'))) {
+        if (! File::exists($this->buildDirectory->path('dist/assets/app.tar.gz'))) {
             $this->components->error('Build failed: app.tar.gz not found.');
 
             return self::FAILURE;
@@ -59,7 +62,7 @@ class DeployCommand extends Command
 
         $process = new Process(
             ['npx', 'wrangler', 'deploy'],
-            base_path('.cloudflare'),
+            $this->buildDirectory->path(),
             null,
             null,
             300
@@ -92,7 +95,7 @@ class DeployCommand extends Command
         $passed = true;
 
         // Check wrangler.jsonc exists and has account_id
-        $wranglerConfigPath = base_path('.cloudflare/wrangler.jsonc');
+        $wranglerConfigPath = $this->buildDirectory->path('wrangler.jsonc');
         if (! File::exists($wranglerConfigPath)) {
             $this->components->warn('  wrangler.jsonc not found.');
             $passed = false;
@@ -133,7 +136,7 @@ class DeployCommand extends Command
     {
         $process = new Process(
             ['npx', 'wrangler', 'whoami'],
-            base_path('.cloudflare'),
+            base_path(),
             null,
             null,
             30
@@ -146,7 +149,7 @@ class DeployCommand extends Command
 
     private function getBundleSize(): array
     {
-        $cloudflarePath = base_path('.cloudflare');
+        $buildPath = $this->buildDirectory->path();
         $workerSize = 0;
         $assetsSize = 0;
         $assetCount = 0;
@@ -154,14 +157,14 @@ class DeployCommand extends Command
         // Get worker size (main entry point and any built JS)
         $workerFiles = ['worker.ts', 'worker.js', 'index.js'];
         foreach ($workerFiles as $file) {
-            $path = $cloudflarePath.'/'.$file;
+            $path = $buildPath.'/'.$file;
             if (File::exists($path)) {
                 $workerSize += File::size($path);
             }
         }
 
         // Check dist directory for assets
-        $distPath = $cloudflarePath.'/dist';
+        $distPath = $buildPath.'/dist';
         if (is_dir($distPath)) {
             $iterator = new \RecursiveIteratorIterator(
                 new \RecursiveDirectoryIterator($distPath, \RecursiveDirectoryIterator::SKIP_DOTS)
@@ -220,8 +223,8 @@ class DeployCommand extends Command
         $this->newLine();
         $this->components->info('Files that would be deployed:');
 
-        $cloudflarePath = base_path('.cloudflare');
-        $distPath = $cloudflarePath.'/dist';
+        $buildPath = $this->buildDirectory->path();
+        $distPath = $buildPath.'/dist';
 
         if (is_dir($distPath)) {
             $iterator = new \RecursiveIteratorIterator(
@@ -239,7 +242,7 @@ class DeployCommand extends Command
         // List worker files
         $workerFiles = ['worker.ts', 'worker.js', 'index.js', 'wrangler.jsonc'];
         foreach ($workerFiles as $file) {
-            $path = $cloudflarePath.'/'.$file;
+            $path = $buildPath.'/'.$file;
             if (File::exists($path)) {
                 $this->line(sprintf('  %s (%s)', $file, $this->formatBytes(File::size($path))));
             }
@@ -288,7 +291,7 @@ class DeployCommand extends Command
 
     private function getCustomDomain(): ?string
     {
-        $wranglerConfigPath = base_path('.cloudflare/wrangler.jsonc');
+        $wranglerConfigPath = $this->buildDirectory->path('wrangler.jsonc');
         if (! File::exists($wranglerConfigPath)) {
             return null;
         }

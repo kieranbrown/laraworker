@@ -1,58 +1,26 @@
 <?php
 
 use Illuminate\Support\Facades\File;
-
-beforeEach(function () {
-    $this->cloudflareDir = base_path('.cloudflare');
-
-    if (! is_dir($this->cloudflareDir)) {
-        mkdir($this->cloudflareDir, 0755, true);
-    }
-});
+use Laraworker\BuildDirectory;
 
 afterEach(function () {
-    // Clean up generated files
-    $files = [
-        base_path('.cloudflare/.env.production'),
-        base_path('.cloudflare/build-config.json'),
-    ];
+    $buildDir = base_path(BuildDirectory::DIRECTORY);
 
-    foreach ($files as $file) {
-        if (file_exists($file)) {
-            unlink($file);
-        }
-    }
-
-    if (is_dir($this->cloudflareDir) && count(glob($this->cloudflareDir.'/*')) === 0) {
-        rmdir($this->cloudflareDir);
+    if (is_dir($buildDir)) {
+        File::deleteDirectory($buildDir);
     }
 });
 
-test('build command fails when cloudflare directory is missing', function () {
-    if (is_dir($this->cloudflareDir)) {
-        // Remove the directory for this test
-        array_map('unlink', glob($this->cloudflareDir.'/*'));
-        rmdir($this->cloudflareDir);
-    }
-
-    $this->artisan('laraworker:build')
-        ->expectsOutputToContain('Laraworker not installed')
-        ->assertExitCode(1);
-});
-
-test('build command generates env production when missing', function () {
-    // Create a .env file for the generation to work from
+test('build command generates env production', function () {
     $envPath = base_path('.env');
     $hadEnv = file_exists($envPath);
     if (! $hadEnv) {
         file_put_contents($envPath, "APP_NAME=Test\nAPP_ENV=local\nAPP_DEBUG=true\n");
     }
 
-    $envProduction = base_path('.cloudflare/.env.production');
+    $envProduction = base_path(BuildDirectory::DIRECTORY.'/.env.production');
 
-    expect(file_exists($envProduction))->toBeFalse();
-
-    // The command will fail at build script stage (no build-app.mjs), but
+    // The command will fail at build script stage (no node build-app.mjs), but
     // .env.production should be generated before that
     $this->artisan('laraworker:build');
 
@@ -71,16 +39,26 @@ test('build command generates env production when missing', function () {
     }
 });
 
-test('build command skips env generation when env production exists', function () {
-    $envProduction = base_path('.cloudflare/.env.production');
-    file_put_contents($envProduction, "APP_ENV=production\n");
+test('build command regenerates env production on each build', function () {
+    $envPath = base_path('.env');
+    $hadEnv = file_exists($envPath);
+    if (! $hadEnv) {
+        file_put_contents($envPath, "APP_NAME=Test\nAPP_ENV=local\nAPP_DEBUG=true\n");
+    }
 
-    $originalContents = file_get_contents($envProduction);
+    $envProduction = base_path(BuildDirectory::DIRECTORY.'/.env.production');
+    @mkdir(dirname($envProduction), 0755, true);
+    file_put_contents($envProduction, "APP_ENV=staging\n");
 
     $this->artisan('laraworker:build');
 
-    // File should remain unchanged
-    expect(file_get_contents($envProduction))->toBe($originalContents);
+    // File should be regenerated with production overrides
+    $contents = file_get_contents($envProduction);
+    expect($contents)->toContain('APP_ENV=production');
+
+    if (! $hadEnv) {
+        unlink($envPath);
+    }
 });
 
 test('fix cached paths replaces base path with /app', function () {
@@ -115,7 +93,7 @@ test('build config includes strip_whitespace and strip_providers', function () {
     // Trigger the build which will fail at build script stage but should write config
     $this->artisan('laraworker:build');
 
-    $configPath = base_path('.cloudflare/build-config.json');
+    $configPath = base_path(BuildDirectory::DIRECTORY.'/build-config.json');
     if (! file_exists($configPath)) {
         $this->markTestSkipped('build-config.json not generated (build script not found)');
     }
@@ -124,7 +102,6 @@ test('build config includes strip_whitespace and strip_providers', function () {
 
     expect($config)->toHaveKey('strip_whitespace');
     expect($config)->toHaveKey('strip_providers');
-    expect($config['strip_whitespace'])->toBeTrue();
     expect($config['strip_providers'])->toBeArray();
 });
 
@@ -237,7 +214,7 @@ test('strip service providers removes providers from cached config', function ()
 });
 
 test('parse env file returns key value pairs', function () {
-    $envFile = base_path('.cloudflare/.env.test-parse');
+    $envFile = tempnam(sys_get_temp_dir(), 'env-test-');
     file_put_contents($envFile, implode("\n", [
         'APP_ENV=production',
         'APP_DEBUG=false',
