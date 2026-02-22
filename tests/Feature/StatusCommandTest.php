@@ -1,18 +1,19 @@
 <?php
 
 use Illuminate\Support\Facades\File;
+use Laraworker\BuildDirectory;
 
 beforeEach(function () {
-    $this->cloudflareDir = base_path('.cloudflare');
+    $this->laraworkerDir = base_path(BuildDirectory::DIRECTORY);
 
-    if (is_dir($this->cloudflareDir)) {
-        File::deleteDirectory($this->cloudflareDir);
+    if (is_dir($this->laraworkerDir)) {
+        File::deleteDirectory($this->laraworkerDir);
     }
 });
 
 afterEach(function () {
-    if (is_dir($this->cloudflareDir)) {
-        File::deleteDirectory($this->cloudflareDir);
+    if (is_dir($this->laraworkerDir)) {
+        File::deleteDirectory($this->laraworkerDir);
     }
 });
 
@@ -21,15 +22,15 @@ test('status command succeeds', function () {
         ->assertSuccessful();
 });
 
-test('status shows not installed when .cloudflare missing', function () {
+test('status shows not installed when .laraworker missing', function () {
     $this->artisan('laraworker:status')
         ->expectsOutputToContain('Installation Status')
         ->assertSuccessful();
 });
 
-test('status shows installed when .cloudflare exists', function () {
-    mkdir($this->cloudflareDir, 0755, true);
-    file_put_contents($this->cloudflareDir.'/wrangler.jsonc', '{}');
+test('status shows installed when .laraworker exists', function () {
+    mkdir($this->laraworkerDir, 0755, true);
+    file_put_contents($this->laraworkerDir.'/wrangler.jsonc', '{}');
 
     $this->artisan('laraworker:status')
         ->expectsOutputToContain('Installation Status')

@@ -45,18 +45,11 @@ jobs:
         working-directory: demo
         run: php artisan laraworker:install --no-interaction
 
-      - name: Configure wrangler.jsonc
+      - name: Configure deployment
         working-directory: demo
         run: |
-          node -e "
-            const fs = require('fs');
-            const raw = fs.readFileSync('.cloudflare/wrangler.jsonc', 'utf8');
-            const stripped = raw.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
-            const config = JSON.parse(stripped);
-            config.account_id = process.env.CLOUDFLARE_ACCOUNT_ID;
-            config.routes = [{ pattern: 'laraworker.kswb.dev', custom_domain: true }];
-            fs.writeFileSync('.cloudflare/wrangler.jsonc', JSON.stringify(config, null, 2) + '\n');
-          "
+          echo "CLOUDFLARE_ACCOUNT_ID=$CLOUDFLARE_ACCOUNT_ID" >> .env
+          echo "LARAWORKER_NAME=laraworker-demo" >> .env
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
