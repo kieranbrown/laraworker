@@ -338,13 +338,11 @@ TS,
         $this->components->task('Running initial build (patch Emscripten + copy WASM)', function () {
             $this->writeBuildConfig();
 
-            exec('node '.base_path('.cloudflare/build-app.mjs').' 2>&1', $output, $exitCode);
+            // Use passthru for real-time output to help debugging
+            passthru('node '.base_path('.cloudflare/build-app.mjs').' 2>&1', $exitCode);
 
             if ($exitCode !== 0) {
                 $this->components->warn('Initial build failed. Run "php artisan laraworker:build" manually.');
-                foreach ($output as $line) {
-                    $this->line("  {$line}");
-                }
             }
         });
     }

@@ -372,7 +372,12 @@ const fmt = (bytes) => {
 
 // --- Main ---
 
+console.log('  Starting build-app.mjs...');
+console.log(`  ROOT: ${ROOT}`);
+console.log(`  DIST_DIR: ${DIST_DIR}`);
+
 if (existsSync(DIST_DIR)) {
+  console.log('  Cleaning dist directory...');
   rmSync(DIST_DIR, { recursive: true });
 }
 
@@ -458,11 +463,11 @@ if (existsSync(composerJson)) {
   try {
     console.log('  Optimizing Composer autoloader (classmap-authoritative)...');
     // --no-scripts prevents package:discover from running with missing dev providers
-    // Use inherit stdio to see any errors, and add COMPOSER_NO_INTERACTION to ensure it doesn't hang
-    execSync('COMPOSER_NO_INTERACTION=1 composer dump-autoload --classmap-authoritative --no-dev --no-scripts', {
+    execSync('composer dump-autoload --classmap-authoritative --no-dev --no-scripts', {
       cwd: ROOT,
       stdio: 'inherit',
       timeout: 60_000,
+      env: { ...process.env, COMPOSER_NO_INTERACTION: '1' },
     });
     console.log('  Composer autoloader optimized');
   } catch (err) {
