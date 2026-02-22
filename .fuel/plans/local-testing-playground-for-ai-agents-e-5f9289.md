@@ -14,33 +14,28 @@ Create a `playground/` directory (gitignored) with automation scripts that:
 
 ## Key Decisions
 - `playground/` added to .gitignore — ephemeral, agents create/destroy as needed
-- Shell scripts in `scripts/` directory (not Makefile) — simpler for AI agent invocation
+- A `Makefile` or shell script (`scripts/playground.sh`) orchestrates setup
 - Must work headless (no interactive prompts) for AI agent usage
 - Should support teardown/reset for clean re-testing
-- Path repository points to project root (the package lives at repo root, not in packages/)
-- `bun install` run explicitly after `laraworker:install` — the install command's own npm install may not fully complete
-- `composer dump-autoload` run after install to fix autoloader corruption (install's `--no-dev` build step strips dev packages from autoloader cache)
 
-## Completed — Playground Scripts (f-1abf91)
+## Scripts
 
-### Files Created
-- `.gitignore` — added `/playground/` entry
-- `scripts/playground-setup.sh` — creates fresh Laravel project, installs laraworker via path repo, runs install + bun install + autoloader fix
-- `scripts/playground-build.sh` — runs `laraworker:build` inside playground
-- `scripts/playground-dev.sh` — runs `laraworker:dev` inside playground (foreground process), checks for build artifacts first
-- `scripts/playground-teardown.sh` — removes playground/ directory
+| Script | Purpose |
+|--------|---------|
+| `scripts/playground-setup.sh` | Scaffold Laravel project, install laraworker, run install command |
+| `scripts/playground-build.sh` | Run `php artisan laraworker:build` inside playground |
+| `scripts/playground-dev.sh` | Start `php artisan laraworker:dev` (interactive) |
+| `scripts/playground-teardown.sh` | Remove playground directory |
+| `scripts/playground-smoke-test.sh` | End-to-end: build → start dev server → HTTP assertions → cleanup |
 
-### Gotchas
-- `laraworker:install` runs an initial build that calls `composer dump-autoload --classmap-authoritative --no-dev`, which corrupts the autoloader for dev packages (e.g., Laravel Pail). Must run `composer dump-autoload` after install to restore.
-- `laraworker:install` installs npm deps via bun but node_modules may not persist (observed empty node_modules after install). Explicit `bun install` after install is required.
-- All scripts use `set -euo pipefail` and resolve paths relative to script location via `BASH_SOURCE`.
+## Patterns
 
-### Patterns
-- Scripts resolve `PROJECT_ROOT` from `SCRIPT_DIR/..` so they work from any working directory
-- `--force` flag on setup for non-interactive reset (AI agent friendly)
-- Build and dev scripts validate preconditions before running (playground exists, build artifacts exist)
+- All scripts use `set -euo pipefail` and derive `PLAYGROUND_DIR` from script location
+- Dev server runs on `http://localhost:8787` (wrangler default)
+- Smoke test uses `trap EXIT` to guarantee background process cleanup
+- Scripts check for playground existence and error early with actionable messages
 
 ## Tasks
 1. ~~Add playground infrastructure (gitignore, setup script)~~ ✅
-2. Create smoke test script that verifies build + dev server works
+2. ~~Create smoke test script that verifies build + dev server works~~ ✅
 3. Document playground usage in AGENTS.md or similar
