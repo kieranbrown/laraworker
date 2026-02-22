@@ -98,7 +98,7 @@ TS,
                 mkdir($targetDir, 0755, true);
             }
 
-            $stubs = ['worker.ts', 'shims.ts', 'tar.ts', 'build-app.mjs', 'tsconfig.json'];
+            $stubs = ['worker.ts', 'shims.ts', 'tar.ts', 'inertia-ssr.ts', 'build-app.mjs', 'tsconfig.json'];
 
             foreach ($stubs as $stub) {
                 $target = $targetDir.'/'.$stub;
