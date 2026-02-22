@@ -458,13 +458,14 @@ if (carbonRemoved.length > 0) {
   console.log(`  Stripped ${carbonRemoved.length} Carbon locale files (kept en* only)`);
 }
 
-// Run composer dump-autoload --classmap-authoritative if composer.json exists
+// Run composer dump-autoload --optimize if composer.json exists
 const composerJson = join(ROOT, 'composer.json');
 if (existsSync(composerJson)) {
   try {
-    console.log('  Optimizing Composer autoloader (classmap-authoritative)...');
-    // --no-scripts prevents package:discover from running with missing dev providers
-    execSync('composer dump-autoload --classmap-authoritative --no-dev --no-scripts', {
+    console.log('  Optimizing Composer autoloader...');
+    // Use --optimize-autoloader (not --classmap-authoritative --no-dev) to avoid
+    // missing dev dependency classes that are referenced in config files
+    execSync('composer dump-autoload --optimize --no-scripts', {
       cwd: ROOT,
       stdio: 'inherit',
       timeout: 60_000,
