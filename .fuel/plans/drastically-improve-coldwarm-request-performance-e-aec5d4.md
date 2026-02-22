@@ -42,3 +42,54 @@ Significantly reduce cold start (~2s) and warm request times for Laravel on Clou
 
 ## Dependency
 Blocked by e-5f9289 (local testing playground) — need to be able to benchmark locally before and after changes.
+
+---
+
+## Completed Work
+
+### Phase 1: Build Optimizations (Implemented)
+
+All Tier 1 and partial Tier 2 optimizations from the investigation report have been implemented:
+
+1. **PHP whitespace stripping** (`php -w` at build time) — ~30-40% PHP file size reduction
+2. **Service provider stripping** — Removes Broadcasting, Bus, Notifications from cached config
+3. **Class preloader** — Generates `bootstrap/preload.php` with core Illuminate classes, eliminating per-class autoloader lookups
+4. **Additional vendor pruning** — CLI bins, Symfony translations, testing utilities, console stubs
+5. **Configurable extensions** — mbstring/openssl can be disabled to save ~1.7 MB
+
+### Key Files
+- `config/laraworker.php` — All optimizations configurable
+- `src/Console/BuildCommand.php` — Build pipeline with optimization steps
+- `stubs/build-app.mjs` — JS build script with whitespace stripping, pruning, stubs
+- `.fuel/docs/performance-investigation.md` — Full investigation report with benchmarks
+
+### Patterns Established
+- Build optimizations are config-driven via `config/laraworker.php`
+- Build config is serialized to `.cloudflare/build-config.json` for the Node build script
+- Private methods on BuildCommand handle each optimization step independently
+- `try/finally` ensures local environment is always restored after build
+
+### Honest Assessment (from investigation)
+- **Cold start <1s: NOT achievable** without Cloudflare platform changes (WASM compilation alone: 500-800ms)
+- **Warm <100ms: Aggressive** but approachable with ClassPreloader + whitespace stripping (estimated ~250-500ms after optimizations vs ~500ms baseline)
+- **Bundle <3 MB: Achievable** by disabling unused extensions
+
+### Test Coverage
+- 44 tests passing (129 assertions)
+- New tests cover: config defaults, build command behavior, path fixing, preload generation, provider stripping, env parsing
+
+## Epic Review (f-1e1ef4)
+
+**Verdict: PASS with caveats**
+
+| Criterion | Status | Notes |
+|-----------|--------|-------|
+| Investigation report with benchmarks | PASS | Comprehensive 415-line report |
+| Cold start <1s | PARTIAL | Platform-blocked; all software optimizations applied |
+| Warm request <100ms | PARTIAL | Estimated improvement to ~250-500ms; platform-limited |
+| Bundle within free tier | PASS | Achievable via extension config |
+| Tests pass | PASS | 44/44 pass |
+| No regressions | PASS | Code review clean, Pint passes |
+| Changes documented | PASS | Report + config comments + commit messages |
+
+The targets for cold start and warm request were aspirational. The investigation correctly identified that WASM compilation overhead and lack of OPcache are platform-level constraints that cannot be solved at the application layer. All feasible optimizations have been implemented.
