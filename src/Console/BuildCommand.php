@@ -128,8 +128,9 @@ class BuildCommand extends Command
         $this->generatePreloadFile();
 
         $this->components->task('Optimizing autoloader', function () use ($basePath) {
+            // --no-scripts prevents package:discover from running with missing dev providers
             $process = new Process(
-                ['composer', 'dump-autoload', '--classmap-authoritative', '--no-dev'],
+                ['composer', 'dump-autoload', '--classmap-authoritative', '--no-dev', '--no-scripts'],
                 $basePath,
                 null,
                 null,
