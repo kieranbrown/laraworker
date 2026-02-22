@@ -457,7 +457,8 @@ const composerJson = join(ROOT, 'composer.json');
 if (existsSync(composerJson)) {
   try {
     console.log('  Optimizing Composer autoloader (classmap-authoritative)...');
-    execSync('composer dump-autoload --classmap-authoritative --no-dev --quiet', {
+    // --no-scripts prevents package:discover from running with missing dev providers
+    execSync('composer dump-autoload --classmap-authoritative --no-dev --no-scripts --quiet', {
       cwd: ROOT,
       stdio: 'pipe',
       timeout: 60_000,
