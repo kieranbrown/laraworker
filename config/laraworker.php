@@ -48,10 +48,10 @@ return [
     */
 
     'strip_providers' => [
-        \Illuminate\Broadcasting\BroadcastServiceProvider::class,
-        \Illuminate\Bus\BusServiceProvider::class,
-        \Illuminate\Notifications\NotificationServiceProvider::class,
-        \Laravel\Pail\PailServiceProvider::class,
+        'Illuminate\Broadcasting\BroadcastServiceProvider',
+        'Illuminate\Bus\BusServiceProvider',
+        'Illuminate\Notifications\NotificationServiceProvider',
+        'Laravel\Pail\PailServiceProvider',
     ],
 
     /*
