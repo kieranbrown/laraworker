@@ -128,9 +128,10 @@ class BuildCommand extends Command
         $this->generatePreloadFile();
 
         $this->components->task('Optimizing autoloader', function () use ($basePath) {
-            // --no-scripts prevents package:discover from running with missing dev providers
+            // Use --optimize-autoloader instead of --classmap-authoritative --no-dev
+            // to avoid missing dev dependency classes referenced in config files
             $process = new Process(
-                ['composer', 'dump-autoload', '--classmap-authoritative', '--no-dev', '--no-scripts'],
+                ['composer', 'dump-autoload', '--optimize', '--no-scripts'],
                 $basePath,
                 null,
                 null,
@@ -402,7 +403,7 @@ class BuildCommand extends Command
             'include_dirs' => config('laraworker.include_dirs', []),
             'include_files' => config('laraworker.include_files', []),
             'exclude_patterns' => config('laraworker.exclude_patterns', []),
-            'strip_whitespace' => config('laraworker.strip_whitespace', true),
+            'strip_whitespace' => config('laraworker.strip_whitespace', false),
             'strip_providers' => config('laraworker.strip_providers', []),
         ];
 

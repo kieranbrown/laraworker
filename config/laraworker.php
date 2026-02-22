@@ -29,9 +29,13 @@ return [
     | unnecessary whitespace at build time using `php -w`. This reduces
     | tar size by ~30-40% per file and speeds up PHP parsing in WASM.
     |
+    | Note: This adds significant build time (several minutes) so it's
+    | disabled by default to keep builds fast. Enable for production
+    | deployments where bundle size is critical.
+    |
     */
 
-    'strip_whitespace' => true,
+    'strip_whitespace' => false,
 
     /*
     |--------------------------------------------------------------------------
