@@ -24,8 +24,8 @@ echo "→ Running Pint (auto-fix)..."
 # Restage auto-fixed files so commit includes fixes
 git add -- "${PHP_FILES[@]}"
 
-# Run tests with Pest
+# Run tests with Pest (full suite — Pest doesn't filter by source file paths)
 echo "→ Running Pest tests..."
-./vendor/bin/pest --compact "${PHP_FILES[@]}"
+./vendor/bin/pest --compact
 
 echo "✓ Quality gate passed"

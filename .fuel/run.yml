@@ -1,13 +1,1 @@
-processes:
-  server:
-    command: "php artisan serve --port=${FUEL_PORT_BASE:-8000} --no-interaction"
-    auto_restart: true
-  vite:
-    command: "bun run dev"
-    auto_restart: true
-  queue:
-    command: "php artisan queue:listen --tries=1 --timeout=0 --no-interaction"
-    auto_restart: true
-  logs:
-    command: "php artisan pail --timeout=0 --no-interaction"
-    auto_restart: false
+processes: {}
