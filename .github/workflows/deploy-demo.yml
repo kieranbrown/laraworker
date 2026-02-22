@@ -1,0 +1,59 @@
+name: Deploy Demo
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout laraworker package
+        uses: actions/checkout@v4
+        with:
+          path: laraworker-package
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Create Laravel app
+        run: composer create-project laravel/laravel demo --no-interaction
+
+      - name: Add laraworker package
+        working-directory: demo
+        run: |
+          composer config repositories.laraworker path ../laraworker-package
+          composer require kieranbrown/laraworker:@dev --no-interaction
+
+      - name: Install laraworker
+        working-directory: demo
+        run: php artisan laraworker:install --no-interaction
+
+      - name: Configure wrangler.jsonc
+        working-directory: demo
+        run: |
+          node -e "
+            const fs = require('fs');
+            const raw = fs.readFileSync('.cloudflare/wrangler.jsonc', 'utf8');
+            const stripped = raw.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+            const config = JSON.parse(stripped);
+            config.account_id = process.env.CLOUDFLARE_ACCOUNT_ID;
+            config.routes = [{ pattern: 'laraworker.kswb.dev', custom_domain: true }];
+            fs.writeFileSync('.cloudflare/wrangler.jsonc', JSON.stringify(config, null, 2) + '\n');
+          "
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Deploy
+        working-directory: demo
+        run: php artisan laraworker:deploy --no-interaction
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
