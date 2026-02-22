@@ -1,59 +1,167 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Laraworker
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+[![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-777BB4?logo=php&logoColor=white)](https://php.net)
+[![Laravel 12](https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white)](https://laravel.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-## About Laravel
+Deploy Laravel applications to Cloudflare Workers via PHP WASM.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Laraworker packages your Laravel app into a compressed tar archive, then runs it on Cloudflare Workers using [php-cgi-wasm](https://github.com/nicmart/php-cgi-wasm). On each request, the Worker unpacks the app into an in-memory filesystem and processes it through the PHP WASM runtime — no traditional server required.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Requirements
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- PHP 8.2+
+- Laravel 12
+- Node.js or [Bun](https://bun.sh)
+- A [Cloudflare](https://cloudflare.com) account
 
-## Learning Laravel
+## Installation
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+```bash
+composer require kieranbrown/laraworker
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Then run the install command to scaffold the `.cloudflare/` directory and configure your project:
 
-## Laravel Sponsors
+```bash
+php artisan laraworker:install
+```
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+This will:
+- Publish the `config/laraworker.php` configuration file
+- Add build scripts and dependencies to `package.json`
+- Scaffold the `.cloudflare/` directory with Worker entry point, build scripts, and TypeScript config
+- Generate a `wrangler.jsonc` for Cloudflare Workers
+- Install npm dependencies (`php-cgi-wasm`, `wrangler`, etc.)
+- Run an initial build
 
-### Premium Partners
+## Configuration
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+After installation, configure your setup in `config/laraworker.php`:
 
-## Contributing
+```php
+return [
+    // PHP extensions to include in the WASM bundle
+    'extensions' => [
+        'mbstring' => true,   // ~742 KiB gzipped
+        'openssl' => true,    // ~936 KiB gzipped
+    ],
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+    // Directories included in the app bundle (relative to project root)
+    'include_dirs' => [
+        'app',
+        'bootstrap',
+        'config',
+        'database',
+        'routes',
+        'resources/views',
+        'vendor',
+    ],
 
-## Code of Conduct
+    // Individual files to include
+    'include_files' => [
+        'public/index.php',
+        'artisan',
+        'composer.json',
+    ],
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+    // Regex patterns for files to exclude
+    'exclude_patterns' => [
+        '/\.git\//',
+        '/\/node_modules\//',
+        '/\/tests\//',
+        // ...
+    ],
+];
+```
 
-## Security Vulnerabilities
+### Wrangler Configuration
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Customize `wrangler.jsonc` in the `.cloudflare/` directory to set your `account_id`, routes, custom domains, and other Cloudflare Workers settings.
+
+## Usage
+
+Laraworker provides five Artisan commands:
+
+### `laraworker:install`
+
+Scaffold the `.cloudflare/` directory and configure the project for Cloudflare Workers.
+
+```bash
+php artisan laraworker:install
+php artisan laraworker:install --force  # Overwrite existing files
+```
+
+### `laraworker:build`
+
+Build the Laravel application for production deployment. Caches config, routes, and views, then packages everything into `app.tar.gz`.
+
+```bash
+php artisan laraworker:build
+```
+
+### `laraworker:dev`
+
+Build and start a local development server using `wrangler dev`.
+
+```bash
+php artisan laraworker:dev
+```
+
+### `laraworker:deploy`
+
+Build and deploy to Cloudflare Workers.
+
+```bash
+php artisan laraworker:deploy
+php artisan laraworker:deploy --dry-run  # Build without deploying
+```
+
+### `laraworker:status`
+
+Check installation status, bundle sizes, and tier compatibility.
+
+```bash
+php artisan laraworker:status
+```
+
+## How It Works
+
+1. **Build** — Your Laravel app is optimized (cached config/routes/views, classmap autoload) and packaged into a compressed `app.tar.gz`
+2. **Deploy** — The archive and PHP WASM binary are deployed to Cloudflare Workers as static assets
+3. **Request** — On cold start, the Worker fetches `app.tar.gz`, unpacks it into an in-memory filesystem (MEMFS), and boots the PHP runtime
+4. **Process** — Each HTTP request is routed through `php-cgi-wasm`, which executes your Laravel application and returns the response
+
+The entire bundle (WASM binary + app archive + Worker code) fits within Cloudflare Workers' **free tier limit of 3 MB**.
+
+## Custom Domain Setup
+
+To serve your app from a custom domain, add routes to `.cloudflare/wrangler.jsonc`:
+
+```jsonc
+{
+  "routes": [
+    {
+      "pattern": "example.com/*",
+      "zone_name": "example.com"
+    }
+  ]
+}
+```
+
+Make sure your domain is added to your Cloudflare account and DNS is configured.
+
+## Extensions
+
+Two PHP extensions can be toggled in `config/laraworker.php`:
+
+| Extension | Default | Size Impact |
+|-----------|---------|-------------|
+| `mbstring` | Enabled | ~742 KiB gzipped |
+| `openssl` | Enabled | ~936 KiB gzipped |
+
+Disabling unused extensions reduces your bundle size, which can help stay within Cloudflare's tier limits.
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Laraworker is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
