@@ -121,6 +121,18 @@ Generated at build time (NOT in git):
 - Since `.laraworker/` is fully generated, no migration of files needed
 - User-customized wrangler config (account_id) moves to `config/laraworker.php`
 
+### 9. Update Deploy Demo workflow ✓ COMPLETE (f-397fc0)
+
+**Changes made:**
+- `.github/workflows/deploy-demo.yml`: Renamed worker to `laraworker` (was `laraworker-demo`), added custom domain route config via php -r inline
+- `config/laraworker.php`: Added `routes` config option (array of route objects with `pattern` and `custom_domain` keys)
+- `src/BuildDirectory.php`: `generateWranglerConfig()` now merges `routes` into generated wrangler.jsonc when non-empty
+- `tests/Unit/BuildDirectoryTest.php`: Added tests for routes inclusion and omission
+
+**Key decisions:**
+- Routes are injected programmatically (json_decode → add routes → json_encode) rather than via stub placeholder, avoiding JSONC formatting issues
+- Empty routes array means no `routes` key in wrangler.jsonc (clean default)
+
 ## Risk Areas
 - `build-app.mjs` uses `import.meta.dirname` extensively — copying to `.laraworker/` preserves this
 - wrangler.jsonc account_id is currently hand-edited by users — needs clear migration docs
