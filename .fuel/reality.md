@@ -7,6 +7,7 @@ Standalone Composer package (`kieranbrown/laraworker`) for running Laravel on Cl
 | Module | Purpose | Entry Point |
 |--------|---------|-------------|
 | `src/` | Package source — ServiceProvider, artisan commands (install, build, dev, deploy) | `LaraworkerServiceProvider.php` |
+| `src/BuildDirectory.php` | Helper for `.laraworker/` directory operations (paths, creation, wrangler detection) | `BuildDirectory.php` |
 | `config/` | Package config | `laraworker.php` |
 | `stubs/` | Worker stubs — worker.ts, shims.ts, tar.ts, build-app.mjs, php.ts.stub, wrangler.jsonc.stub | Published to user's app |
 | `php-wasm-build/` | Docker toolchain for building custom PHP WASM binary | `.php-wasm-rc` |
@@ -22,6 +23,8 @@ Standalone Composer package (`kieranbrown/laraworker`) for running Laravel on Cl
 - **Orchestra Testbench**: `Tests\TestCase` extends `Orchestra\Testbench\TestCase` for package testing
 - **Pest v3** for testing
 - **PSR-4 autoload**: `Laraworker\\` → `src/`, `Tests\\` → `tests/`
+- **Build-time `.laraworker/`**: Worker assets (wrangler config, worker.ts, app.tar.gz) are generated into `.laraworker/` at `laraworker:build` time — not published at install time. `BuildDirectory` helper centralises all path logic.
+- **InstallCommand is minimal**: Only registers config/stubs; no worker file copying or generation. All build artifacts live in `.laraworker/`.
 - **Extension system**: `laraworker:install` generates `php.ts` with dynamic WASM extension imports
 - **PHP stubs**: Runtime-injected via `auto_prepend_file` for functions missing from minimal WASM build
 - **Build-time optimizations** (all configurable in `config/laraworker.php`): PHP whitespace stripping via `php -w`, vendor pruning (CLI bins, translations, test utils), service provider stripping from cached config, class preloader for core Illuminate files
@@ -32,6 +35,8 @@ Standalone Composer package (`kieranbrown/laraworker`) for running Laravel on Cl
 | Pest | `vendor/bin/pest --compact` | PHP test runner (Feature + Unit suites) |
 
 ## Recent Changes
+- 2026-02-22: Eliminated `.cloudflare/` from user's app — all worker assets now generated into `.laraworker/` at build time; added `BuildDirectory` helper (664ea16)
+- 2026-02-22: Simplified `InstallCommand` — removed stub copying/generation; build now owns all file generation (b9b0658)
 - 2026-02-22: Added build-time optimizations to `BuildCommand.php` — whitespace stripping, vendor pruning, SP stripping, class preloading (de0f23e)
 - 2026-02-22: Added GitHub Actions workflow for demo deployment (7405082)
 - Restructured from Laravel app to standalone Composer package (81c88fa)
