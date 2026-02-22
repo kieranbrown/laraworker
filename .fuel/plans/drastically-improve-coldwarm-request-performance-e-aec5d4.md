@@ -3,83 +3,89 @@
 ## Goal
 Significantly reduce cold start (~2s) and warm request times for Laravel on Cloudflare Workers. Current bottleneck is PHP WASM execution parsing all framework files without OPcache.
 
-## Current Benchmarks (Feb 2026, laraworker.kswb.dev)
+## Investigation Areas
 
-| Metric | Value |
-|--------|-------|
-| Cold start TTFB | ~2.4–2.8s |
-| Warm TTFB (fast) | ~0.43–0.67s |
-| Warm TTFB (slow) | ~1.6–1.9s |
-| Bundle size (all ext) | ~4.5–5.0 MB |
+### 1. Eliminate custom tar logic
+- Is our custom tar archive + MEMFS unpack still the best approach?
+- Cloudflare Workers now has **Workers Assets** — can we serve static files via assets binding and only WASM-process PHP routes?
+- Cloudflare has **Workers KV**, **R2**, and **Durable Objects** — could pre-built filesystem snapshots be cached?
+- Investigate if Cloudflare's **Static Assets** can serve the entire app directory, avoiding tar extraction entirely
 
-See `.fuel/docs/performance-investigation.md` for full breakdown.
+### 2. Tree shaking / dead code elimination
+- Laravel bootstraps many service providers we may not need in a WASM context
+- Can we strip unused service providers, facades, and middleware?
+- Investigate `composer dump-autoload --classmap-authoritative` effectiveness
+- Can we precompute the autoloader to only include classes actually used in routes?
+- PHP file-level tree shaking: only include files that are actually `require`d
 
-## Investigation Results (Completed)
+### 3. PHP WASM execution optimization
+- OPcache equivalent for WASM? Pre-compile PHP to opcodes at build time
+- Investigate PHP preloading (`opcache.preload`) — can we bake preloaded files into the WASM memory?
+- Reduce number of PHP files parsed on each request (current: parses entire framework)
+- Single-file bundler: concatenate all PHP files into fewer files to reduce filesystem overhead
 
-### 1. Tar extraction — NOT the bottleneck (~30–80ms of ~2.5s cold start)
-- ✅ Investigated. Tar unpack is fast. Static Assets can't replace MEMFS mounting.
-- KV/R2 caching not worth the complexity for ~50ms savings.
-- **Keep current tar approach.**
+### 4. Worker-level optimizations
+- Module-level caching: can the WASM module persist between requests in the same isolate?
+- Lazy initialization: defer service provider boots until actually needed
+- Strip all comments/whitespace from PHP files at build time (php-strip-whitespace)
 
-### 2. PHP file parsing — HIGH IMPACT opportunity
-- ~50–150 PHP files loaded per request even with caching
-- OPcache not available in Emscripten-based php-cgi-wasm
-- **ClassPreloader** can bundle all classes into a single file → est. 100–300ms warm savings
-- **php_strip_whitespace** at build time → est. 20–60ms savings, 10–20% smaller tar
-- Removing unused service providers → est. 5–15ms savings
+### 5. Bundle size reduction (affects cold start)
+- Current: 2,596 KiB gzipped WASM + 3.35 MB compressed tar
+- Audit which PHP extensions are truly needed
+- Consider lighter alternatives to full Laravel (e.g., stripped framework bootstrap)
+- Compress vendor more aggressively — are there large unused files?
 
-### 3. WASM caching — already correctly implemented, platform-blocked for more
-- ✅ Module-level `php` instance persists across warm requests (correct pattern)
-- No V8 WASM code caching in workerd (Cloudflare must implement)
-- WASM memory snapshots (like Python Workers) would be transformative but blocked
-- Cloudflare's Shard & Conquer achieves 99.99% warm rate automatically
-
-### 4. Bundle size — addressable via extension config
-- Extensions add ~1.7 MB (mbstring 742 KiB + openssl 936 KiB)
-- Making extensions optional gets bundle to ~3.0–3.5 MB (near free tier)
-- Tree-shaking Illuminate is high-effort, high-risk
-
-### 5. Cloudflare platform — limited additional gains
-- Static Assets already correctly used
-- Smart Placement not useful (no external backend)
-- 10ms CPU free tier is insufficient; paid tier required
-- 128 MB memory limit is a constraint to monitor
-
-## Recommended Implementation Order
-
-### Phase 1 — Build optimizations (no runtime changes)
-1. Add `php -w` strip whitespace to build-app.mjs for all PHP files in tar
-2. Make WASM extensions configurable with sensible defaults
-3. Add build-time vendor pruning (CLI scripts, unused Symfony resources)
-4. Document Workers-optimized service provider set in config
-
-### Phase 2 — ClassPreloader integration
-5. Integrate ClassPreloader into build pipeline
-6. Generate single preload file with all framework + vendor classes
-7. Benchmark before/after
-
-### Phase 3 — Advanced (platform-dependent)
-8. Monitor CF WASM code caching / memory snapshot progress
-9. OPcache patching (WordPress Playground approach) if Phase 2 insufficient
-10. Illuminate tree-shaker as last resort
-
-## Key Decisions & Patterns
-- Tar extraction is NOT worth replacing — focus on PHP-level optimizations
-- ClassPreloader is the highest-impact addressable optimization for warm requests
-- Cold start <1s is NOT achievable without Cloudflare platform changes (WASM compilation alone is ~500–800ms)
-- Warm request <100ms is aggressive but approachable with ClassPreloader + strip whitespace
-
-## Gotchas
-- Free tier 10ms CPU limit is insufficient for PHP-on-WASM — document this prominently
-- 128 MB isolate memory shared between JS heap and WASM linear memory
-- 1 second startup time limit is tight with full extension set
-- Laravel's internal dependencies are deeply intertwined — tree-shaking is risky
-- PHAR bundling is counterproductive (slower loading than direct includes)
-
-## Success Criteria (Revised Assessment)
-- Cold start < 1s — ❌ Blocked by platform (WASM compilation ~500–800ms alone)
-- Warm request < 100ms — ⚠️ Aggressive but approachable with Phase 1+2
-- Bundle stays within 3 MiB free tier — ✅ Achievable with optional extensions
+## Success Criteria
+- Cold start < 1s
+- Warm request < 100ms
+- Bundle stays within Cloudflare free tier (3 MiB worker, 25 MiB assets)
 
 ## Dependency
 Blocked by e-5f9289 (local testing playground) — need to be able to benchmark locally before and after changes.
+
+---
+
+## Implemented Optimizations (f-cb3f9c)
+
+### 1. PHP Whitespace Stripping at Build Time [DONE]
+- **File**: `stubs/build-app.mjs` — `stripPhpFile()` function, integrated into `createTar()`
+- **Config**: `config/laraworker.php` → `strip_whitespace` (default: `true`)
+- **How**: Runs `php -w` on every `.php` file before packing into tar
+- **Impact**: ~30-40% reduction per PHP file, reduces parse time in WASM
+- **Passed to build-app.mjs via**: `build-config.json` → `strip_whitespace`
+
+### 2. Additional Vendor File Pruning [DONE]
+- **File**: `stubs/build-app.mjs` — `DEFAULT_EXCLUDE_PATTERNS` array
+- **New patterns**: vendor/bin/, vendor/*/bin/, Symfony translations, Illuminate/Testing/, Foundation/Console/stubs/, .github/, .travis.yml, CONTRIBUTING, SECURITY.md
+- **Impact**: Removes CLI scripts, locale files, testing utilities, dev files
+
+### 3. Service Provider Stripping [DONE]
+- **File**: `src/Console/BuildCommand.php` → `stripServiceProviders()` method
+- **Config**: `config/laraworker.php` → `strip_providers` array
+- **How**: After config:cache, removes listed providers from cached config file using regex replacement of double-backslash escaped class names
+- **Default stripped**: BroadcastServiceProvider, BusServiceProvider, NotificationServiceProvider
+- **Gotcha**: Cached config uses double backslashes in class names (`Illuminate\\Bus\\BusServiceProvider`), so regex must handle this via `str_replace('\\', '\\\\', $provider)` before `preg_quote()`
+
+### 4. Class Preloader [DONE]
+- **File**: `src/Console/BuildCommand.php` → `generatePreloadFile()` method
+- **Output**: `bootstrap/preload.php` (auto-cleaned up after build)
+- **How**: Reads `vendor/composer/autoload_classmap.php`, filters to core Illuminate namespaces (Support, Routing, Http, Foundation, Container, Pipeline, Config, Events, View, etc.), excludes Console/Testing namespaces, generates `require_once` list with `/app/` WASM paths
+- **Loaded via**: `php-stubs.php` (auto_prepend_file) — conditionally includes `/app/bootstrap/preload.php`
+- **Impact**: Eliminates per-class autoloader lookups and MEMFS analyzePath() overhead for ~50-150 framework files
+
+### Key Decisions
+- **require_once approach** (not concatenation): Simpler, more robust, avoids complex namespace/dependency resolution. Still saves autoloader lookup + classmap hash table overhead per class
+- **Filtered namespaces**: Only core web-request namespaces preloaded (not Database, Queue, Mail, Console, etc.) to avoid loading unused code
+- **Configurable stripping**: Both whitespace and providers are configurable so users can disable if needed
+- **Stubs integration**: Preloader loaded via existing auto_prepend_file mechanism (php-stubs.php)
+
+### Patterns for Future Agents
+- Build config flows: `config/laraworker.php` → `BuildCommand::writeBuildConfig()` → `.cloudflare/build-config.json` → `build-app.mjs`
+- Runtime files generated during build should be cleaned up in `restoreLocalEnvironment()`
+- Tests use Orchestra Testbench — `base_path()` points to testbench's Laravel skeleton, not the package root. Fake classmaps/files needed for testing build features
+
+### Remaining Optimization Opportunities
+- **Concatenated class preloader** (v2): Merge all class files into single PHP file for true single-parse-pass benefit. Requires topological sort of class dependencies
+- **Configurable WASM extensions**: Already supported in config — users can disable mbstring/openssl to save ~1.7MB
+- **Illuminate component tree-shaking**: Aggressive removal of unused framework components (high effort, high risk)
+- **OPcache in WASM**: Following WordPress Playground's approach (very high effort)

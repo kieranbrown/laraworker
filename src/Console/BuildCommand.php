@@ -123,6 +123,10 @@ class BuildCommand extends Command
             return $this->runArtisan(['view:cache'], $basePath, $envFile);
         });
 
+        $this->stripServiceProviders(base_path('bootstrap/cache/config.php'));
+
+        $this->generatePreloadFile();
+
         $this->components->task('Optimizing autoloader', function () use ($basePath) {
             $process = new Process(
                 ['composer', 'dump-autoload', '--classmap-authoritative', '--no-dev'],
@@ -170,6 +174,146 @@ class BuildCommand extends Command
 
             return $process->isSuccessful();
         });
+
+        // Clean up generated preload file
+        $preloadPath = base_path('bootstrap/preload.php');
+        if (file_exists($preloadPath)) {
+            unlink($preloadPath);
+        }
+    }
+
+    /**
+     * Generate a class preload file that requires critical framework files upfront.
+     *
+     * This eliminates per-class autoloader lookups and MEMFS filesystem overhead
+     * in the WASM runtime by loading all framework classes in a single batch.
+     */
+    private function generatePreloadFile(): void
+    {
+        $this->components->task('Generating class preload file', function () {
+            $classmapPath = base_path('vendor/composer/autoload_classmap.php');
+            if (! file_exists($classmapPath)) {
+                return false;
+            }
+
+            $classmap = require $classmapPath;
+            $basePath = base_path();
+
+            // Namespaces to preload — core framework classes needed for web requests
+            $preloadPrefixes = [
+                'Illuminate\\Auth\\',
+                'Illuminate\\Container\\',
+                'Illuminate\\Config\\',
+                'Illuminate\\Cookie\\',
+                'Illuminate\\Encryption\\',
+                'Illuminate\\Events\\',
+                'Illuminate\\Filesystem\\',
+                'Illuminate\\Foundation\\',
+                'Illuminate\\Hashing\\',
+                'Illuminate\\Http\\',
+                'Illuminate\\Log\\',
+                'Illuminate\\Pipeline\\',
+                'Illuminate\\Routing\\',
+                'Illuminate\\Session\\',
+                'Illuminate\\Support\\',
+                'Illuminate\\Translation\\',
+                'Illuminate\\Validation\\',
+                'Illuminate\\View\\',
+            ];
+
+            // Namespaces to skip even if they match a prefix above
+            $skipPrefixes = [
+                'Illuminate\\Foundation\\Console\\',
+                'Illuminate\\Foundation\\Testing\\',
+                'Illuminate\\Routing\\Console\\',
+                'Illuminate\\Auth\\Console\\',
+            ];
+
+            $files = [];
+            foreach ($classmap as $class => $file) {
+                $matched = false;
+                foreach ($preloadPrefixes as $prefix) {
+                    if (str_starts_with($class, $prefix)) {
+                        $matched = true;
+                        break;
+                    }
+                }
+
+                if (! $matched) {
+                    continue;
+                }
+
+                foreach ($skipPrefixes as $skipPrefix) {
+                    if (str_starts_with($class, $skipPrefix)) {
+                        $matched = false;
+                        break;
+                    }
+                }
+
+                if ($matched) {
+                    // Convert to WASM runtime path
+                    $runtimePath = str_replace($basePath, '/app', $file);
+                    $files[$runtimePath] = true;
+                }
+            }
+
+            $files = array_keys($files);
+            sort($files);
+
+            $lines = ["<?php\n"];
+            $lines[] = '// Auto-generated class preloader — loaded via auto_prepend_file';
+            $lines[] = '// Eliminates per-class autoloader lookups in WASM runtime';
+            $lines[] = '// Generated: '.date('Y-m-d H:i:s');
+            $lines[] = sprintf('// Classes: %d files', count($files));
+            $lines[] = '';
+            $lines[] = "require_once '/app/vendor/autoload.php';";
+            $lines[] = '';
+
+            foreach ($files as $file) {
+                $lines[] = "require_once '{$file}';";
+            }
+
+            $preloadPath = base_path('bootstrap/preload.php');
+            file_put_contents($preloadPath, implode("\n", $lines)."\n");
+
+            return true;
+        });
+    }
+
+    /**
+     * Remove unnecessary service providers from the cached config.
+     */
+    private function stripServiceProviders(string $cachedConfigFile): void
+    {
+        /** @var array<int, class-string> $providers */
+        $providers = config('laraworker.strip_providers', []);
+
+        if (empty($providers) || ! file_exists($cachedConfigFile)) {
+            return;
+        }
+
+        $this->components->task('Stripping unnecessary service providers', function () use ($cachedConfigFile, $providers) {
+            $contents = file_get_contents($cachedConfigFile);
+
+            foreach ($providers as $provider) {
+                // Cached config files use double backslashes in class names
+                $doubleEscaped = str_replace('\\', '\\\\', $provider);
+                $escaped = preg_quote($doubleEscaped, '/');
+                $contents = preg_replace(
+                    "/\s*\d+\s*=>\s*'{$escaped}',?\n?/",
+                    '',
+                    $contents
+                );
+            }
+
+            file_put_contents($cachedConfigFile, $contents);
+
+            return true;
+        });
+
+        $this->components->bulletList(
+            collect($providers)->map(fn (string $p) => class_basename($p))->all()
+        );
     }
 
     /**
@@ -255,6 +399,8 @@ class BuildCommand extends Command
             'include_dirs' => config('laraworker.include_dirs', []),
             'include_files' => config('laraworker.include_files', []),
             'exclude_patterns' => config('laraworker.exclude_patterns', []),
+            'strip_whitespace' => config('laraworker.strip_whitespace', true),
+            'strip_providers' => config('laraworker.strip_providers', []),
         ];
 
         file_put_contents(

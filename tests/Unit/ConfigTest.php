@@ -84,3 +84,23 @@ test('config exclude patterns are valid regex', function () {
         expect($result)->not->toBeFalse("Invalid regex pattern: {$pattern}");
     }
 });
+
+test('config strip_whitespace is enabled by default', function () {
+    expect(config('laraworker.strip_whitespace'))->toBeTrue();
+});
+
+test('config has strip_providers array', function () {
+    $providers = config('laraworker.strip_providers');
+
+    expect($providers)
+        ->toBeArray()
+        ->toContain(Illuminate\Broadcasting\BroadcastServiceProvider::class)
+        ->toContain(Illuminate\Bus\BusServiceProvider::class)
+        ->toContain(Illuminate\Notifications\NotificationServiceProvider::class);
+});
+
+test('config strip_providers can be customized', function () {
+    config(['laraworker.strip_providers' => []]);
+
+    expect(config('laraworker.strip_providers'))->toBeEmpty();
+});

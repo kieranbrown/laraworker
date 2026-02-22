@@ -22,6 +22,39 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Strip PHP Whitespace
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, PHP files in the bundle are stripped of comments and
+    | unnecessary whitespace at build time using `php -w`. This reduces
+    | tar size by ~30-40% per file and speeds up PHP parsing in WASM.
+    |
+    */
+
+    'strip_whitespace' => true,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Service Providers to Strip
+    |--------------------------------------------------------------------------
+    |
+    | Service providers listed here are removed from the cached config at
+    | build time. This eliminates registration and boot overhead for services
+    | that aren't functional in a Cloudflare Workers environment.
+    |
+    | Typical candidates: Broadcasting, Queue, and other providers that
+    | require infrastructure not available in Workers (WebSockets, Redis, etc).
+    |
+    */
+
+    'strip_providers' => [
+        \Illuminate\Broadcasting\BroadcastServiceProvider::class,
+        \Illuminate\Bus\BusServiceProvider::class,
+        \Illuminate\Notifications\NotificationServiceProvider::class,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Included Directories
     |--------------------------------------------------------------------------
     |
