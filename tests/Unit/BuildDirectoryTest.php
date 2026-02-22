@@ -139,6 +139,39 @@ test('generateWranglerConfig uses app name slug when worker_name is null', funct
     expect($content)->toContain('"name": "my-test-app"');
 });
 
+test('generateWranglerConfig includes routes when configured', function () {
+    config(['laraworker.worker_name' => 'test-worker']);
+    config(['laraworker.compatibility_date' => '2025-01-01']);
+    config(['laraworker.routes' => [
+        ['pattern' => 'example.com', 'custom_domain' => true],
+    ]]);
+
+    $this->buildDir->ensureDirectory();
+    $this->buildDir->generateWranglerConfig();
+
+    $content = file_get_contents($this->buildDir->path('wrangler.jsonc'));
+    $config = json_decode($content, true);
+
+    expect($config['routes'])
+        ->toBeArray()
+        ->toHaveCount(1)
+        ->and($config['routes'][0]['pattern'])->toBe('example.com')
+        ->and($config['routes'][0]['custom_domain'])->toBeTrue();
+});
+
+test('generateWranglerConfig omits routes when empty', function () {
+    config(['laraworker.worker_name' => 'test-worker']);
+    config(['laraworker.compatibility_date' => '2025-01-01']);
+    config(['laraworker.routes' => []]);
+
+    $this->buildDir->ensureDirectory();
+    $this->buildDir->generateWranglerConfig();
+
+    $content = file_get_contents($this->buildDir->path('wrangler.jsonc'));
+
+    expect($content)->not->toContain('"routes"');
+});
+
 test('generateEnvProduction creates .env.production with overrides', function () {
     $envPath = base_path('.env');
     $originalEnv = file_exists($envPath) ? file_get_contents($envPath) : null;

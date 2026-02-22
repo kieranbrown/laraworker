@@ -158,6 +158,22 @@ return [
 
     'compatibility_date' => env('LARAWORKER_COMPAT_DATE'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Routes
+    |--------------------------------------------------------------------------
+    |
+    | Custom domain routes for the Cloudflare Worker. Each entry is a route
+    | object with a `pattern` key and optional `custom_domain` flag. When
+    | set, these are included in the generated wrangler.jsonc.
+    |
+    | Example:
+    |   [['pattern' => 'example.com', 'custom_domain' => true]]
+    |
+    */
+
+    'routes' => [],
+
     'env_overrides' => [
         'APP_ENV' => 'production',
         'APP_DEBUG' => 'false',

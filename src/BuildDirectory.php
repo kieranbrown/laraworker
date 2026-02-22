@@ -167,6 +167,15 @@ TS,
         $content = str_replace('{{APP_NAME}}', $workerName, $content);
         $content = str_replace('{{COMPATIBILITY_DATE}}', $compatibilityDate, $content);
 
+        /** @var array<int, array{pattern: string, custom_domain?: bool}> $routes */
+        $routes = config('laraworker.routes', []);
+
+        if (! empty($routes)) {
+            $config = json_decode($content, true);
+            $config['routes'] = $routes;
+            $content = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n";
+        }
+
         file_put_contents($this->path('wrangler.jsonc'), $content);
     }
 

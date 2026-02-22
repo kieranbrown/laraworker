@@ -49,7 +49,12 @@ jobs:
         working-directory: demo
         run: |
           echo "CLOUDFLARE_ACCOUNT_ID=$CLOUDFLARE_ACCOUNT_ID" >> .env
-          echo "LARAWORKER_NAME=laraworker-demo" >> .env
+          echo "LARAWORKER_NAME=laraworker" >> .env
+          php -r "
+            \$config = file_get_contents('config/laraworker.php');
+            \$config = str_replace(\"'routes' => [],\", \"'routes' => [['pattern' => 'laraworker.kswb.dev', 'custom_domain' => true]],\", \$config);
+            file_put_contents('config/laraworker.php', \$config);
+          "
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
