@@ -37,7 +37,7 @@ class DeployCommand extends Command
         }
 
         // Check app.tar.gz exists after build
-        if (! File::exists(base_path('.cloudflare/dist/app.tar.gz'))) {
+        if (! File::exists(base_path('.cloudflare/dist/assets/app.tar.gz'))) {
             $this->components->error('Build failed: app.tar.gz not found.');
 
             return self::FAILURE;
