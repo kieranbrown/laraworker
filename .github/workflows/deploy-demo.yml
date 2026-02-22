@@ -1,14 +1,23 @@
 name: Deploy Demo
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   deploy:
+    name: Deploy Demo
     runs-on: ubuntu-latest
-
+    timeout-minutes: 10
     steps:
       - name: Checkout laraworker package
         uses: actions/checkout@v4
