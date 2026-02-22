@@ -29,12 +29,12 @@ class StatusCommand extends Command
     {
         $this->components->info('Installation Status');
 
-        $cloudflareExists = is_dir(base_path('.cloudflare'));
-        $wranglerExists = file_exists(base_path('.cloudflare/wrangler.jsonc'));
+        $laraworkerExists = is_dir(base_path('.laraworker'));
+        $wranglerExists = file_exists(base_path('.laraworker/wrangler.jsonc'));
         $wasmBinary = $this->detectWasmBinary();
 
         $this->components->bulletList([
-            '.cloudflare/ directory: '.($cloudflareExists ? '<fg=green>✓</>' : '<fg=red>✗</>'),
+            '.laraworker/ directory: '.($laraworkerExists ? '<fg=green>✓</>' : '<fg=red>✗</>'),
             'wrangler.jsonc: '.($wranglerExists ? '<fg=green>✓</>' : '<fg=red>✗</>'),
             'WASM binary: '.($wasmBinary['found'] ? '<fg=green>✓</> ('.$wasmBinary['mode'].')' : '<fg=red>✗</>'),
         ]);
@@ -44,9 +44,9 @@ class StatusCommand extends Command
 
     private function showBundleSizes(): void
     {
-        $appTarGz = base_path('.cloudflare/dist/assets/app.tar.gz');
+        $appTarGz = base_path('.laraworker/dist/assets/app.tar.gz');
         $wasmFiles = $this->getWasmFiles();
-        $viteAssetsDir = base_path('.cloudflare/dist/assets/build');
+        $viteAssetsDir = base_path('.laraworker/dist/assets/build');
 
         $this->components->info('Bundle Sizes');
 
@@ -96,7 +96,7 @@ class StatusCommand extends Command
     private function showTierCompatibility(): void
     {
         $totalSize = $this->calculateTotalWorkerSize(
-            base_path('.cloudflare/dist/assets/app.tar.gz'),
+            base_path('.laraworker/dist/assets/app.tar.gz'),
             $this->getWasmFiles()
         );
 
@@ -141,7 +141,7 @@ class StatusCommand extends Command
 
         $hints = [];
 
-        $appTarGz = base_path('.cloudflare/dist/assets/app.tar.gz');
+        $appTarGz = base_path('.laraworker/dist/assets/app.tar.gz');
         if (file_exists($appTarGz)) {
             $tarSize = filesize($appTarGz);
             if ($tarSize > 2 * 1024 * 1024) {
@@ -174,7 +174,7 @@ class StatusCommand extends Command
     private function detectWasmBinary(): array
     {
         $npmWasm = base_path('node_modules/php-cgi-wasm/php-cgi.wasm');
-        $customWasm = base_path('.cloudflare/php-cgi.wasm');
+        $customWasm = base_path('.laraworker/php-cgi.wasm');
 
         if (file_exists($customWasm)) {
             return ['found' => true, 'mode' => 'custom-wasm'];
@@ -190,13 +190,13 @@ class StatusCommand extends Command
     private function getWasmFiles(): array
     {
         $files = [];
-        $cloudflareDir = base_path('.cloudflare');
+        $laraworkerDir = base_path('.laraworker');
 
-        if (! is_dir($cloudflareDir)) {
+        if (! is_dir($laraworkerDir)) {
             return $files;
         }
 
-        $iterator = new \DirectoryIterator($cloudflareDir);
+        $iterator = new \DirectoryIterator($laraworkerDir);
         foreach ($iterator as $fileinfo) {
             if ($fileinfo->isFile() && $fileinfo->getExtension() === 'wasm') {
                 $files[] = $fileinfo->getPathname();
