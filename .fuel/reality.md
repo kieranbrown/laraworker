@@ -6,7 +6,7 @@ Standalone Composer package (`kieranbrown/laraworker`) for running Laravel on Cl
 ## Modules
 | Module | Purpose | Entry Point |
 |--------|---------|-------------|
-| `src/` | Package source — ServiceProvider, artisan commands (install, build, dev, deploy) | `LaraworkerServiceProvider.php` |
+| `src/` | Package source — ServiceProvider, artisan commands (install, build, dev, deploy, status) | `LaraworkerServiceProvider.php` |
 | `src/BuildDirectory.php` | Helper for `.laraworker/` directory operations (paths, creation, wrangler detection) | `BuildDirectory.php` |
 | `config/` | Package config | `laraworker.php` |
 | `stubs/` | Worker stubs — worker.ts, shims.ts, tar.ts, build-app.mjs, php.ts.stub, wrangler.jsonc.stub | Published to user's app |
@@ -14,7 +14,7 @@ Standalone Composer package (`kieranbrown/laraworker`) for running Laravel on Cl
 | `tests/` | Pest test suites (Feature + Unit) using orchestra/testbench | `Pest.php` |
 
 ## Entry Points
-- **CLI**: artisan commands `laraworker:install`, `laraworker:build`, `laraworker:dev`, `laraworker:deploy`
+- **CLI**: artisan commands `laraworker:install`, `laraworker:build`, `laraworker:dev`, `laraworker:deploy`, `laraworker:status`
 - **Auto-discovery**: `extra.laravel.providers` registers `Laraworker\LaraworkerServiceProvider`
 - **CI/CD**: `.github/workflows/deploy-demo.yml` deploys a demo Laravel app to Cloudflare Workers
 
@@ -33,7 +33,9 @@ Standalone Composer package (`kieranbrown/laraworker`) for running Laravel on Cl
 ## Quality Gates
 | Tool | Command | Purpose |
 |------|---------|---------|
-| Pest | `vendor/bin/pest --compact` | PHP test runner (Feature + Unit suites) |
+| Pint | `vendor/bin/pint --dirty` | PHP code formatter (Laravel preset, no custom config) |
+| Pest | `vendor/bin/pest --compact` | PHP test runner (Feature + Unit suites via orchestra/testbench) |
+| Fuel quality-gate | `.fuel/quality-gate` | Pre-commit hook: Pint auto-fix on staged PHP files → restage → full Pest suite |
 
 ## Recent Changes
 - 2026-02-23: Statically linked OPcache into custom PHP WASM binary — caches compiled opcodes in WASM linear memory, directly addresses cold-start bottleneck (parsing all framework files without OPcache)
