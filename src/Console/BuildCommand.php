@@ -84,7 +84,7 @@ class BuildCommand extends Command
     /**
      * Create a staging directory with production-only vendor dependencies.
      *
-     * This runs composer install --no-dev --classmap-authoritative in isolation
+     * This runs composer update --no-dev --classmap-authoritative in isolation
      * to ensure no dev packages (faker, phpunit, pest, psysh) end up in the bundle.
      * The --classmap-authoritative flag skips filesystem checks, critical for WASM
      * where FS operations are expensive.
@@ -116,13 +116,10 @@ class BuildCommand extends Command
         }
         file_put_contents($stagingDir.'/composer.json', json_encode($composerJson, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n");
 
-        if (file_exists($basePath.'/composer.lock')) {
-            copy($basePath.'/composer.lock', $stagingDir.'/composer.lock');
-        }
-
-        // Run composer install --no-dev --classmap-authoritative in staging
+        // Run composer update (not install) because the lock file contains relative path
+        // repository source paths that don't resolve from the staging directory
         $process = new Process(
-            ['composer', 'install', '--no-dev', '--optimize-autoloader', '--classmap-authoritative', '--no-scripts', '--no-interaction'],
+            ['composer', 'update', '--no-dev', '--optimize-autoloader', '--classmap-authoritative', '--no-scripts', '--no-interaction'],
             $stagingDir,
             null,
             null,
