@@ -232,6 +232,28 @@ export default {
           steps.push(`Untar done (${Date.now() - t4}ms)`);
         }
 
+        // Create required dirs
+        const dirs = ['/app/storage/framework/sessions', '/app/storage/framework/views',
+          '/app/storage/framework/cache', '/app/storage/framework/cache/data',
+          '/app/storage/logs', '/app/bootstrap/cache'];
+        for (const dir of dirs) { mkdirp(FS, dir); }
+        steps.push('Dirs created');
+
+        // Test PHP execution with a simple script
+        steps.push('Testing PHP execution...');
+        const t5 = Date.now();
+        try {
+          const phpResponse = await testPhp.request(
+            new Request('https://laraworker.kswb.dev/', { method: 'GET' })
+          );
+          steps.push(`PHP done: ${phpResponse.status} (${Date.now() - t5}ms)`);
+          const body = await phpResponse.text();
+          steps.push(`Response length: ${body.length} chars`);
+        } catch (phpErr) {
+          const phpMsg = phpErr instanceof Error ? phpErr.message : String(phpErr);
+          steps.push(`PHP error (${Date.now() - t5}ms): ${phpMsg}`);
+        }
+
         steps.push(`Total: ${Date.now() - t0}ms`);
         return new Response(steps.join('\n'), { status: 200, headers: { 'Content-Type': 'text/plain' } });
       } catch (error) {
