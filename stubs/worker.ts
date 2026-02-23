@@ -239,19 +239,38 @@ export default {
         for (const dir of dirs) { mkdirp(FS, dir); }
         steps.push('Dirs created');
 
-        // Test PHP execution with a simple script
-        steps.push('Testing PHP execution...');
+        // Write a minimal PHP test script
+        FS.writeFile('/app/public/test.php', '<?php echo "PHP works! Version: " . PHP_VERSION;');
+        steps.push('Wrote test.php');
+
+        // Test PHP execution with the simple script (bypass Laravel)
+        steps.push('Testing simple PHP execution...');
         const t5 = Date.now();
         try {
           const phpResponse = await testPhp.request(
-            new Request('https://laraworker.kswb.dev/', { method: 'GET' })
+            new Request('https://laraworker.kswb.dev/test.php', { method: 'GET' })
           );
-          steps.push(`PHP done: ${phpResponse.status} (${Date.now() - t5}ms)`);
+          steps.push(`Simple PHP done: ${phpResponse.status} (${Date.now() - t5}ms)`);
           const body = await phpResponse.text();
-          steps.push(`Response length: ${body.length} chars`);
+          steps.push(`Response: ${body.substring(0, 200)}`);
         } catch (phpErr) {
           const phpMsg = phpErr instanceof Error ? phpErr.message : String(phpErr);
-          steps.push(`PHP error (${Date.now() - t5}ms): ${phpMsg}`);
+          steps.push(`Simple PHP error (${Date.now() - t5}ms): ${phpMsg}`);
+        }
+
+        // Now test Laravel route
+        steps.push('Testing Laravel execution...');
+        const t6 = Date.now();
+        try {
+          const laravelResponse = await testPhp.request(
+            new Request('https://laraworker.kswb.dev/', { method: 'GET' })
+          );
+          steps.push(`Laravel done: ${laravelResponse.status} (${Date.now() - t6}ms)`);
+          const body2 = await laravelResponse.text();
+          steps.push(`Response length: ${body2.length} chars`);
+        } catch (laravelErr) {
+          const laravelMsg = laravelErr instanceof Error ? laravelErr.message : String(laravelErr);
+          steps.push(`Laravel error (${Date.now() - t6}ms): ${laravelMsg}`);
         }
 
         steps.push(`Total: ${Date.now() - t0}ms`);
