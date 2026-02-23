@@ -195,9 +195,11 @@ export default {
       return new Response('OK', { status: 200, headers: { 'Content-Type': 'text/plain' } });
     }
 
-    // Diagnostic: test PHP WASM initialization only
-    if (url.pathname === '/__diag') {
+    // Diagnostic: step-by-step init + execution
+    if (url.pathname.startsWith('/__diag')) {
       const steps: string[] = [];
+      const runPhp = url.searchParams.get('php') === '1';
+      const runLaravel = url.searchParams.get('laravel') === '1';
       try {
         const t0 = Date.now();
         steps.push('Creating PhpCgiCloudflare...');
@@ -209,68 +211,46 @@ export default {
         });
         steps.push(`Constructor done (${Date.now() - t0}ms)`);
 
-        steps.push('Awaiting WASM binary (getFS)...');
         const t1 = Date.now();
         const FS = await testPhp.getFS();
         steps.push(`WASM ready (${Date.now() - t1}ms)`);
 
-        steps.push('Fetching app.tar.gz...');
         const t2 = Date.now();
         const tarResponse = await env.ASSETS.fetch(new Request('http://assets.local/app.tar.gz'));
-        steps.push(`Fetch done: ${tarResponse.status} (${Date.now() - t2}ms)`);
-
         if (tarResponse.ok) {
-          steps.push('Decompressing...');
-          const t3 = Date.now();
           const decompressed = tarResponse.body!.pipeThrough(new DecompressionStream('gzip'));
           const tarBuffer = await new Response(decompressed).arrayBuffer();
-          steps.push(`Decompress done: ${(tarBuffer.byteLength / 1024 / 1024).toFixed(1)} MB (${Date.now() - t3}ms)`);
-
-          steps.push('Untarring...');
-          const t4 = Date.now();
           untar(FS, tarBuffer, '/app');
-          steps.push(`Untar done (${Date.now() - t4}ms)`);
+          steps.push(`Tar loaded: ${(tarBuffer.byteLength / 1024 / 1024).toFixed(1)} MB (${Date.now() - t2}ms)`);
         }
 
-        // Create required dirs
         const dirs = ['/app/storage/framework/sessions', '/app/storage/framework/views',
           '/app/storage/framework/cache', '/app/storage/framework/cache/data',
           '/app/storage/logs', '/app/bootstrap/cache'];
         for (const dir of dirs) { mkdirp(FS, dir); }
-        steps.push('Dirs created');
 
-        // Write a minimal PHP test script
-        FS.writeFile('/app/public/test.php', '<?php echo "PHP works! Version: " . PHP_VERSION;');
-        steps.push('Wrote test.php');
+        if (runPhp || runLaravel) {
+          FS.writeFile('/app/public/test.php', '<?php echo "PHP " . PHP_VERSION . " OK";');
 
-        // Test PHP execution with the simple script (bypass Laravel)
-        steps.push('Testing simple PHP execution...');
-        const t5 = Date.now();
-        try {
-          const phpResponse = await testPhp.request(
-            new Request('https://laraworker.kswb.dev/test.php', { method: 'GET' })
-          );
-          steps.push(`Simple PHP done: ${phpResponse.status} (${Date.now() - t5}ms)`);
-          const body = await phpResponse.text();
-          steps.push(`Response: ${body.substring(0, 200)}`);
-        } catch (phpErr) {
-          const phpMsg = phpErr instanceof Error ? phpErr.message : String(phpErr);
-          steps.push(`Simple PHP error (${Date.now() - t5}ms): ${phpMsg}`);
-        }
+          if (runPhp) {
+            steps.push('Executing test.php...');
+            const t5 = Date.now();
+            const phpResponse = await testPhp.request(
+              new Request('https://laraworker.kswb.dev/test.php', { method: 'GET' })
+            );
+            const body = await phpResponse.text();
+            steps.push(`test.php: ${phpResponse.status} (${Date.now() - t5}ms) -> ${body.substring(0, 100)}`);
+          }
 
-        // Now test Laravel route
-        steps.push('Testing Laravel execution...');
-        const t6 = Date.now();
-        try {
-          const laravelResponse = await testPhp.request(
-            new Request('https://laraworker.kswb.dev/', { method: 'GET' })
-          );
-          steps.push(`Laravel done: ${laravelResponse.status} (${Date.now() - t6}ms)`);
-          const body2 = await laravelResponse.text();
-          steps.push(`Response length: ${body2.length} chars`);
-        } catch (laravelErr) {
-          const laravelMsg = laravelErr instanceof Error ? laravelErr.message : String(laravelErr);
-          steps.push(`Laravel error (${Date.now() - t6}ms): ${laravelMsg}`);
+          if (runLaravel) {
+            steps.push('Executing Laravel /...');
+            const t6 = Date.now();
+            const laravelResponse = await testPhp.request(
+              new Request('https://laraworker.kswb.dev/', { method: 'GET' })
+            );
+            const body2 = await laravelResponse.text();
+            steps.push(`Laravel: ${laravelResponse.status} (${Date.now() - t6}ms) len=${body2.length}`);
+          }
         }
 
         steps.push(`Total: ${Date.now() - t0}ms`);
