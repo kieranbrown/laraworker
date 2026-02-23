@@ -100,8 +100,22 @@ class BuildCommand extends Command
 
         mkdir($stagingDir, 0755, true);
 
-        // Copy composer files to staging
-        copy($basePath.'/composer.json', $stagingDir.'/composer.json');
+        // Copy composer.json to staging, resolving relative path repository URLs
+        // so they work from the staging directory instead of only from $basePath
+        $composerJson = json_decode(file_get_contents($basePath.'/composer.json'), true);
+        if (isset($composerJson['repositories'])) {
+            foreach ($composerJson['repositories'] as &$repo) {
+                if (($repo['type'] ?? '') === 'path' && isset($repo['url']) && ! str_starts_with($repo['url'], '/')) {
+                    $resolved = realpath($basePath.'/'.$repo['url']);
+                    if ($resolved !== false) {
+                        $repo['url'] = $resolved;
+                    }
+                }
+            }
+            unset($repo);
+        }
+        file_put_contents($stagingDir.'/composer.json', json_encode($composerJson, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n");
+
         if (file_exists($basePath.'/composer.lock')) {
             copy($basePath.'/composer.lock', $stagingDir.'/composer.lock');
         }
@@ -118,6 +132,12 @@ class BuildCommand extends Command
         $process->run();
 
         if (! $process->isSuccessful()) {
+            $this->components->warn('Composer install failed in staging directory.');
+            $stderr = $process->getErrorOutput();
+            if ($stderr) {
+                $this->components->warn($stderr);
+            }
+
             return false;
         }
 
