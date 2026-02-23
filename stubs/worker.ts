@@ -195,6 +195,52 @@ export default {
       return new Response('OK', { status: 200, headers: { 'Content-Type': 'text/plain' } });
     }
 
+    // Diagnostic: test PHP WASM initialization only
+    if (url.pathname === '/__diag') {
+      const steps: string[] = [];
+      try {
+        const t0 = Date.now();
+        steps.push('Creating PhpCgiCloudflare...');
+        const testPhp = new PhpCgiCloudflare({
+          docroot: '/app/public',
+          prefix: '/',
+          entrypoint: 'index.php',
+          ini: 'auto_prepend_file=/app/php-stubs.php',
+        });
+        steps.push(`Constructor done (${Date.now() - t0}ms)`);
+
+        steps.push('Awaiting WASM binary (getFS)...');
+        const t1 = Date.now();
+        const FS = await testPhp.getFS();
+        steps.push(`WASM ready (${Date.now() - t1}ms)`);
+
+        steps.push('Fetching app.tar.gz...');
+        const t2 = Date.now();
+        const tarResponse = await env.ASSETS.fetch(new Request('http://assets.local/app.tar.gz'));
+        steps.push(`Fetch done: ${tarResponse.status} (${Date.now() - t2}ms)`);
+
+        if (tarResponse.ok) {
+          steps.push('Decompressing...');
+          const t3 = Date.now();
+          const decompressed = tarResponse.body!.pipeThrough(new DecompressionStream('gzip'));
+          const tarBuffer = await new Response(decompressed).arrayBuffer();
+          steps.push(`Decompress done: ${(tarBuffer.byteLength / 1024 / 1024).toFixed(1)} MB (${Date.now() - t3}ms)`);
+
+          steps.push('Untarring...');
+          const t4 = Date.now();
+          untar(FS, tarBuffer, '/app');
+          steps.push(`Untar done (${Date.now() - t4}ms)`);
+        }
+
+        steps.push(`Total: ${Date.now() - t0}ms`);
+        return new Response(steps.join('\n'), { status: 200, headers: { 'Content-Type': 'text/plain' } });
+      } catch (error) {
+        const msg = error instanceof Error ? `${error.message}\n${error.stack}` : String(error);
+        steps.push(`ERROR: ${msg}`);
+        return new Response(steps.join('\n'), { status: 500, headers: { 'Content-Type': 'text/plain' } });
+      }
+    }
+
     try {
       const instance = await ensureInitialized(env);
 
