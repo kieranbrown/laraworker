@@ -77,7 +77,29 @@ Agents MUST follow these rules:
 - The `recursiveRmdir()` in BuildCommand only targets `.laraworker/vendor-staging/` — this is safe
 
 ## Implementation Notes
-<!-- Tasks: append discoveries, decisions, gotchas here -->
+
+### Task 1 — Path repo resolution (DONE)
+- `prepareProductionVendor()` (BuildCommand.php:103-116) parses composer.json, finds `type=path` repos with relative URLs, resolves via `realpath($basePath.'/'.$repo['url'])`, writes absolute paths to staging composer.json.
+- `unset($repo)` correctly breaks foreach-by-reference.
+- Composer install failure in staging now outputs stderr via `$this->components->warn()` (lines 134-141).
+
+### Task 2 — Bundle exclusion patterns (DONE)
+- `stubs/build-app.mjs` has 60+ exclusion patterns covering: VCS, vendor tests/docs/metadata, CI configs, tooling, bin dirs, stubs, Symfony translations/polyfills, Laravel exception renderer/testing/console stubs.
+- Dev package guard (lines 608-640) blocks faker, phpunit, pest, mockery, sail, pint, dusk, ignition.
+- Carbon locale stripping keeps only `en.php`.
+
+### Task 3 — Review (DONE)
+Review completed. All acceptance criteria verified:
+1. Tests: 63 passed (176 assertions)
+2. Path repo resolution: correct — rewrites relative to absolute before staging copy
+3. Exclusion patterns: comprehensive, no obvious gaps
+4. Both cases: apps with path repos (foreach modifies them) and without (block skipped or no-op)
+5. Error visibility: composer failure outputs warning + stderr
+6. No debug code: no dd/var_dump/dump/console.log in src/ or stubs/
+7. Code style: pint --dirty passes, PSR-4 namespace, Laravel conventions followed
+
+### Gotchas
+- `realpath()` returns `false` if the path doesn't exist on the build machine. The code handles this (line 110 guard), but if a path repo directory is missing at build time, the relative path is preserved — composer will fail in staging. This is acceptable: the developer should have the path repo available.
 
 ## Interfaces Created
-<!-- Tasks: document interfaces/contracts created -->
+No new interfaces or contracts — changes are internal to `BuildCommand::prepareProductionVendor()` and `build-app.mjs` exclusion config.
