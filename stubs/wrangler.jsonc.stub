@@ -3,17 +3,15 @@
   "name": "{{APP_NAME}}",
   "main": "worker.ts",
   "compatibility_date": "{{COMPATIBILITY_DATE}}",
+  "compatibility_flags": ["nodejs_compat"],
   "minify": true,
   "observability": {
     "logs": {
       "enabled": true
-    },
-    "traces": {
-      "enabled": true
     }
   },
   "limits": {
-    "cpu_ms": 10000
+    "cpu_ms": 30000
   },
   "assets": {
     "directory": "./dist/assets",
