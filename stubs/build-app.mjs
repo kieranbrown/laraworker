@@ -656,6 +656,7 @@ if (idx >= 0) {
 console.log('  Generating PHP stubs for extensions...');
 const stubsContent = generatePhpStubs(EXTENSIONS);
 const stubsFile = join(DIST_DIR, '__php_stubs.php');
+mkdirSync(DIST_DIR, { recursive: true });
 writeFileSync(stubsFile, stubsContent);
 allFiles.push({ path: 'php-stubs.php', isDir: false, fullPath: stubsFile });
 console.log(`    iconv: ${EXTENSIONS.iconv ? 'enabled (no stubs)' : 'disabled (stubs added)'}`);
