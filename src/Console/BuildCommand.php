@@ -105,11 +105,16 @@ class BuildCommand extends Command
         $composerJson = json_decode(file_get_contents($basePath.'/composer.json'), true);
         if (isset($composerJson['repositories'])) {
             foreach ($composerJson['repositories'] as &$repo) {
-                if (($repo['type'] ?? '') === 'path' && isset($repo['url']) && ! str_starts_with($repo['url'], '/')) {
-                    $resolved = realpath($basePath.'/'.$repo['url']);
-                    if ($resolved !== false) {
-                        $repo['url'] = $resolved;
+                if (($repo['type'] ?? '') === 'path' && isset($repo['url'])) {
+                    if (! str_starts_with($repo['url'], '/')) {
+                        $resolved = realpath($basePath.'/'.$repo['url']);
+                        if ($resolved !== false) {
+                            $repo['url'] = $resolved;
+                        }
                     }
+
+                    // Force mirroring instead of symlinks so staging is self-contained
+                    $repo['options']['symlink'] = false;
                 }
             }
             unset($repo);
@@ -129,7 +134,7 @@ class BuildCommand extends Command
         $process->run();
 
         if (! $process->isSuccessful()) {
-            $this->components->warn('Composer install failed in staging directory.');
+            $this->components->warn('Composer update failed in staging directory.');
             $stderr = $process->getErrorOutput();
             if ($stderr) {
                 $this->components->warn($stderr);
@@ -152,15 +157,21 @@ class BuildCommand extends Command
      */
     private function recursiveRmdir(string $dir): void
     {
+        if (is_link($dir)) {
+            unlink($dir);
+
+            return;
+        }
+
         if (is_dir($dir)) {
             $objects = scandir($dir);
             foreach ($objects as $object) {
-                if ($object != '.' && $object != '..') {
+                if ($object !== '.' && $object !== '..') {
                     $path = $dir.'/'.$object;
-                    if (is_dir($path)) {
-                        $this->recursiveRmdir($path);
-                    } else {
+                    if (is_link($path) || ! is_dir($path)) {
                         unlink($path);
+                    } else {
+                        $this->recursiveRmdir($path);
                     }
                 }
             }
