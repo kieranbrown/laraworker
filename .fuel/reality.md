@@ -28,6 +28,7 @@ Standalone Composer package (`kieranbrown/laraworker`) for running Laravel on Cl
 - **Extension system**: `laraworker:install` generates `php.ts` with dynamic WASM extension imports
 - **PHP stubs**: Runtime-injected via `auto_prepend_file` for functions missing from minimal WASM build
 - **Build-time optimizations** (all configurable in `config/laraworker.php`): PHP whitespace stripping via `php -w`, vendor pruning (CLI bins, translations, test utils), service provider stripping from cached config, class preloader for core Illuminate files
+- **OPcache configuration**: `config/laraworker.php` exposes OPcache settings — OPcache caches compiled PHP opcodes in WASM linear memory for ~3x warm request speedup. Works alongside ClassPreloader (complementary optimizations). See `.fuel/docs/MEMORY.md` for details
 
 ## Quality Gates
 | Tool | Command | Purpose |
@@ -35,9 +36,9 @@ Standalone Composer package (`kieranbrown/laraworker`) for running Laravel on Cl
 | Pest | `vendor/bin/pest --compact` | PHP test runner (Feature + Unit suites) |
 
 ## Recent Changes
+- 2026-02-23: Added OPcache configuration to `config/laraworker.php` — exposes OPcache settings for WASM environment with sensible defaults for ~3x warm request speedup
+- 2026-02-23: Created `.fuel/docs/MEMORY.md` documenting OPcache in WASM, how it works with ClassPreloader, tuning guidelines, and monitoring
 - 2026-02-22: Eliminated `.cloudflare/` from user's app — all worker assets now generated into `.laraworker/` at build time; added `BuildDirectory` helper (664ea16)
 - 2026-02-22: Simplified `InstallCommand` — removed stub copying/generation; build now owns all file generation (b9b0658)
 - 2026-02-22: Added build-time optimizations to `BuildCommand.php` — whitespace stripping, vendor pruning, SP stripping, class preloading (de0f23e)
-- 2026-02-22: Added GitHub Actions workflow for demo deployment (7405082)
-- Restructured from Laravel app to standalone Composer package (81c88fa)
-_Last updated: 2026-02-22_
+_Last updated: 2026-02-23_
