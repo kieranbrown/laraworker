@@ -1,1 +1,6 @@
 processes: {}
+# This is a Composer library package — no long-lived dev processes needed.
+# For E2E testing with a real Laravel app, use the playground scripts:
+#   scripts/playground-setup.sh   — Create a fresh Laravel app with laraworker
+#   scripts/playground-build.sh   — Build for Cloudflare Workers
+#   scripts/playground-dev.sh     — Start wrangler dev server
