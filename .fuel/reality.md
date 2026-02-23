@@ -1,7 +1,7 @@
 # Reality
 
 ## Architecture
-Standalone Composer package (`kieranbrown/laraworker`) for running Laravel on Cloudflare Workers via PHP-WASM. Custom PHP 8.2.11 WASM binary (static-linked, MAIN_MODULE=0) with minimal extensions (ctype, filter, tokenizer). Uses orchestra/testbench for testing.
+Standalone Composer package (`kieranbrown/laraworker`) for running Laravel on Cloudflare Workers via PHP-WASM. Custom PHP 8.5 WASM binary (static-linked, MAIN_MODULE=0) with minimal extensions (ctype, filter, tokenizer). Uses orchestra/testbench for testing.
 
 ## Modules
 | Module | Purpose | Entry Point |
@@ -27,7 +27,7 @@ Standalone Composer package (`kieranbrown/laraworker`) for running Laravel on Cl
 - **InstallCommand is minimal**: Only registers config/stubs; no worker file copying or generation. All build artifacts live in `.laraworker/`.
 - **Extension system**: `laraworker:install` generates `php.ts` with dynamic WASM extension imports
 - **PHP stubs**: Runtime-injected via `auto_prepend_file` for functions missing from minimal WASM build
-- **Build-time optimizations** (all configurable in `config/laraworker.php`): PHP whitespace stripping via `php -w`, vendor pruning (CLI bins, translations, test utils), service provider stripping from cached config, class preloader for core Illuminate files
+- **Build-time optimizations** (all configurable in `config/laraworker.php`): PHP whitespace stripping via `php -w` (parallel, disabled by default), vendor pruning (CLI bins, translations, test utils, unnecessary file types), service provider stripping from cached config, class preloader for core Illuminate files
 
 ## Quality Gates
 | Tool | Command | Purpose |
@@ -35,9 +35,9 @@ Standalone Composer package (`kieranbrown/laraworker`) for running Laravel on Cl
 | Pest | `vendor/bin/pest --compact` | PHP test runner (Feature + Unit suites) |
 
 ## Recent Changes
+- 2026-02-23: Upgraded custom PHP WASM build from 8.2.11 to 8.5; added aggressive bundle size minimization (parallel whitespace stripping, additional vendor file pruning) targeting <3MB Cloudflare Workers free tier
 - 2026-02-22: Eliminated `.cloudflare/` from user's app — all worker assets now generated into `.laraworker/` at build time; added `BuildDirectory` helper (664ea16)
 - 2026-02-22: Simplified `InstallCommand` — removed stub copying/generation; build now owns all file generation (b9b0658)
 - 2026-02-22: Added build-time optimizations to `BuildCommand.php` — whitespace stripping, vendor pruning, SP stripping, class preloading (de0f23e)
 - 2026-02-22: Added GitHub Actions workflow for demo deployment (7405082)
-- Restructured from Laravel app to standalone Composer package (81c88fa)
-_Last updated: 2026-02-22_
+_Last updated: 2026-02-23_
