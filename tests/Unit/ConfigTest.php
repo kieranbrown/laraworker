@@ -104,3 +104,33 @@ test('config strip_providers can be customized', function () {
 
     expect(config('laraworker.strip_providers'))->toBeEmpty();
 });
+
+test('config has opcache settings', function () {
+    $opcache = config('laraworker.opcache');
+
+    expect($opcache)
+        ->toBeArray()
+        ->toHaveKey('enabled')
+        ->toHaveKey('enable_cli')
+        ->toHaveKey('memory_consumption')
+        ->toHaveKey('max_accelerated_files')
+        ->toHaveKey('validate_timestamps')
+        ->toHaveKey('jit');
+});
+
+test('config opcache defaults are sensible', function () {
+    expect(config('laraworker.opcache.enabled'))->toBeTrue();
+    expect(config('laraworker.opcache.enable_cli'))->toBeTrue();
+    expect(config('laraworker.opcache.memory_consumption'))->toBe(32);
+    expect(config('laraworker.opcache.max_accelerated_files'))->toBe(1000);
+    expect(config('laraworker.opcache.validate_timestamps'))->toBeFalse();
+    expect(config('laraworker.opcache.jit'))->toBeFalse();
+});
+
+test('config opcache can be customized', function () {
+    config(['laraworker.opcache.enabled' => false]);
+    config(['laraworker.opcache.memory_consumption' => 64]);
+
+    expect(config('laraworker.opcache.enabled'))->toBeFalse();
+    expect(config('laraworker.opcache.memory_consumption'))->toBe(64);
+});

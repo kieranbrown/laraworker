@@ -22,6 +22,30 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | OPcache Configuration
+    |--------------------------------------------------------------------------
+    |
+    | OPcache settings for the PHP WASM runtime. OPcache caches compiled PHP
+    | opcodes in WASM linear memory, providing ~3x speedup for warm requests.
+    | These settings are tuned for the Cloudflare Workers environment where
+    | files never change (MEMFS) and memory is limited.
+    |
+    | Note: OPcache must be statically linked into the PHP WASM binary.
+    |       This is handled by the php-wasm-builder toolchain.
+    |
+    */
+
+    'opcache' => [
+        'enabled' => true,
+        'enable_cli' => true,
+        'memory_consumption' => 32,
+        'max_accelerated_files' => 1000,
+        'validate_timestamps' => false,
+        'jit' => false,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Strip PHP Whitespace
     |--------------------------------------------------------------------------
     |

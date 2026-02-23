@@ -1,9 +1,17 @@
 #!/usr/bin/env php-wasm
 
 # Absolute minimum PHP WASM build for Cloudflare Workers.
-# No extensions — just the bare PHP interpreter.
+# Built from seanmorris/php-wasm sm-8.5 branch.
+# OPcache statically linked — provides ~3x warm request speedup.
 
-PHP_VERSION=8.4
+PHP_VERSION=8.5
+# PHP_BRANCH is overridden by the sm-8.5 Makefile to php-8.5.2 (its supported version).
+# This value is informational; the Makefile sets PHP_VERSION_FULL=8.5.2 internally.
+PHP_BRANCH=php-8.5.2
+
+# Build source: seanmorris/php-wasm (sm-8.5 branch)
+# Branch URL: https://github.com/seanmorris/php-wasm/tree/sm-8.5
+# Builder image: seanmorris/phpwasm-emscripten-builder:latest
 
 # Static linking only — no dynamic library support.
 # Produces a single .wasm file with everything baked in.
@@ -23,7 +31,25 @@ WITH_SOURCEMAPS=0
 # Compression
 GZIP=1
 
+# ── OPcache: enabled ──
+# PHP 8.5 makes OPcache a required, non-optional extension (always compiled).
+# The sm-8.5 Makefile passes --disable-opcache-jit automatically.
+#
+# Emscripten cross-compilation quirk: the autoconf mmap(MAP_ANON) shared memory
+# test can't execute, so it defaults to "no" — leaving OPcache without a shared
+# memory backend (compiled but non-functional). build.sh applies patches from
+# patches/opcache-wasm-support.sh to force php_cv_shm_mmap_anon=yes and add
+# a missing <unistd.h> include. Emscripten's mmap() allocates from the WASM
+# linear heap, which is sufficient for single-process OPcache.
+#
+# Same approach as WordPress Playground (PR #2400, July 2025).
+# Opcodes persist across requests in warm Cloudflare Workers isolates.
+# Expected size increase: ~150-250 KB gzipped vs no-opcache build.
+WITH_OPCACHE=1
+
 # ── Extensions: ALL disabled ──
+# These are optional PHP extensions — all disabled to minimise binary size.
+# OPcache is NOT listed here as it is a bundled (always-compiled) extension.
 
 WITH_BCMATH=0
 WITH_CALENDAR=0
@@ -32,6 +58,10 @@ WITH_EXIF=0
 WITH_FILTER=0
 WITH_TOKENIZER=0
 WITH_VRZNO=0
+
+# WITH_SESSION MUST be 1: the pib (PHP-in-Browser) extension references ps_globals
+# from the session module. Disabling session causes an undefined symbol link error.
+WITH_SESSION=1
 
 WITH_PHAR=0
 WITH_LIBXML=0

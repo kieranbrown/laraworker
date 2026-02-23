@@ -57,7 +57,15 @@ async function ensureInitialized(env: Env): Promise<PhpCgiCloudflare> {
       docroot: '/app/public',
       prefix: '/',
       entrypoint: 'index.php',
-      ini: 'auto_prepend_file=/app/php-stubs.php',
+      ini: [
+        'auto_prepend_file=/app/php-stubs.php',
+        'opcache.enable=1',
+        'opcache.enable_cli=1',
+        'opcache.memory_consumption=32',
+        'opcache.max_accelerated_files=1000',
+        'opcache.validate_timestamps=0',
+        'opcache.jit=disable',
+      ].join('\n'),
     });
 
     initialized = initializeFilesystem(php, env);
