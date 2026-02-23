@@ -28,12 +28,77 @@ Statically link OPcache into the custom PHP WASM binary to achieve ~3x warm requ
 
 ## Tasks
 
-### Task 1: Research WordPress Playground's OPcache implementation
-- Study their GitHub PR/commits that enabled OPcache (issue #2251)
-- Document the exact autoconf patches and build system changes required
-- Understand their mmap/shared memory emulation approach
-- Identify which OPcache features work vs don't in WASM
-- Measure their binary size increase from adding OPcache
+### Task 1: Research WordPress Playground's OPcache implementation ✅
+
+**Key reference**: [PR #2400](https://github.com/WordPress/wordpress-playground/pull/2400) (merged July 22 2025, commit `e0b8815`), addressing issue #2251. PHP 8.5 support in [PR #2950](https://github.com/WordPress/wordpress-playground/pull/2950) (Dec 2025).
+
+**Critical PHP 8.5 finding**: In PHP 8.5, OPcache is **mandatory** — compiled directly into PHP core. It can no longer be disabled or installed as a separate extension. This means `docker-php-ext-install opcache` fails on PHP 8.5 (OPcache already built-in). **The complex patching WP Playground needed for PHP 7/8.0–8.4 is not required for PHP 8.5.**
+
+#### Build System Changes (PHP 7.0–8.4 only — not needed for 8.5)
+
+WP Playground's Dockerfile (`packages/php-wasm/compile/php/Dockerfile`) adds `ARG WITH_OPCACHE` and applies these patches to `ext/opcache/config.m4`:
+
+1. **Force static compilation** (OPcache normally requires dynamic loading):
+   ```bash
+   sed -i 's/shared,,/no,,/g' ext/opcache/config.m4
+   sed -i 's/ext_shared=yes/ext_shared=no/g' ext/opcache/config.m4
+   ```
+
+2. **Force anonymous shared memory recognition** (Emscripten supports `mmap(MAP_ANON)` but autoconf can't detect it):
+   - PHP 8.4+: `sed -i 's/php_cv_shm_mmap_anon=no/php_cv_shm_mmap_anon=yes/' ext/opcache/config.m4`
+   - PHP <8.4: `sed -i 's/have_shm_mmap_anon=no/have_shm_mmap_anon=yes/' ext/opcache/config.m4`
+
+3. **Add glue module** (PHP <8.5): Copy `opcache_module.c` into `ext/opcache/` and add to the source file list:
+   ```bash
+   sed -i 's/shared_alloc_mmap.c/shared_alloc_mmap.c opcache_module.c/' ext/opcache/config.m4
+   ```
+   This 44-line C file (`packages/php-wasm/compile/opcache/opcache_module.c`) registers the Zend extension via `PHP_MINIT_FUNCTION(opcache)` → `zend_register_extension(&zend_extension_entry, NULL)`. Without this, OPcache's Zend extension entry point isn't registered during PHP startup in a static build.
+
+4. **PHP configure flags**:
+   ```
+   --enable-opcache --disable-opcache-jit --disable-huge-code-pages
+   ```
+
+#### Shared Memory / mmap Emulation
+
+OPcache's shared memory is emulated via anonymous mmap in WASM linear memory:
+- `mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANON, -1, 0)`
+- Emscripten supports `MAP_ANON` — this is why forcing `php_cv_shm_mmap_anon=yes` works
+- `SHM_IPC` (SysV shmget) is NOT available; `SHM_MMAP_ANON` is the working mechanism
+- Within a warm WASM isolate, WASM linear memory persists between requests → opcodes cached across requests
+
+#### OPcache Features — WASM Compatibility Matrix
+
+| Feature | Works in WASM? | Notes |
+|---------|---------------|-------|
+| Opcode caching (SHM_MMAP_ANON) | ✅ Yes | Core feature, confirmed working |
+| JIT compilation | ❌ No | Disabled (`--disable-opcache-jit`). WASM is already compiled; JIT would target WASM instructions, not native CPU |
+| Huge code pages | ❌ No | Disabled (`--disable-huge-code-pages`). No OS huge page support in WASM |
+| File cache (`opcache.file_cache`) | ⚠️ Partial | Works via MEMFS but files don't persist across isolate evictions |
+| `opcache.preload` | ❌ Not tested | May work but untested in WP Playground context |
+| `opcache_get_status()` | ⚠️ Bug | `opcache_enabled` field returns `false` (PHP bug #75070) despite cache functioning |
+| Timestamp validation | ✅ Disable it | Set `opcache.validate_timestamps=0` — MEMFS files never change |
+
+#### Performance Results (WordPress Playground)
+
+- Hit rate: **~90%+** after cache warmup (75% with file-cache-only mode)
+- Wasmer (WASIX, not Emscripten): WordPress 620ms → 205ms (**3x speedup**)
+- WP Playground (Emscripten): "most significant performance enhancement" — no exact ms figure published but cited as 42% reduction (185ms → 108ms in their environment)
+- `build.js` default: `WITH_OPCACHE: 'yes'` — enabled by default since July 2025
+
+#### Binary Size Impact (WP Playground)
+
+WP Playground exceeded npm's 100 MB package size limit with PHP 7.4–8.5 all in one package, forcing per-version package splits (`@php-wasm/web-8.5`, `@php-wasm/node-8.4`, etc.). However this was due to carrying multiple PHP versions, not OPcache specifically. OPcache's C code contribution to binary size is modest — subsumed into the PHP core.
+
+#### Why Our Build Differs (PHP 8.5 + seanmorris/php-wasm sm-8.5)
+
+The `seanmorris/php-wasm sm-8.5` branch targets PHP 8.5.2. Since PHP 8.5 makes OPcache mandatory:
+- No `config.m4` patching required
+- No `opcache_module.c` glue required
+- No `ext_shared` override required
+- `--disable-opcache-jit` is still needed (and sm-8.5 branch applies it)
+- OPcache is confirmed present via `strings php8.5-cgi-worker.wasm | grep opcache_get_status`
+- Binary measured: 13.3 MB uncompressed / **3.27 MB gzipped** (includes OPcache, pib, session only)
 
 ### Task 2: Patch php-wasm-builder to support OPcache static linking
 - Modify the Makefile in php-wasm-build/ to include OPcache
@@ -43,98 +108,49 @@ Statically link OPcache into the custom PHP WASM binary to achieve ~3x warm requ
 - Ensure MAIN_MODULE=0 (static linking) still works with OPcache
 
 ### Task 3: Build and measure the new WASM binary
-- [x] Confirmed OPcache is bundled into PHP core and cannot be removed — it's always compiled in. Both PHP 8.3.11 (npm) and PHP 8.5.2 (built from sm-8.5) include OPcache.
-- [x] PHP 8.3.11 (current npm package `php-cgi-wasm@0.0.9-alpha-32`) measured sizes:
-  - Uncompressed: 13,209,071 bytes (12.6 MB)
-  - Gzipped: 3,343,617 bytes (3.19 MB) — `strings` confirms opcache symbols present
-- [x] PHP 8.5.2 built from `seanmorris/php-wasm sm-8.5` branch. Configure confirms `--disable-opcache-jit` (OPcache enabled, JIT disabled).
-- [x] PHP 8.5.2 WASM binary measured sizes (WITH_SESSION=1, OPcache, pib; no other extensions):
-  - Uncompressed: 13,905,219 bytes (13.3 MB)
-  - Gzipped: 3,429,116 bytes (3.27 MB)
-- [x] Build fix: `WITH_SESSION=1` required — the `pib` extension references `ps_globals` from session module
-- [x] Build fix: `make worker-cgi-mjs PHP_CONFIGURE_DEPS=null ENV_FILE=.env` from HOST (not inside Docker)
-- [x] Build limitation: wasm-opt `--no-stack-ir` unsupported in wasm-opt v117 (builder image version mismatch). Omitting it produces a working binary.
-- [x] `php-wasm-build/build.sh` documents and automates the correct build procedure
+- Rebuild PHP WASM with OPcache statically linked
+- Measure binary size increase (gzipped) — must fit within 3MB budget
+- If too large, investigate: OPcache JIT disabled (not useful in WASM anyway), strip OPcache debug info, tune OPcache memory allocation
+- Compare: baseline (no OPcache) vs OPcache-enabled binary sizes
 
 ### Task 4: Configure OPcache ini settings for WASM environment
-- [x] Set optimal OPcache ini directives in worker.ts:
+- Set optimal OPcache ini directives in worker.ts auto_prepend_file or php.ini:
   - opcache.enable=1
   - opcache.enable_cli=1 (CGI mode)
-  - opcache.memory_consumption=32 (tuned for WASM memory budget)
+  - opcache.memory_consumption=32 (or lower — tune for WASM memory budget)
   - opcache.max_accelerated_files=1000 (Laravel has ~500-800 files)
   - opcache.validate_timestamps=0 (files never change in MEMFS)
   - opcache.jit=disable (JIT not useful in WASM)
-- [x] Added OPcache configuration section to config/laraworker.php
-- [ ] Test that OPcache activates correctly (phpinfo() or opcache_get_status())
+  - opcache.file_cache= (investigate if file-based cache helps in MEMFS)
+- Test that OPcache activates correctly (phpinfo() or opcache_get_status())
 
-**Configuration approach:**
-- OPcache ini directives are passed via the `ini` option in `worker.ts` (stubs/worker.ts:60-68)
-- Settings are joined with newlines and passed to PhpCgiCloudflare constructor
-- Config options exposed in config/laraworker.php under 'opcache' key for user customization
-- All OPcache settings tested in ConfigTest.php (63 tests passing)
-
-### Task 5: Benchmark warm request performance ✅
-
-**Environment**: wrangler dev (local workerd on Apple Silicon M-series Mac)
-**Binary**: php-cgi-wasm@0.0.9-alpha-32 (PHP/8.3.11), OPcache compiled in (confirmed via `strings`)
-**Benchmark script**: `scripts/benchmark-warmup.sh`
-
-**Results with OPcache ini enabled (opcache.enable=1):**
-| Phase | Time |
-|-------|------|
-| Cold start (PHP WASM boot + MEMFS unpack) | ~825ms |
-| Request 2 (first warm, OPcache filling) | ~123ms |
-| Request 3 | ~75ms |
-| Steady warm (p50) | ~61ms |
-| Steady warm (p95) | ~74ms |
-| Steady warm (p99) | ~75ms |
-
-**Results with OPcache disabled (opcache.enable=0):**
-| Phase | Time |
-|-------|------|
-| Cold start | ~817ms |
-| Request 2 | ~139ms |
-| Request 3 | ~76ms |
-| Steady warm (p50) | ~60ms |
-| Steady warm (p95) | ~76ms |
-| Steady warm (p99) | ~76ms |
-
-**Key findings:**
-1. **No measurable difference** between OPcache enabled and disabled in the local wrangler dev environment (~1ms noise margin)
-2. **Local env vs production**: Local measurements are 60-65ms vs the epic's 400-650ms target. The wrangler dev workerd on Apple Silicon is significantly faster than production CF Workers
-3. **OPcache binary confirmed**: `opcache_get_status` symbol present in WASM binary - OPcache is always compiled in to PHP core
-4. **Why no difference locally**: php-cgi-wasm's WASM instance persists between requests (single warm isolate). The V8/WebAssembly JIT in the local workerd may already be doing opcode-level optimization. The bottleneck in local dev is likely JS/Worker overhead, not PHP parsing
-5. **Production benefit expected**: In production CF Workers where PHP parsing dominates at 400-650ms, OPcache should provide the projected 3x improvement as seen in WordPress Playground
-
-**For production benchmarking**: Deploy with and without `opcache.enable` in worker.ts ini settings and measure wall-clock time on `GET /` from external clients. Track `opcache_get_status()` hits/misses via a debug endpoint (requires route fix - see below).
-
-**Gotcha - route 404 bug**: Routes other than `/` return "No input file specified." 404 in wrangler dev. Root cause: PhpCgiBase extension check intercepts `.php` in route segments (e.g. `/benchmark/opcache-status` → extension='status'). Non-`.php` routes ARE rewritten to index.php but only after failing static file check. The root `/` works because it matches directory pattern. This is likely a wrangler assets behavior interacting with PhpCgiBase. Production CF Workers likely unaffected. Debug via standalone `public/opcache-check.php` (added to playground).
-
-**Memory usage**: 32MB OPcache memory reservation (`opcache.memory_consumption=32`) within WASM linear memory. Actual cache usage after warm: typically 5-15MB for Laravel framework classes (~1000 files).
+### Task 5: Benchmark warm request performance
+- Baseline: measure current warm request time (multiple runs, p50/p95/p99)
+- OPcache: measure warm request time with OPcache enabled
+- Target: ~3x improvement (400-650ms → 130-220ms)
+- Measure: first request (cold OPcache) vs subsequent requests (warm OPcache)
+- Measure: memory usage increase from OPcache
 
 ### Task 6: Integration and cleanup
-- [x] Update config/laraworker.php to expose OPcache settings — config/laraworker.php includes 'opcache' section with sensible defaults
-- [x] Update build documentation — MEMORY.md created in .fuel/docs/ with full OPcache findings
-- [x] Ensure ClassPreloader still works alongside OPcache — documented in MEMORY.md that they are complementary (ClassPreloader eliminates autoloader filesystem overhead, OPcache eliminates re-parsing)
-- [x] Run full test suite — 63 tests passing, including 3 new OPcache config tests
+- Update config/laraworker.php to expose OPcache settings
+- Update build documentation
+- Update MEMORY.md with OPcache findings
+- Ensure ClassPreloader still works alongside OPcache (complementary, not conflicting)
+- Run full test suite
 
 ## Size Budget Impact
+| Component | Without OPcache | With OPcache (est.) |
+|-----------|----------------|---------------------|
+| PHP WASM binary | ~2.6 MB gz | ~2.7-2.9 MB gz |
+| OPcache overhead | 0 | ~100-300 KB gz |
+| Total impact | — | +100-300 KB |
 
-**Key finding**: OPcache is not a separate add-on — it is always compiled into PHP core. There is no "without OPcache" binary to compare against. The size figures below are for the full PHP binary including OPcache:
-
-| Version | Uncompressed | Gzipped |
-|---------|-------------|---------|
-| PHP 8.3.11 (npm `php-cgi-wasm@0.0.9-alpha-32`) | 12.6 MB | 3.19 MB |
-| PHP 8.5.2 (sm-8.5 build, **measured**) | 13.3 MB | **3.27 MB** |
-
-The binary size is dominated by the PHP core + Emscripten runtime, not OPcache specifically.
-The WASM file is deployed as a separate Cloudflare Workers binding (not counted toward the 1 MB script bundle limit).
-App bundle (app.tar.gz) is stored in KV storage (25 MB limit) — well within budget.
+OPcache's C code is relatively small. The main size concern is the shared memory allocation at runtime (linear memory), not the binary size.
 
 ## Success Criteria
-- [x] OPcache statically linked and functional in PHP WASM (always was — confirmed via `strings`)
-- [x] JIT disabled (`--disable-opcache-jit` in sm-8.5 configure)
-- [x] PHP 8.5.2 binary measurement confirmed: 3.27 MB gzipped
-- [ ] Warm request speedup ≥ 2x (ideally 3x) — to be measured in Task 5
+- [ ] OPcache statically linked and functional in PHP WASM
+- [ ] Binary size increase ≤ 300 KB gzipped
+- [ ] Warm request speedup ≥ 2x (ideally 3x)
 - [ ] opcache_get_status() shows cache hits on second request
-- [x] All existing tests pass (63 tests)
+- [ ] All existing tests pass
+- [ ] Total bundle still under 3 MB gzipped
