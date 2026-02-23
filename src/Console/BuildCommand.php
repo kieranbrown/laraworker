@@ -102,7 +102,9 @@ class BuildCommand extends Command
 
         // Copy composer files to staging
         copy($basePath.'/composer.json', $stagingDir.'/composer.json');
-        copy($basePath.'/composer.lock', $stagingDir.'/composer.lock');
+        if (file_exists($basePath.'/composer.lock')) {
+            copy($basePath.'/composer.lock', $stagingDir.'/composer.lock');
+        }
 
         // Run composer install --no-dev --classmap-authoritative in staging
         $process = new Process(
