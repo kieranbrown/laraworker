@@ -651,7 +651,7 @@ if (STRIP_WHITESPACE) {
   console.log('  Stripping PHP whitespace and comments...');
 }
 
-const { tar, strippedCount, bytesSaved } = createTar(allFiles, { stripWhitespace: STRIP_WHITESPACE });
+const { tar, strippedCount, bytesSaved } = await createTar(allFiles, { stripWhitespace: STRIP_WHITESPACE, cacheDir: DIST_DIR });
 
 if (STRIP_WHITESPACE && strippedCount > 0) {
   console.log(`  Stripped whitespace from ${strippedCount} PHP files (saved ${fmt(bytesSaved)} uncompressed)`);
@@ -665,15 +665,19 @@ writeFileSync(OUTPUT, gzipped);
 // Compute compressed sizes per category for report
 const vendorOnlyFiles = allFiles.filter(f => !f.isDir && f.path.startsWith('vendor/'));
 const appOnlyFiles = allFiles.filter(f => !f.isDir && !f.path.startsWith('vendor/'));
-const { tar: vendorTar } = createTar(vendorOnlyFiles, { stripWhitespace: STRIP_WHITESPACE });
+const { tar: vendorTar } = await createTar(vendorOnlyFiles, { stripWhitespace: STRIP_WHITESPACE });
 const vendorGz = gzipSync(vendorTar, { level: 9 });
-const { tar: appTar } = createTar(appOnlyFiles, { stripWhitespace: STRIP_WHITESPACE });
+const { tar: appTar } = await createTar(appOnlyFiles, { stripWhitespace: STRIP_WHITESPACE });
 const appGz = gzipSync(appTar, { level: 9 });
 
 const totalCompressed = gzipped.length;
-const WASM_ESTIMATE_BYTES = 2.6 * 1024 * 1024; // ~2.6 MB gzipped WASM
+// PHP 8.5 WASM binary (gzipped). Measured from PHP 8.5.2 build: 3.27 MB gz.
+// PHP WASM is loaded as a separate Cloudflare Workers binding (not bundled in script).
+const WASM_ESTIMATE_BYTES = 3.4 * 1024 * 1024;
 const totalWithWasm = totalCompressed + WASM_ESTIMATE_BYTES;
-const fitsFreeTier = totalWithWasm < 3 * 1024 * 1024;
+// App bundle budget: app.tar.gz should fit in Cloudflare Workers KV (25 MB limit).
+// WASM is deployed as a separate Workers binding, not counted here.
+const appFitsBudget = totalCompressed < 25 * 1024 * 1024;
 
 console.log('');
 console.log('  ┌─────────────────────────────────────────────────┐');
@@ -685,9 +689,9 @@ console.log(`  │ vendor/              │ ${String(vendorFileCount).padStart(6
 console.log(`  │ app (non-vendor)     │ ${String(appFileCount).padStart(6)} │ ${fmt(appGz.length).padStart(13)} │`);
 console.log('  ├──────────────────────┼──────────┼───────────────┤');
 console.log(`  │ Total tar entries    │ ${String(allFiles.length).padStart(6)} │ ${fmt(totalCompressed).padStart(13)} │`);
-console.log(`  │ + WASM (~2.6 MB gz)  │        │ ${fmt(totalWithWasm).padStart(13)} │`);
+console.log(`  │ + WASM (~3.4 MB gz)  │        │ ${fmt(totalWithWasm).padStart(13)} │`);
 console.log('  ├──────────────────────┴──────────┴───────────────┤');
-console.log(`  │ Free tier (< 3 MB total):  ${fitsFreeTier ? '✅ FITS' : '❌ EXCEEDS'}${' '.repeat(20)}│`);
+console.log(`  │ App bundle (< 25 MB): ${appFitsBudget ? '✅ FITS' : '❌ EXCEEDS'}${' '.repeat(24)}│`);
 console.log('  └─────────────────────────────────────────────────┘');
 console.log('');
 

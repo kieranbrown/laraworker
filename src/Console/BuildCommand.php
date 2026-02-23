@@ -77,10 +77,10 @@ class BuildCommand extends Command
         $this->generatePreloadFile();
 
         $this->components->task('Optimizing autoloader', function () use ($basePath) {
-            // Use --optimize-autoloader instead of --classmap-authoritative --no-dev
-            // to avoid missing dev dependency classes referenced in config files
+            // --classmap-authoritative skips filesystem checks for classes not in classmap
+            // Critical for WASM where filesystem operations are expensive
             $process = new Process(
-                ['composer', 'dump-autoload', '--optimize', '--no-scripts'],
+                ['composer', 'dump-autoload', '--no-dev', '--optimize', '--classmap-authoritative', '--no-scripts'],
                 $basePath,
                 null,
                 null,
