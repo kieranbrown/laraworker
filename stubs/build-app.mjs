@@ -11,7 +11,12 @@
 import { readdirSync, statSync, readFileSync, mkdirSync, writeFileSync, copyFileSync, existsSync, rmSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 import { join, relative, resolve } from 'node:path';
-import { execSync } from 'node:child_process';
+import { execSync, execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { createHash } from 'node:crypto';
+import { cpus } from 'node:os';
+
+const execFileAsync = promisify(execFile);
 
 const ROOT = resolve(import.meta.dirname, '..');
 const DIST_DIR = resolve(import.meta.dirname, 'dist', 'assets');
@@ -257,20 +262,92 @@ if (file_exists('/app/bootstrap/preload.php')) {
   return '<?php\n// Auto-generated PHP stubs for missing extensions\n// Extensions enabled: ' + JSON.stringify(extensions) + '\n' + stubs.join('\n');
 }
 
+// Cache directory for stripped PHP files — persists between builds
+const STRIP_CACHE_DIR = join(import.meta.dirname, '.strip-cache');
+// Number of parallel php -w workers
+const STRIP_CONCURRENCY = Math.max(4, cpus().length);
+
 /**
- * Strip whitespace and comments from a PHP file using `php -w`.
- * Returns the stripped content as a Buffer, or null on failure.
+ * Run async tasks with a bounded concurrency pool.
  */
-function stripPhpFile(filePath) {
+async function mapConcurrent(items, fn, concurrency) {
+  const results = new Array(items.length);
+  let index = 0;
+  async function worker() {
+    while (index < items.length) {
+      const i = index++;
+      results[i] = await fn(items[i], i);
+    }
+  }
+  await Promise.all(Array.from({ length: concurrency }, worker));
+  return results;
+}
+
+/**
+ * Strip whitespace from a single PHP file asynchronously.
+ * Uses a content-hash cache to skip unchanged files.
+ * Returns stripped Buffer or null on failure.
+ */
+async function stripPhpFileAsync(filePath, originalContent) {
+  const hash = createHash('sha256').update(originalContent).digest('hex');
+  const cachePath = join(STRIP_CACHE_DIR, hash);
+
+  // Cache hit — return without spawning a PHP process
+  if (existsSync(cachePath)) {
+    return { content: readFileSync(cachePath), fromCache: true };
+  }
+
   try {
-    return execSync(`php -w ${JSON.stringify(filePath)}`, {
-      stdio: ['pipe', 'pipe', 'pipe'],
-      timeout: 10_000,
+    const { stdout } = await execFileAsync('php', ['-w', filePath], {
+      encoding: 'buffer',
+      timeout: 30_000,
       maxBuffer: 10 * 1024 * 1024,
     });
+
+    if (stdout && stdout.length > 0) {
+      mkdirSync(STRIP_CACHE_DIR, { recursive: true });
+      writeFileSync(cachePath, stdout);
+      return { content: stdout, fromCache: false };
+    }
   } catch {
-    return null;
+    // php -w failed — skip this file
   }
+
+  return null;
+}
+
+/**
+ * Pre-process all PHP files in parallel.
+ * Returns a Map of fullPath → stripped Buffer.
+ */
+async function stripPhpFilesParallel(files) {
+  const phpFiles = files.filter(
+    f => !f.isDir && f.path.endsWith('.php') && !f.path.startsWith('php-stubs'),
+  );
+
+  const startTime = Date.now();
+  let cacheHits = 0;
+  const strippedMap = new Map();
+
+  await mapConcurrent(phpFiles, async (file) => {
+    const original = readFileSync(file.fullPath);
+    const result = await stripPhpFileAsync(file.fullPath, original);
+
+    if (result) {
+      const saved = original.length - result.content.length;
+      if (saved > 0) {
+        strippedMap.set(file.fullPath, result.content);
+        if (result.fromCache) {
+          cacheHits++;
+        }
+      }
+    }
+  }, STRIP_CONCURRENCY);
+
+  const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+  console.log(`    Done in ${elapsed}s (${cacheHits}/${phpFiles.length} cache hits, ${strippedMap.size} files reduced)`);
+
+  return strippedMap;
 }
 
 /**
@@ -355,9 +432,9 @@ function createTarHeader(path, size, isDir) {
 
 /**
  * Create a tar archive from collected files.
- * When stripWhitespace is true, PHP files are stripped of comments/whitespace.
+ * When strippedContents is provided, pre-stripped PHP content is used directly.
  */
-function createTar(files, { stripWhitespace = false } = {}) {
+function createTar(files, { stripWhitespace = false, strippedContents = new Map() } = {}) {
   const chunks = [];
   let strippedCount = 0;
   let bytesSaved = 0;
@@ -368,9 +445,9 @@ function createTar(files, { stripWhitespace = false } = {}) {
     } else {
       let content = readFileSync(file.fullPath);
 
-      // Strip whitespace from PHP files (skip auto-generated files)
+      // Use pre-stripped content if available
       if (stripWhitespace && file.path.endsWith('.php') && !file.path.startsWith('php-stubs')) {
-        const stripped = stripPhpFile(file.fullPath);
+        const stripped = strippedContents.get(file.fullPath);
         if (stripped && stripped.length > 0) {
           const saved = content.length - stripped.length;
           if (saved > 0) {
@@ -581,11 +658,14 @@ for (const f of allFiles) {
 
 console.log(`  Collected ${allFiles.length} entries (${vendorFileCount + appFileCount} files)`);
 
+// Strip PHP whitespace in parallel (with content-hash cache for incremental builds)
+let strippedContents = new Map();
 if (STRIP_WHITESPACE) {
-  console.log('  Stripping PHP whitespace and comments...');
+  console.log(`  Stripping PHP whitespace and comments (${STRIP_CONCURRENCY} parallel workers)...`);
+  strippedContents = await stripPhpFilesParallel(allFiles);
 }
 
-const { tar, strippedCount, bytesSaved } = createTar(allFiles, { stripWhitespace: STRIP_WHITESPACE });
+const { tar, strippedCount, bytesSaved } = createTar(allFiles, { stripWhitespace: STRIP_WHITESPACE, strippedContents });
 
 if (STRIP_WHITESPACE && strippedCount > 0) {
   console.log(`  Stripped whitespace from ${strippedCount} PHP files (saved ${fmt(bytesSaved)} uncompressed)`);
@@ -599,9 +679,9 @@ writeFileSync(OUTPUT, gzipped);
 // Compute compressed sizes per category for report
 const vendorOnlyFiles = allFiles.filter(f => !f.isDir && f.path.startsWith('vendor/'));
 const appOnlyFiles = allFiles.filter(f => !f.isDir && !f.path.startsWith('vendor/'));
-const { tar: vendorTar } = createTar(vendorOnlyFiles, { stripWhitespace: STRIP_WHITESPACE });
+const { tar: vendorTar } = createTar(vendorOnlyFiles, { stripWhitespace: STRIP_WHITESPACE, strippedContents });
 const vendorGz = gzipSync(vendorTar, { level: 9 });
-const { tar: appTar } = createTar(appOnlyFiles, { stripWhitespace: STRIP_WHITESPACE });
+const { tar: appTar } = createTar(appOnlyFiles, { stripWhitespace: STRIP_WHITESPACE, strippedContents });
 const appGz = gzipSync(appTar, { level: 9 });
 
 const totalCompressed = gzipped.length;
