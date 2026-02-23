@@ -85,5 +85,13 @@ Agents MUST follow these rules:
 - Added `$this->components->warn()` with stderr output when composer install fails in staging — previously returned `false` silently
 - Gotcha: `realpath()` returns `false` if the path doesn't exist; we skip rewriting in that case so it falls through to composer's own error handling
 
+### Task 2 (f-b869e5) — Completed
+- Added 20 new exclusion patterns to `DEFAULT_EXCLUDE_PATTERNS` in `stubs/build-app.mjs`
+- New categories: example/benchmark/fixture dirs, CI service configs, package manager files, Symfony polyfill stubs
+- Symfony polyfill PHP version stubs (`Resources/stubs/`) safe to exclude: on PHP 8.5 all native classes exist, autoloader never loads stubs
+- `vendor/composer/installed.php` NOT excluded (used by `InstalledVersions` — some packages check versions at runtime)
+- `database/` directory NOT changed: controlled by `include_dirs` not exclusion patterns, and some apps may need it
+- Gotcha: patterns without `$` anchor (e.g. `phpunit\.xml`) already match `.dist` variants — don't double-exclude
+
 ## Interfaces Created
 <!-- Tasks: document interfaces/contracts created -->
