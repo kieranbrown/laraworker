@@ -57,10 +57,13 @@ const DEFAULT_EXCLUDE_PATTERNS = [
   '/\\/node_modules\\//',
   '/\\/\\.DS_Store$/',
 
-  // Vendor tests
+  // Vendor tests, examples, benchmarks, fixtures (dev-only)
   '/vendor\\/[^/]+\\/[^/]+\\/tests\\//',
   '/vendor\\/[^/]+\\/[^/]+\\/Tests\\//',
   '/vendor\\/[^/]+\\/[^/]+\\/test\\//',
+  '/vendor\\/[^/]+\\/[^/]+\\/examples?\\//',
+  '/vendor\\/[^/]+\\/[^/]+\\/benchmarks?\\//',
+  '/vendor\\/[^/]+\\/[^/]+\\/fixtures?\\//',
 
   // Vendor docs & metadata
   '/vendor\\/[^/]+\\/[^/]+\\/docs\\//',
@@ -68,11 +71,14 @@ const DEFAULT_EXCLUDE_PATTERNS = [
   '/vendor\\/[^/]+\\/[^/]+\\/CHANGELOG/',
   '/vendor\\/[^/]+\\/[^/]+\\/UPGRADE/',
 
-  // LICENSE, README, CREDITS, NOTICE files (not needed at runtime)
+  // Metadata files not needed at runtime
   '/vendor\\/[^/]+\\/[^/]+\\/LICENSE/',
   '/vendor\\/[^/]+\\/[^/]+\\/CREDITS/',
   '/vendor\\/[^/]+\\/[^/]+\\/NOTICE/',
   '/vendor\\/[^/]+\\/[^/]+\\/README/',
+  '/vendor\\/[^/]+\\/[^/]+\\/AUTHORS/',
+  '/vendor\\/[^/]+\\/[^/]+\\/CONTRIBUTORS/',
+  '/vendor\\/[^/]+\\/[^/]+\\/BACKERS/',
 
   // Vendor tooling configs
   '/vendor\\/[^/]+\\/[^/]+\\/phpunit\\.xml/',
@@ -89,6 +95,18 @@ const DEFAULT_EXCLUDE_PATTERNS = [
   '/vendor\\/[^/]+\\/[^/]+\\/Dockerfile$/',
   '/vendor\\/[^/]+\\/[^/]+\\/rector\\.php$/',
   '/vendor\\/[^/]+\\/[^/]+\\/pint\\.json$/',
+  '/vendor\\/[^/]+\\/[^/]+\\/infection\\.json/',
+  '/vendor\\/[^/]+\\/[^/]+\\/box\\.json/',
+  '/vendor\\/[^/]+\\/[^/]+\\/phpbench\\.json/',
+  '/vendor\\/[^/]+\\/[^/]+\\/\\.phpunit\\.result\\.cache$/',
+  '/vendor\\/[^/]+\\/[^/]+\\/\\.phpunit\\.cache\\//',
+
+  // CI service configs
+  '/vendor\\/[^/]+\\/[^/]+\\/\\.scrutinizer\\.yml$/',
+  '/vendor\\/[^/]+\\/[^/]+\\/codecov\\.ya?ml$/',
+  '/vendor\\/[^/]+\\/[^/]+\\/\\.coveralls\\.yml$/',
+  '/vendor\\/[^/]+\\/[^/]+\\/\\.gitlab-ci\\.yml$/',
+  '/vendor\\/[^/]+\\/[^/]+\\/crowdin\\.ya?ml$/',
 
   // Vendor CLI scripts (not useful in Workers)
   '/vendor\\/bin\\//',
@@ -101,8 +119,11 @@ const DEFAULT_EXCLUDE_PATTERNS = [
   // Composer metadata (autoloader doesn't need installed.json at runtime)
   '/vendor\\/composer\\/installed\\.json$/',
 
-  // Package manager lock files in vendor
+  // Package manager files in vendor (PHP packages don't need these)
   '/vendor\\/.*\\/package-lock\\.json$/',
+  '/vendor\\/[^/]+\\/[^/]+\\/package\\.json$/',
+  '/vendor\\/[^/]+\\/[^/]+\\/yarn\\.lock$/',
+  '/vendor\\/[^/]+\\/[^/]+\\/bun\\.lock$/',
 
   // Stub/template files (artisan make:* commands don't work in Workers)
   '/vendor\\/.*\\.stub$/',
@@ -114,6 +135,9 @@ const DEFAULT_EXCLUDE_PATTERNS = [
   '/vendor\\/symfony\\/[^/]+\\/Resources\\/schemas\\//',
   '/vendor\\/symfony\\/[^/]+\\/Resources\\/bin\\//',
   '/vendor\\/symfony\\/http-kernel\\/Resources\\/welcome/',
+
+  // Symfony polyfill stubs for PHP ≤ 8.4 (target runtime is PHP 8.5; native classes exist)
+  '/vendor\\/symfony\\/polyfill-php[0-9]+\\/Resources\\/stubs\\//',
 
   // Laravel framework exception renderer build artifacts (APP_DEBUG=false in production)
   '/vendor\\/laravel\\/framework\\/src\\/Illuminate\\/Foundation\\/resources\\/exceptions\\/renderer\\/dist\\//',
