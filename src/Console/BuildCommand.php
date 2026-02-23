@@ -76,21 +76,77 @@ class BuildCommand extends Command
 
         $this->generatePreloadFile();
 
-        $this->components->task('Optimizing autoloader', function () use ($basePath) {
-            // Use --optimize-autoloader instead of --classmap-authoritative --no-dev
-            // to avoid missing dev dependency classes referenced in config files
-            $process = new Process(
-                ['composer', 'dump-autoload', '--optimize', '--no-scripts'],
-                $basePath,
-                null,
-                null,
-                120
-            );
-
-            $process->run();
-
-            return $process->isSuccessful();
+        $this->components->task('Preparing production vendor (no-dev)', function () use ($basePath) {
+            return $this->prepareProductionVendor($basePath);
         });
+    }
+
+    /**
+     * Create a staging directory with production-only vendor dependencies.
+     *
+     * This runs composer install --no-dev --classmap-authoritative in isolation
+     * to ensure no dev packages (faker, phpunit, pest, psysh) end up in the bundle.
+     * The --classmap-authoritative flag skips filesystem checks, critical for WASM
+     * where FS operations are expensive.
+     */
+    private function prepareProductionVendor(string $basePath): bool
+    {
+        $stagingDir = $this->buildDirectory->path('vendor-staging');
+
+        // Clean up any previous staging directory
+        if (is_dir($stagingDir)) {
+            $this->recursiveRmdir($stagingDir);
+        }
+
+        mkdir($stagingDir, 0755, true);
+
+        // Copy composer files to staging
+        copy($basePath.'/composer.json', $stagingDir.'/composer.json');
+        copy($basePath.'/composer.lock', $stagingDir.'/composer.lock');
+
+        // Run composer install --no-dev --classmap-authoritative in staging
+        $process = new Process(
+            ['composer', 'install', '--no-dev', '--optimize-autoloader', '--classmap-authoritative', '--no-scripts', '--no-interaction'],
+            $stagingDir,
+            null,
+            null,
+            300
+        );
+
+        $process->run();
+
+        if (! $process->isSuccessful()) {
+            return false;
+        }
+
+        // Write staging path to build config for build-app.mjs
+        $buildConfigPath = $this->buildDirectory->path('build-config.json');
+        $config = json_decode(file_get_contents($buildConfigPath), true);
+        $config['vendor_staging_dir'] = $stagingDir;
+        file_put_contents($buildConfigPath, json_encode($config, JSON_PRETTY_PRINT)."\n");
+
+        return true;
+    }
+
+    /**
+     * Recursively remove a directory.
+     */
+    private function recursiveRmdir(string $dir): void
+    {
+        if (is_dir($dir)) {
+            $objects = scandir($dir);
+            foreach ($objects as $object) {
+                if ($object != '.' && $object != '..') {
+                    $path = $dir.'/'.$object;
+                    if (is_dir($path)) {
+                        $this->recursiveRmdir($path);
+                    } else {
+                        unlink($path);
+                    }
+                }
+            }
+            rmdir($dir);
+        }
     }
 
     private function restoreLocalEnvironment(): void

@@ -38,7 +38,7 @@ TS,
                 'php8.3-mbstring.so' => 'mbstringModule',
             ],
             'npm_packages' => [
-                'php-wasm-mbstring' => '^0.0.0-c',
+                'php-wasm-mbstring' => '^0.0.9-alpha-32',
             ],
         ],
         'openssl' => [
@@ -57,7 +57,7 @@ TS,
                 'php8.3-openssl.so' => 'opensslModule',
             ],
             'npm_packages' => [
-                'php-wasm-openssl' => '^0.0.9-k',
+                'php-wasm-openssl' => '^0.0.9-alpha-32',
             ],
         ],
     ];

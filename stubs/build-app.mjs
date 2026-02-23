@@ -9,14 +9,14 @@
  */
 
 import { readdirSync, statSync, readFileSync, mkdirSync, writeFileSync, copyFileSync, existsSync, rmSync } from 'node:fs';
-import { createHash } from 'node:crypto';
 import { gzipSync } from 'node:zlib';
-import { join, relative, resolve, dirname } from 'node:path';
-import { execSync } from 'node:child_process';
-import { exec } from 'node:child_process';
+import { join, relative, resolve } from 'node:path';
+import { execSync, execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import { createHash } from 'node:crypto';
+import { cpus } from 'node:os';
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 const ROOT = resolve(import.meta.dirname, '..');
 const DIST_DIR = resolve(import.meta.dirname, 'dist', 'assets');
@@ -29,10 +29,21 @@ if (existsSync(configPath)) {
   config = JSON.parse(readFileSync(configPath, 'utf8'));
 }
 
-const INCLUDE_DIRS = config.include_dirs ?? [
+const VENDOR_STAGING_DIR = config.vendor_staging_dir;
+
+let INCLUDE_DIRS = config.include_dirs ?? [
   'app', 'bootstrap', 'config', 'database',
   'routes', 'resources/views', 'vendor',
 ];
+
+// Use staging vendor if available (production-only, no-dev)
+if (VENDOR_STAGING_DIR && existsSync(VENDOR_STAGING_DIR)) {
+  console.log('  Using staging vendor (production-only, no-dev)...');
+  // Filter out vendor from include_dirs - we'll add staging vendor separately
+  INCLUDE_DIRS = INCLUDE_DIRS.filter(d => d !== 'vendor');
+} else {
+  console.warn('  Warning: No staging vendor found, using main vendor (may include dev packages)');
+}
 
 const INCLUDE_FILES = config.include_files ?? [
   'public/index.php', 'artisan', 'composer.json',
@@ -57,6 +68,12 @@ const DEFAULT_EXCLUDE_PATTERNS = [
   '/vendor\\/[^/]+\\/[^/]+\\/CHANGELOG/',
   '/vendor\\/[^/]+\\/[^/]+\\/UPGRADE/',
 
+  // LICENSE, README, CREDITS, NOTICE files (not needed at runtime)
+  '/vendor\\/[^/]+\\/[^/]+\\/LICENSE/',
+  '/vendor\\/[^/]+\\/[^/]+\\/CREDITS/',
+  '/vendor\\/[^/]+\\/[^/]+\\/NOTICE/',
+  '/vendor\\/[^/]+\\/[^/]+\\/README/',
+
   // Vendor tooling configs
   '/vendor\\/[^/]+\\/[^/]+\\/phpunit\\.xml/',
   '/vendor\\/[^/]+\\/[^/]+\\/\\.editorconfig$/',
@@ -71,13 +88,37 @@ const DEFAULT_EXCLUDE_PATTERNS = [
   '/vendor\\/[^/]+\\/[^/]+\\/docker-compose/',
   '/vendor\\/[^/]+\\/[^/]+\\/Dockerfile$/',
   '/vendor\\/[^/]+\\/[^/]+\\/rector\\.php$/',
+  '/vendor\\/[^/]+\\/[^/]+\\/pint\\.json$/',
 
   // Vendor CLI scripts (not useful in Workers)
   '/vendor\\/bin\\//',
   '/vendor\\/[^/]+\\/[^/]+\\/bin\\//',
 
+  // Schema and validation files (not needed at runtime)
+  '/vendor\\/.*\\.xsd$/',
+  '/vendor\\/.*\\.dtd$/',
+
+  // Composer metadata (autoloader doesn't need installed.json at runtime)
+  '/vendor\\/composer\\/installed\\.json$/',
+
+  // Package manager lock files in vendor
+  '/vendor\\/.*\\/package-lock\\.json$/',
+
+  // Stub/template files (artisan make:* commands don't work in Workers)
+  '/vendor\\/.*\\.stub$/',
+
   // Symfony translation/locale resources (large, unused in typical Workers apps)
   '/vendor\\/symfony\\/[^/]+\\/Resources\\/translations\\//',
+
+  // Symfony Resources not needed at runtime
+  '/vendor\\/symfony\\/[^/]+\\/Resources\\/schemas\\//',
+  '/vendor\\/symfony\\/[^/]+\\/Resources\\/bin\\//',
+  '/vendor\\/symfony\\/http-kernel\\/Resources\\/welcome/',
+
+  // Laravel framework exception renderer build artifacts (APP_DEBUG=false in production)
+  '/vendor\\/laravel\\/framework\\/src\\/Illuminate\\/Foundation\\/resources\\/exceptions\\/renderer\\/dist\\//',
+  '/vendor\\/laravel\\/framework\\/src\\/Illuminate\\/Foundation\\/resources\\/exceptions\\/renderer\\/package/',
+  '/vendor\\/laravel\\/framework\\/src\\/Illuminate\\/Foundation\\/resources\\/exceptions\\/renderer\\/vite/',
 
   // Laravel framework testing utilities (not needed at runtime)
   '/vendor\\/laravel\\/framework\\/src\\/Illuminate\\/Testing\\//',
@@ -91,49 +132,6 @@ const DEFAULT_EXCLUDE_PATTERNS = [
   '/vendor\\/[^/]+\\/[^/]+\\/appveyor\\.yml$/',
   '/vendor\\/[^/]+\\/[^/]+\\/CONTRIBUTING/',
   '/vendor\\/[^/]+\\/[^/]+\\/SECURITY\\.md$/',
-
-  // Symfony Resources — schemas, CLI binaries, debug assets (not needed at runtime)
-  // Note: polyfill Resources/unidata/*.php and Resources/stubs/*.php ARE needed
-  '/vendor\\/symfony\\/[^/]+\\/Resources\\/schemas\\//',
-  '/vendor\\/symfony\\/[^/]+\\/Resources\\/bin\\//',
-  '/vendor\\/symfony\\/error-handler\\/Resources\\/assets\\//',
-  '/vendor\\/symfony\\/http-kernel\\/Resources\\/welcome\\.html\\.php$/',
-  '/vendor\\/symfony\\/console\\/Resources\\/bin\\//',
-
-  // Doctrine fixtures & ORM test utilities
-  '/vendor\\/fakerphp\\/faker\\/src\\/Faker\\/ORM\\//',
-  '/vendor\\/doctrine\\/[^/]+\\/docs\\//',
-
-  // LICENSE and README files in vendor (not needed at runtime)
-  '/vendor\\/[^/]+\\/[^/]+\\/LICENSE/',
-  '/vendor\\/[^/]+\\/[^/]+\\/README/',
-
-  // Schema/validation files (.xsd, .dtd) — not needed at runtime
-  '/vendor\\/.*\\.xsd$/',
-  '/vendor\\/.*\\.dtd$/',
-
-  // .txt files in vendor (changelogs, license dupes, etc.)
-  '/vendor\\/[^/]+\\/[^/]+\\/[^/]+\\.txt$/',
-
-  // Vendor metadata files (not needed at runtime)
-  '/vendor\\/[^/]+\\/[^/]+\\/composer\\.lock$/',
-  '/vendor\\/composer\\/installed\\.json$/',
-  '/vendor\\/.*package-lock\\.json$/',
-
-  // Laravel exception renderer dev resources (package.json, vite config, source files)
-  '/vendor\\/laravel\\/framework\\/src\\/Illuminate\\/Foundation\\/resources\\/exceptions\\/renderer\\/package/',
-  '/vendor\\/laravel\\/framework\\/src\\/Illuminate\\/Foundation\\/resources\\/exceptions\\/renderer\\/vite\\.config/',
-  '/vendor\\/laravel\\/framework\\/src\\/Illuminate\\/Foundation\\/resources\\/exceptions\\/renderer\\/scripts\\.js$/',
-  '/vendor\\/laravel\\/framework\\/src\\/Illuminate\\/Foundation\\/resources\\/exceptions\\/renderer\\/styles\\.css$/',
-
-  // Dev packages — these should never be in production builds
-  // Using --no-dev should exclude these, but block them explicitly as safety
-  '/vendor\\/faker\\//',
-  '/vendor\\/phpunit\\//',
-  '/vendor\\/pestphp\\//',
-  '/vendor\\/psy\\//',
-  '/vendor\\/mockery\\//',
-  '/vendor\\/phake\\//',
 ];
 
 const toRegExp = p => new RegExp(p.replace(/^\//, '').replace(/\/$/, ''));
@@ -264,92 +262,92 @@ if (file_exists('/app/bootstrap/preload.php')) {
   return '<?php\n// Auto-generated PHP stubs for missing extensions\n// Extensions enabled: ' + JSON.stringify(extensions) + '\n' + stubs.join('\n');
 }
 
+// Cache directory for stripped PHP files — persists between builds
+const STRIP_CACHE_DIR = join(import.meta.dirname, '.strip-cache');
+// Number of parallel php -w workers
+const STRIP_CONCURRENCY = Math.max(4, cpus().length);
+
 /**
- * Strip whitespace and comments from a PHP file using `php -w` (async version).
- * Returns the stripped content as a Buffer, or null on failure.
+ * Run async tasks with a bounded concurrency pool.
  */
-async function stripPhpFile(filePath) {
+async function mapConcurrent(items, fn, concurrency) {
+  const results = new Array(items.length);
+  let index = 0;
+  async function worker() {
+    while (index < items.length) {
+      const i = index++;
+      results[i] = await fn(items[i], i);
+    }
+  }
+  await Promise.all(Array.from({ length: concurrency }, worker));
+  return results;
+}
+
+/**
+ * Strip whitespace from a single PHP file asynchronously.
+ * Uses a content-hash cache to skip unchanged files.
+ * Returns stripped Buffer or null on failure.
+ */
+async function stripPhpFileAsync(filePath, originalContent) {
+  const hash = createHash('sha256').update(originalContent).digest('hex');
+  const cachePath = join(STRIP_CACHE_DIR, hash);
+
+  // Cache hit — return without spawning a PHP process
+  if (existsSync(cachePath)) {
+    return { content: readFileSync(cachePath), fromCache: true };
+  }
+
   try {
-    const { stdout } = await execAsync(`php -w ${JSON.stringify(filePath)}`, {
-      timeout: 10_000,
+    const { stdout } = await execFileAsync('php', ['-w', filePath], {
+      encoding: 'buffer',
+      timeout: 30_000,
       maxBuffer: 10 * 1024 * 1024,
     });
-    return Buffer.from(stdout);
+
+    if (stdout && stdout.length > 0) {
+      mkdirSync(STRIP_CACHE_DIR, { recursive: true });
+      writeFileSync(cachePath, stdout);
+      return { content: stdout, fromCache: false };
+    }
   } catch {
-    return null;
+    // php -w failed — skip this file
   }
+
+  return null;
 }
 
 /**
- * Get cache key for a file based on content hash.
+ * Pre-process all PHP files in parallel.
+ * Returns a Map of fullPath → stripped Buffer.
  */
-function getCacheKey(filePath) {
-  try {
-    const content = readFileSync(filePath);
-    return createHash('sha256').update(content).digest('hex');
-  } catch {
-    return null;
-  }
-}
+async function stripPhpFilesParallel(files) {
+  const phpFiles = files.filter(
+    f => !f.isDir && f.path.endsWith('.php') && !f.path.startsWith('php-stubs'),
+  );
 
-/**
- * Strip whitespace from multiple PHP files in parallel with concurrency limit.
- * Uses a simple cache to avoid re-processing unchanged files.
- */
-async function stripPhpFilesParallel(files, cacheDir, { concurrency = 8 } = {}) {
-  const cacheFile = join(cacheDir, '.strip-whitespace-cache.json');
-  let cache = {};
+  const startTime = Date.now();
+  let cacheHits = 0;
+  const strippedMap = new Map();
 
-  // Load existing cache
-  if (existsSync(cacheFile)) {
-    try {
-      cache = JSON.parse(readFileSync(cacheFile, 'utf8'));
-    } catch {
-      cache = {};
-    }
-  }
+  await mapConcurrent(phpFiles, async (file) => {
+    const original = readFileSync(file.fullPath);
+    const result = await stripPhpFileAsync(file.fullPath, original);
 
-  const results = new Map();
-  const toProcess = [];
-
-  // Check cache for each file
-  for (const file of files) {
-    const cacheKey = getCacheKey(file.fullPath);
-    if (cacheKey && cache[file.path] && cache[file.path].hash === cacheKey) {
-      // Use cached result (stored as base64)
-      results.set(file.path, Buffer.from(cache[file.path].content, 'base64'));
-    } else {
-      toProcess.push({ file, cacheKey });
-    }
-  }
-
-  // Process files in parallel batches
-  for (let i = 0; i < toProcess.length; i += concurrency) {
-    const batch = toProcess.slice(i, i + concurrency);
-    await Promise.all(batch.map(async ({ file, cacheKey }) => {
-      const stripped = await stripPhpFile(file.fullPath);
-      if (stripped) {
-        results.set(file.path, stripped);
-        // Update cache
-        if (cacheKey) {
-          cache[file.path] = {
-            hash: cacheKey,
-            content: stripped.toString('base64'),
-          };
+    if (result) {
+      const saved = original.length - result.content.length;
+      if (saved > 0) {
+        strippedMap.set(file.fullPath, result.content);
+        if (result.fromCache) {
+          cacheHits++;
         }
       }
-    }));
-  }
+    }
+  }, STRIP_CONCURRENCY);
 
-  // Save cache
-  try {
-    mkdirSync(cacheDir, { recursive: true });
-    writeFileSync(cacheFile, JSON.stringify(cache, null, 2));
-  } catch {
-    // Ignore cache write errors
-  }
+  const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+  console.log(`    Done in ${elapsed}s (${cacheHits}/${phpFiles.length} cache hits, ${strippedMap.size} files reduced)`);
 
-  return results;
+  return strippedMap;
 }
 
 /**
@@ -434,26 +432,12 @@ function createTarHeader(path, size, isDir) {
 
 /**
  * Create a tar archive from collected files.
- * When stripWhitespace is true, PHP files are stripped of comments/whitespace.
+ * When strippedContents is provided, pre-stripped PHP content is used directly.
  */
-async function createTar(files, { stripWhitespace = false, cacheDir = null } = {}) {
+function createTar(files, { stripWhitespace = false, strippedContents = new Map() } = {}) {
   const chunks = [];
   let strippedCount = 0;
   let bytesSaved = 0;
-
-  // Pre-process all PHP files in parallel if stripping is enabled
-  let strippedContentMap = new Map();
-  if (stripWhitespace) {
-    const phpFiles = files.filter(f =>
-      !f.isDir &&
-      f.path.endsWith('.php') &&
-      !f.path.startsWith('php-stubs')
-    );
-
-    if (phpFiles.length > 0) {
-      strippedContentMap = await stripPhpFilesParallel(phpFiles, cacheDir || DIST_DIR);
-    }
-  }
 
   for (const file of files) {
     if (file.isDir) {
@@ -462,14 +446,16 @@ async function createTar(files, { stripWhitespace = false, cacheDir = null } = {
       let content = readFileSync(file.fullPath);
 
       // Use pre-stripped content if available
-      if (stripWhitespace && strippedContentMap.has(file.path)) {
-        const stripped = strippedContentMap.get(file.path);
-        const saved = content.length - stripped.length;
-        if (saved > 0) {
-          bytesSaved += saved;
-          strippedCount++;
+      if (stripWhitespace && file.path.endsWith('.php') && !file.path.startsWith('php-stubs')) {
+        const stripped = strippedContents.get(file.fullPath);
+        if (stripped && stripped.length > 0) {
+          const saved = content.length - stripped.length;
+          if (saved > 0) {
+            bytesSaved += saved;
+            strippedCount++;
+            content = stripped;
+          }
         }
-        content = stripped;
       }
 
       chunks.push(createTarHeader(file.path, content.length, false));
@@ -501,8 +487,6 @@ const fmt = (bytes) => {
 };
 
 // --- Main ---
-
-(async () => {
 
 console.log('  Starting build-app.mjs...');
 console.log(`  ROOT: ${ROOT}`);
@@ -546,6 +530,12 @@ for (const file of INCLUDE_FILES) {
   }
 }
 
+// Add staging vendor files if available
+if (VENDOR_STAGING_DIR && existsSync(VENDOR_STAGING_DIR)) {
+  allFiles.push({ path: 'vendor/', isDir: true });
+  allFiles.push(...collectFiles(VENDOR_STAGING_DIR, 'vendor'));
+}
+
 // Copy .env.production as .env
 const envSource = join(import.meta.dirname, '.env.production');
 if (existsSync(envSource)) {
@@ -573,44 +563,61 @@ for (const dir of storageDirs) {
   }
 }
 
-// Strip Carbon locale files (keep only en.php and en_US.php)
+// Strip Carbon locale files (keep only en.php — no regional variants like en_AU, en_GB)
 const carbonLangPrefix = 'vendor/nesbot/carbon/src/Carbon/Lang/';
-const CARBON_KEEP = new Set(['en.php', 'en_US.php']);
 const carbonRemoved = [];
 for (let i = allFiles.length - 1; i >= 0; i--) {
   const f = allFiles[i];
   if (!f.path.startsWith(carbonLangPrefix) || f.isDir) continue;
   const filename = f.path.substring(carbonLangPrefix.length);
-  if (!CARBON_KEEP.has(filename)) {
+  if (filename !== 'en.php') {
     carbonRemoved.push(f.path);
     allFiles.splice(i, 1);
   }
 }
 if (carbonRemoved.length > 0) {
-  console.log(`  Stripped ${carbonRemoved.length} Carbon locale files (kept en + en_US only)`);
+  console.log(`  Stripped ${carbonRemoved.length} Carbon locale files (kept en.php only)`);
 }
 
-// Run composer dump-autoload --optimize if composer.json exists
-const composerJson = join(ROOT, 'composer.json');
-if (existsSync(composerJson)) {
-  try {
-    console.log('  Optimizing Composer autoloader...');
-    // --classmap-authoritative skips filesystem checks for classes not in classmap
-    // Critical for WASM where filesystem operations are expensive
-    execSync('composer dump-autoload --no-dev --optimize --classmap-authoritative --no-scripts', {
-      cwd: ROOT,
-      stdio: 'inherit',
-      timeout: 60_000,
-      env: { ...process.env, COMPOSER_NO_INTERACTION: '1' },
-    });
-    console.log('  Composer autoloader optimized (no-dev, classmap-authoritative)');
-  } catch (err) {
-    console.warn(`  Warning: composer dump-autoload failed: ${err.message}`);
+// Verify no dev packages in the final bundle
+// These are packages that should ONLY be in require-dev, not transitive deps
+const DEV_PACKAGE_PATTERNS = [
+  /vendor\/fakerphp\/faker/,
+  /vendor\/phpunit\/phpunit/,
+  /vendor\/pestphp\/pest/,
+  /vendor\/mockery\/mockery/,
+  /vendor\/laravel\/sail/,
+  /vendor\/laravel\/pint/,
+  /vendor\/laravel\/dusk/,
+  /vendor\/spatie\/laravel-ignition/,
+];
+
+const devPackagesFound = [];
+for (const file of allFiles) {
+  for (const pattern of DEV_PACKAGE_PATTERNS) {
+    if (pattern.test(file.path)) {
+      devPackagesFound.push(file.path);
+      break;
+    }
   }
 }
 
-// Override Composer platform check — php-cgi-wasm provides PHP 8.3.11 but
-// Laravel 12 requires >= 8.4.0.
+if (devPackagesFound.length > 0) {
+  console.error('  ERROR: Dev packages found in bundle:');
+  for (const pkg of devPackagesFound.slice(0, 10)) {
+    console.error(`    - ${pkg}`);
+  }
+  if (devPackagesFound.length > 10) {
+    console.error(`    ... and ${devPackagesFound.length - 10} more`);
+  }
+  process.exit(1);
+} else {
+  console.log('  ✓ No dev packages found in bundle');
+}
+
+// Override Composer platform check — php-cgi-wasm currently provides PHP 8.3.11
+// but Laravel 12 requires >= 8.4.0. Remove this override once a custom PHP 8.4+
+// WASM binary is built (see php-wasm-build/.php-wasm-rc).
 const platformCheckPath = 'vendor/composer/platform_check.php';
 const idx = allFiles.findIndex(f => f.path === platformCheckPath);
 if (idx >= 0) {
@@ -651,11 +658,14 @@ for (const f of allFiles) {
 
 console.log(`  Collected ${allFiles.length} entries (${vendorFileCount + appFileCount} files)`);
 
+// Strip PHP whitespace in parallel (with content-hash cache for incremental builds)
+let strippedContents = new Map();
 if (STRIP_WHITESPACE) {
-  console.log('  Stripping PHP whitespace and comments...');
+  console.log(`  Stripping PHP whitespace and comments (${STRIP_CONCURRENCY} parallel workers)...`);
+  strippedContents = await stripPhpFilesParallel(allFiles);
 }
 
-const { tar, strippedCount, bytesSaved } = await createTar(allFiles, { stripWhitespace: STRIP_WHITESPACE, cacheDir: DIST_DIR });
+const { tar, strippedCount, bytesSaved } = createTar(allFiles, { stripWhitespace: STRIP_WHITESPACE, strippedContents });
 
 if (STRIP_WHITESPACE && strippedCount > 0) {
   console.log(`  Stripped whitespace from ${strippedCount} PHP files (saved ${fmt(bytesSaved)} uncompressed)`);
@@ -669,9 +679,9 @@ writeFileSync(OUTPUT, gzipped);
 // Compute compressed sizes per category for report
 const vendorOnlyFiles = allFiles.filter(f => !f.isDir && f.path.startsWith('vendor/'));
 const appOnlyFiles = allFiles.filter(f => !f.isDir && !f.path.startsWith('vendor/'));
-const { tar: vendorTar } = await createTar(vendorOnlyFiles, { stripWhitespace: STRIP_WHITESPACE });
+const { tar: vendorTar } = createTar(vendorOnlyFiles, { stripWhitespace: STRIP_WHITESPACE, strippedContents });
 const vendorGz = gzipSync(vendorTar, { level: 9 });
-const { tar: appTar } = await createTar(appOnlyFiles, { stripWhitespace: STRIP_WHITESPACE });
+const { tar: appTar } = createTar(appOnlyFiles, { stripWhitespace: STRIP_WHITESPACE, strippedContents });
 const appGz = gzipSync(appTar, { level: 9 });
 
 const totalCompressed = gzipped.length;
@@ -800,8 +810,6 @@ if (existsSync(wasmOptBin)) {
 }
 
 console.log('Build complete.');
-
-})(); // End async IIFE
 
 function copyDirRecursive(src, dest) {
   mkdirSync(dest, { recursive: true });
