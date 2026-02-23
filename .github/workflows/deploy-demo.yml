@@ -53,8 +53,6 @@ jobs:
           php -r "
             \$config = file_get_contents('config/laraworker.php');
             \$config = str_replace(\"'routes' => [],\", \"'routes' => [['pattern' => 'laraworker.kswb.dev', 'custom_domain' => true]],\", \$config);
-            \$config = str_replace(\"'mbstring' => true\", \"'mbstring' => false\", \$config);
-            \$config = str_replace(\"'openssl' => true\", \"'openssl' => false\", \$config);
             file_put_contents('config/laraworker.php', \$config);
           "
         env:

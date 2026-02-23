@@ -5,13 +5,8 @@
   "compatibility_date": "{{COMPATIBILITY_DATE}}",
   "compatibility_flags": ["nodejs_compat"],
   "minify": true,
-  "observability": {
-    "logs": {
-      "enabled": true
-    }
-  },
   "limits": {
-    "cpu_ms": 30000
+    "cpu_ms": 10000
   },
   "assets": {
     "directory": "./dist/assets",
