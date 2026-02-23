@@ -13,19 +13,23 @@ if [ -n "${FUEL_STAGED_FILES:-}" ]; then
 fi
 
 # Exit early if no PHP files are staged
-[ "${#PHP_FILES[@]}" -eq 0 ] && exit 0
+[ "${#PHP_FILES[@]}" -eq 0 ] && { echo "All quality gates passed"; exit 0; }
 
-echo "Running quality gate on ${#PHP_FILES[@]} PHP file(s)..."
-
-# Auto-fix formatting with Pint
-echo "→ Running Pint (auto-fix)..."
-./vendor/bin/pint "${PHP_FILES[@]}"
+# Auto-fix formatting with Pint (silent, no colors)
+if ! ./vendor/bin/pint --quiet --no-ansi "${PHP_FILES[@]}" 2>&1; then
+    echo "Pint"
+    ./vendor/bin/pint --no-ansi "${PHP_FILES[@]}" 2>&1 || true
+    exit 1
+fi
 
 # Restage auto-fixed files so commit includes fixes
-git add -- "${PHP_FILES[@]}"
+git add -- "${PHP_FILES[@]}" 2>/dev/null || true
 
-# Run tests with Pest (full suite — Pest doesn't filter by source file paths)
-echo "→ Running Pest tests..."
-./vendor/bin/pest --compact
+# Run tests with Pest (no colors, compact output only on failure)
+if ! ./vendor/bin/pest --colors=never --no-coverage 2>&1; then
+    echo "Pest"
+    ./vendor/bin/pest --colors=never --no-coverage 2>&1 || true
+    exit 1
+fi
 
-echo "✓ Quality gate passed"
+echo "All quality gates passed"
