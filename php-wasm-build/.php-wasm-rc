@@ -32,11 +32,18 @@ WITH_SOURCEMAPS=0
 GZIP=1
 
 # ── OPcache: enabled ──
-# OPcache is bundled into PHP core and enabled by default in sm-8.5 branch.
-# The sm-8.5 Makefile passes --disable-opcache-jit automatically (JIT not
-# useful in single-threaded WASM execution).
-# Memory allocation: uses mmap() within WASM linear memory (no shmget).
-# Persists across requests in warm Cloudflare Workers isolates.
+# PHP 8.5 makes OPcache a required, non-optional extension (always compiled).
+# The sm-8.5 Makefile passes --disable-opcache-jit automatically.
+#
+# Emscripten cross-compilation quirk: the autoconf mmap(MAP_ANON) shared memory
+# test can't execute, so it defaults to "no" — leaving OPcache without a shared
+# memory backend (compiled but non-functional). build.sh applies patches from
+# patches/opcache-wasm-support.sh to force php_cv_shm_mmap_anon=yes and add
+# a missing <unistd.h> include. Emscripten's mmap() allocates from the WASM
+# linear heap, which is sufficient for single-process OPcache.
+#
+# Same approach as WordPress Playground (PR #2400, July 2025).
+# Opcodes persist across requests in warm Cloudflare Workers isolates.
 # Expected size increase: ~150-250 KB gzipped vs no-opcache build.
 WITH_OPCACHE=1
 

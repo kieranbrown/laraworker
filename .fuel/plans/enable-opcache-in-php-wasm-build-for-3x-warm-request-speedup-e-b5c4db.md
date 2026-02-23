@@ -100,12 +100,27 @@ The `seanmorris/php-wasm sm-8.5` branch targets PHP 8.5.2. Since PHP 8.5 makes O
 - OPcache is confirmed present via `strings php8.5-cgi-worker.wasm | grep opcache_get_status`
 - Binary measured: 13.3 MB uncompressed / **3.27 MB gzipped** (includes OPcache, pib, session only)
 
-### Task 2: Patch php-wasm-builder to support OPcache static linking
-- Modify the Makefile in php-wasm-build/ to include OPcache
-- Patch PHP's configure/autoconf to allow --enable-opcache as static extension
-- Emulate shared memory for Emscripten (mmap-based approach)
-- Handle any sys/shm.h dependencies
-- Ensure MAIN_MODULE=0 (static linking) still works with OPcache
+### Task 2: Patch php-wasm-builder to support OPcache static linking ✅
+
+**Files created/modified:**
+- `php-wasm-build/patches/opcache-wasm-support.sh` — Patch script applied during Docker build
+- `php-wasm-build/build.sh` — Modified to inject OPcache patches into Makefile flow
+- `php-wasm-build/.php-wasm-rc` — Updated documentation for OPcache configuration
+
+**Key decisions:**
+1. **PHP 8.5 simplification**: OPcache is mandatory in PHP 8.5 (RFC: make_opcache_required), so the complex static linking patches (ext_shared=no, opcache_module.c glue, shared→no) needed for PHP ≤8.4 are unnecessary. Only two patches are required.
+2. **Patch injection approach**: Rather than forking seanmorris/php-wasm or creating a complex git patch with unknown line numbers, we inject a shell script into the Makefile's `patched` target via sed. The script runs inside Docker after base patches and before configure.
+3. **mmap(MAP_ANON) is sufficient**: Emscripten's mmap() allocates from the WASM linear heap. Since WASM is single-process, no inter-process shared memory is needed — OPcache only needs process-local memory for its opcode cache.
+
+**Patches applied (via `patches/opcache-wasm-support.sh`):**
+1. `php_cv_shm_mmap_anon=no` → `yes` in `ext/opcache/config.m4` — Forces autoconf to recognize mmap(MAP_ANON) support (cross-compilation test can't execute in Emscripten)
+2. Add `#include <unistd.h>` in `ext/opcache/zend_accelerator_debug.c` — Provides getpid() declaration for non-Windows (Emscripten)
+
+**Gotchas for future agents:**
+- The seanmorris/php-wasm sm-8.5 branch does NOT handle OPcache shared memory detection for Emscripten. Without our patches, OPcache compiles (because PHP 8.5 makes it mandatory) but the configure warning "No supported shared memory caching support" means it's non-functional at runtime.
+- `WITH_OPCACHE=1` in `.php-wasm-rc` is informational only — the sm-8.5 Makefile doesn't read this variable. OPcache is compiled because PHP 8.5 requires it.
+- The sed-based Makefile injection in `build.sh` matches the literal text `git apply --no-index patch/php${PHP_VERSION}.patch`. If seanmorris changes their patching mechanism, this will silently fail (OPcache compiles but without shared memory).
+- `MAIN_MODULE=0` (static linking) works fine with OPcache on PHP 8.5 since OPcache uses `[no]` (static) in its `PHP_NEW_EXTENSION` call.
 
 ### Task 3: Build and measure the new WASM binary
 - Rebuild PHP WASM with OPcache statically linked

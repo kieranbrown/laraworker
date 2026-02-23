@@ -40,6 +40,27 @@ git clone \
 # The Makefile reads PHP_VERSION, OPTIMIZE, ASYNCIFY, etc. from .env
 cp "$SCRIPT_DIR/.php-wasm-rc" "$BUILD_DIR/.env"
 
+# ── OPcache patches ──
+# Copy our OPcache support patches into the build directory and inject them
+# into the Makefile's patch flow. The script runs inside Docker (via DOCKER_RUN)
+# after the base php-wasm patches are applied but before configure runs.
+#
+# These patches fix two Emscripten cross-compilation issues:
+#   1. Force mmap(MAP_ANON) shared memory detection to succeed
+#   2. Add missing <unistd.h> include for getpid() in OPcache debug logging
+#
+# Without these, OPcache compiles but has no shared memory backend, rendering
+# it non-functional at runtime.
+cp "$SCRIPT_DIR/patches/opcache-wasm-support.sh" "$BUILD_DIR/"
+
+# Insert our patch script into the Makefile's "patched" target, right after
+# git apply runs the base patches. Uses a literal tab for the Makefile recipe.
+TAB=$'\t'
+sed -i.bak "/git apply --no-index patch\/php\${PHP_VERSION}.patch/a\\
+${TAB}\${DOCKER_RUN} bash opcache-wasm-support.sh \${PHP_VERSION}" \
+  "$BUILD_DIR/Makefile"
+rm -f "$BUILD_DIR/Makefile.bak"
+
 echo ""
 echo "Running build (make worker-cgi-mjs from host)..."
 echo "The Makefile will spawn Docker containers for each compile step."
