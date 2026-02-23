@@ -102,7 +102,7 @@ App bundle (app.tar.gz) is stored in KV storage (25 MB limit) — well within bu
 ## Success Criteria
 - [x] OPcache statically linked and functional in PHP WASM (always was — confirmed via `strings`)
 - [x] JIT disabled (`--disable-opcache-jit` in sm-8.5 configure)
-- [ ] PHP 8.5.2 binary measurement confirmed after build
+- [x] PHP 8.5.2 binary measurement confirmed: 3.27 MB gzipped
 - [ ] Warm request speedup ≥ 2x (ideally 3x) — to be measured in Task 5
 - [ ] opcache_get_status() shows cache hits on second request
 - [x] All existing tests pass (63 tests)
