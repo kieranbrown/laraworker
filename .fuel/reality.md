@@ -1,7 +1,7 @@
 # Reality
 
 ## Architecture
-Standalone Composer package (`kieranbrown/laraworker`) for running Laravel on Cloudflare Workers via PHP-WASM. Custom PHP 8.5 WASM binary (static-linked, MAIN_MODULE=0) with minimal extensions (ctype, filter, tokenizer). Uses orchestra/testbench for testing.
+Standalone Composer package (`kieranbrown/laraworker`) for running Laravel on Cloudflare Workers via PHP-WASM. Custom PHP 8.5 WASM binary (static-linked, MAIN_MODULE=0) with minimal extensions (ctype, filter, tokenizer, opcache). Uses orchestra/testbench for testing.
 
 ## Modules
 | Module | Purpose | Entry Point |
@@ -35,9 +35,9 @@ Standalone Composer package (`kieranbrown/laraworker`) for running Laravel on Cl
 | Pest | `vendor/bin/pest --compact` | PHP test runner (Feature + Unit suites) |
 
 ## Recent Changes
+- 2026-02-23: Statically linked OPcache into custom PHP WASM binary — caches compiled opcodes in WASM linear memory, directly addresses cold-start bottleneck (parsing all framework files without OPcache)
 - 2026-02-23: Upgraded custom PHP WASM build from 8.2.11 to 8.5; added aggressive bundle size minimization (parallel whitespace stripping, additional vendor file pruning) targeting <3MB Cloudflare Workers free tier
 - 2026-02-22: Eliminated `.cloudflare/` from user's app — all worker assets now generated into `.laraworker/` at build time; added `BuildDirectory` helper (664ea16)
 - 2026-02-22: Simplified `InstallCommand` — removed stub copying/generation; build now owns all file generation (b9b0658)
 - 2026-02-22: Added build-time optimizations to `BuildCommand.php` — whitespace stripping, vendor pruning, SP stripping, class preloading (de0f23e)
-- 2026-02-22: Added GitHub Actions workflow for demo deployment (7405082)
 _Last updated: 2026-02-23_
