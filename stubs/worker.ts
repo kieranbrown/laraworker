@@ -190,6 +190,11 @@ export default {
       return assetResponse;
     }
 
+    // Health check — responds without initializing PHP
+    if (url.pathname === '/__health') {
+      return new Response('OK', { status: 200, headers: { 'Content-Type': 'text/plain' } });
+    }
+
     try {
       const instance = await ensureInitialized(env);
 
