@@ -14,6 +14,12 @@ class LaraworkerServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../config/laraworker.php', 'laraworker');
+
+        // Enable relative view hashes so compiled view filenames are portable
+        // across environments (build-time local paths vs runtime /app paths).
+        if (! $this->app['config']->has('view.relative_hash')) {
+            $this->app['config']->set('view.relative_hash', true);
+        }
     }
 
     public function boot(): void

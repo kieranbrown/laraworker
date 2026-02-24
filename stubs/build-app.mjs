@@ -608,7 +608,81 @@ if (file_exists('/app/bootstrap/preload.php')) {
     require_once '/app/bootstrap/preload.php';
 }`);
 
-  return '<?php\n// Auto-generated PHP stubs for missing extensions\n// Extensions enabled: ' + JSON.stringify(extensions) + '\n' + stubs.join('\n');
+  // The WASM PHP tokenizer is broken: token_get_all() treats all code after <?php
+  // as a single T_STRING token instead of properly tokenizing. This breaks
+  // BladeCompiler::hasEvenNumberOfParentheses() which relies on token_get_all
+  // to count parentheses while skipping those inside string literals.
+  //
+  // PHP resolves bare function calls to the current namespace first, so defining
+  // token_get_all in the Illuminate\View\Compilers namespace shadows the broken
+  // global version for all BladeCompiler code.
+  const bladeTokenizerFix = `
+namespace Illuminate\\View\\Compilers {
+    function token_get_all(string $code, int $flags = 0): array {
+        $tokens = [];
+        $len = strlen($code);
+        $i = 0;
+        $line = 1;
+        if (substr($code, 0, 5) === '<?php') {
+            $tagEnd = 5;
+            if ($tagEnd < $len && ($code[$tagEnd] === ' ' || $code[$tagEnd] === "\\n" || $code[$tagEnd] === "\\r" || $code[$tagEnd] === "\\t")) {
+                $tagEnd++;
+            }
+            $tokens[] = [T_OPEN_TAG, substr($code, 0, $tagEnd), 1];
+            $i = $tagEnd;
+            $line += substr_count(substr($code, 0, $tagEnd), "\\n");
+        }
+        $current = '';
+        while ($i < $len) {
+            $char = $code[$i];
+            if ($char === '"' || $char === "'") {
+                if ($current !== '') {
+                    $tokens[] = [T_STRING, $current, $line];
+                    $current = '';
+                }
+                $quote = $char;
+                $str = $char;
+                $i++;
+                while ($i < $len && $code[$i] !== $quote) {
+                    if ($code[$i] === '\\\\' && $i + 1 < $len) {
+                        $str .= $code[$i] . $code[$i + 1];
+                        $i += 2;
+                        continue;
+                    }
+                    if ($code[$i] === "\\n") $line++;
+                    $str .= $code[$i];
+                    $i++;
+                }
+                if ($i < $len) {
+                    $str .= $code[$i];
+                    $i++;
+                }
+                $tokens[] = [T_CONSTANT_ENCAPSED_STRING, $str, $line];
+                continue;
+            }
+            if ($char === '(' || $char === ')') {
+                if ($current !== '') {
+                    $tokens[] = [T_STRING, $current, $line];
+                    $current = '';
+                }
+                $tokens[] = $char;
+                $i++;
+                continue;
+            }
+            if ($char === "\\n") $line++;
+            $current .= $char;
+            $i++;
+        }
+        if ($current !== '') {
+            $tokens[] = [T_STRING, $current, $line];
+        }
+        return $tokens;
+    }
+}
+`;
+
+  return '<?php\n// Auto-generated PHP stubs for missing extensions\n// Extensions enabled: '
+    + JSON.stringify(extensions) + '\nnamespace {\n' + stubs.join('\n') + '\n}\n' + bladeTokenizerFix;
 }
 
 // Cache directory for stripped PHP files — persists between builds

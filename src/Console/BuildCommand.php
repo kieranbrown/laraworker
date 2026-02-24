@@ -61,17 +61,21 @@ class BuildCommand extends Command
             return $this->runArtisan(['config:cache', '--env=production'], $basePath, $envFile);
         });
 
+        // view:cache must run BEFORE fixCachedPaths so it can find view files
+        // at their local paths. With view.relative_hash=true (set by the service
+        // provider), compiled filenames use relative paths and are portable.
+        $this->components->task('Caching views', function () use ($basePath, $envFile) {
+            return $this->runArtisan(['view:cache'], $basePath, $envFile);
+        });
+
         $this->fixCachedPaths(base_path('bootstrap/cache/config.php'));
+        $this->fixCompiledViewPaths();
 
         $this->components->task('Caching routes', function () use ($basePath, $envFile) {
             return $this->runArtisan(['route:cache', '--env=production'], $basePath, $envFile);
         });
 
         $this->fixCachedPaths(base_path('bootstrap/cache/routes-v7.php'));
-
-        $this->components->task('Caching views', function () use ($basePath, $envFile) {
-            return $this->runArtisan(['view:cache'], $basePath, $envFile);
-        });
 
         $this->stripServiceProviders(base_path('bootstrap/cache/config.php'));
 
@@ -548,6 +552,25 @@ class BuildCommand extends Command
 
             return ! empty($stripped);
         });
+    }
+
+    /**
+     * Replace local base_path references in compiled view files with '/app'.
+     *
+     * Compiled Blade views contain PATH comments with absolute local paths.
+     * These must be rewritten for the WASM runtime.
+     */
+    private function fixCompiledViewPaths(): void
+    {
+        $viewsDir = base_path('storage/framework/views');
+
+        if (! is_dir($viewsDir)) {
+            return;
+        }
+
+        foreach (glob($viewsDir.'/*.php') as $file) {
+            $this->fixCachedPaths($file);
+        }
     }
 
     /**
