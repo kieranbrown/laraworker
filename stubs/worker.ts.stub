@@ -5,7 +5,7 @@
  * unpacks into Emscripten MEMFS, and caches the PHP instance.
  * Each request is routed through php.request(request).
  *
- * Static assets are served by Cloudflare Static Assets (run_worker_first = false)
+ * Static assets are served by Cloudflare Static Assets (run_worker_first removed)
  * before the worker is invoked, so this worker only handles PHP routing.
  *
  * When Inertia SSR is enabled (INERTIA_SSR=true), HTML responses containing
@@ -211,21 +211,6 @@ async function maybeApplySSR(
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
-
-    // Intercept hashed Vite assets to add immutable cache headers
-    // These are served from ASSETS but we need to add cache-control headers
-    if (url.pathname.startsWith('/build/assets/')) {
-      const assetResponse = await env.ASSETS.fetch(request);
-      if (assetResponse.ok) {
-        const headers = new Headers(assetResponse.headers);
-        headers.set('Cache-Control', 'public, max-age=31536000, immutable');
-        return new Response(assetResponse.body, {
-          status: assetResponse.status,
-          headers,
-        });
-      }
-      return assetResponse;
-    }
 
     // Health check — responds without initializing PHP
     if (url.pathname === '/__health') {

@@ -9,8 +9,7 @@
   },
   "assets": {
     "directory": "./dist/assets",
-    "binding": "ASSETS",
-    "run_worker_first": ["/build/assets/*"]
+    "binding": "ASSETS"
   },
   "observability": {
     "enabled": true,

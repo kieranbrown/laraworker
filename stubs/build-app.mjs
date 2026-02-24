@@ -1197,6 +1197,14 @@ if (PUBLIC_ASSETS) {
   }
 }
 
+// Generate _headers file for Cloudflare Static Assets.
+// This adds immutable cache headers to Vite build assets without worker invocation.
+const headersContent = `/build/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+`;
+writeFileSync(join(DIST_DIR, '_headers'), headersContent);
+console.log('  ✓ Generated _headers for immutable asset caching');
+
 // Verify custom PHP 8.5 WASM binary and helper modules are present.
 // These are copied into the build directory by the PHP BuildCommand
 // (BuildDirectory::copyWasmBinary) before build-app.mjs runs.
