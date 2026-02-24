@@ -130,7 +130,7 @@ async function initializeFilesystem(
   // tar extraction, so isExpired() always returns true without this.
   const viewDir = '/app/storage/framework/views';
   if (FS.analyzePath(viewDir).exists) {
-    const futureTime = Math.floor(Date.now() / 1000) + 86400;
+    const futureTime = Date.now() + 86400000; // 1 day ahead in ms
     const entries = FS.readdir(viewDir).filter(
       (e: string) => e !== '.' && e !== '..',
     );
