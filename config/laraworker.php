@@ -102,6 +102,7 @@ return [
         'database',
         'routes',
         'resources/views',
+        'storage/framework/views',
         'vendor',
     ],
 
@@ -203,7 +204,7 @@ return [
 
     'env_overrides' => [
         'APP_ENV' => 'production',
-        'APP_DEBUG' => 'false',
+        'APP_DEBUG' => 'true',
         'LOG_CHANNEL' => 'stderr',
         'SESSION_DRIVER' => 'array',
         'CACHE_STORE' => 'array',
