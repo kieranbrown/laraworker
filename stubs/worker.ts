@@ -218,106 +218,110 @@ export default {
     try {
       const instance = await ensureInitialized(env);
 
-      // Debug endpoint — PHP diagnostics via a temp PHP file
+      // Debug endpoint — trigger root request and dump compiled views
       if (url.pathname === '/__debug') {
         const FS = await instance.getFS();
 
-        // Write a PHP diagnostic script to MEMFS
-        const diagPhp = `<?php
-error_reporting(E_ALL);
-ini_set('display_errors', '1');
-
-// Boot the application
-$app = require_once __DIR__ . '/../bootstrap/app.php';
-$kernel = $app->make(Illuminate\\Contracts\\Http\\Kernel::class);
-
-echo "=== PHP DIAGNOSTICS ===\\n";
-echo "PHP version: " . PHP_VERSION . "\\n";
-echo "__DIR__ (diag): " . __DIR__ . "\\n";
-
-// Check basePath
-echo "app()->basePath(): " . $app->basePath() . "\\n";
-echo "base_path(): " . base_path() . "\\n";
-
-// Check PCRE settings
-echo "\\n=== PCRE CONFIG ===\\n";
-echo "pcre.backtrack_limit: " . ini_get('pcre.backtrack_limit') . "\\n";
-echo "pcre.recursion_limit: " . ini_get('pcre.recursion_limit') . "\\n";
-echo "pcre.jit: " . ini_get('pcre.jit') . "\\n";
-echo "PCRE version: " . PCRE_VERSION . "\\n";
-
-// Test PCRE on a large string with the Blade regex
-echo "\\n=== PCRE REGEX TEST ===\\n";
-$testStr = str_repeat("x", 80000) . "@if (true) hello @endif";
-$result = preg_match_all('/\\\\B@(@?\\\\w+(?:::\\\\w+)?)([ \\\\t]*)(\\\\( ( [\\\\S\\\\s]*? ) \\\\))?/x', $testStr, $matches);
-echo "preg_match_all result: " . var_export($result, true) . "\\n";
-echo "preg_last_error: " . preg_last_error() . "\\n";
-$errors = [0=>'NONE',1=>'INTERNAL',2=>'BACKTRACK_LIMIT',3=>'RECURSION_LIMIT',4=>'BAD_UTF8',5=>'BAD_UTF8_OFFSET',6=>'JIT_STACKLIMIT'];
-echo "preg_last_error_msg: " . ($errors[preg_last_error()] ?? 'unknown') . "\\n";
-
-// Test on actual welcome view content
-echo "\\n=== BLADE COMPILE TEST ===\\n";
-$welcomePath = '/app/resources/views/welcome.blade.php';
-if (file_exists($welcomePath)) {
-    $content = file_get_contents($welcomePath);
-    echo "welcome.blade.php size: " . strlen($content) . "\\n";
-
-    // Test the statement regex on the actual content
-    $result2 = preg_match_all('/\\\\B@(@?\\\\w+(?:::\\\\w+)?)([ \\\\t]*)(\\\\( ( [\\\\S\\\\s]*? ) \\\\))?/x', $content, $matches2);
-    echo "preg_match_all on welcome: " . var_export($result2, true) . "\\n";
-    echo "preg_last_error: " . preg_last_error() . " (" . ($errors[preg_last_error()] ?? 'unknown') . ")\\n";
-    if ($result2 !== false && $result2 > 0) {
-        echo "Matches found: " . $result2 . "\\n";
-        for ($i = 0; $i < min(5, $result2); $i++) {
-            echo "  Match $i: " . substr($matches2[0][$i], 0, 80) . "\\n";
-        }
-    }
-
-    // Test Blade compiler directly
-    try {
-        $compiler = $app->make('blade.compiler');
-        echo "\\nBladeCompiler basePath: " . (new ReflectionProperty($compiler, 'basePath'))->getValue($compiler) . "\\n";
-        echo "BladeCompiler cachePath: " . (new ReflectionProperty($compiler, 'cachePath'))->getValue($compiler) . "\\n";
-
-        // Compile a small test
-        $small = '@if(true) hello @endif {{ "world" }}';
-        $compiled = $compiler->compileString($small);
-        echo "Small test compiled: " . $compiled . "\\n";
-
-        // Compile the first 500 chars of welcome
-        $partial = substr($content, 0, 500);
-        $compiledPartial = $compiler->compileString($partial);
-        echo "Partial (500 chars) compiled: " . substr($compiledPartial, 0, 500) . "\\n";
-    } catch (Throwable $e) {
-        echo "Blade test error: " . $e->getMessage() . "\\n";
-    }
-} else {
-    echo "welcome.blade.php not found\\n";
-}
-
-// Check view.compiled path from config
-echo "\\n=== VIEW CONFIG ===\\n";
-echo "view.compiled: " . config('view.compiled') . "\\n";
-echo "view.paths: " . json_encode(config('view.paths')) . "\\n";
-`;
-
-        const enc = new TextEncoder();
-        FS.writeFile('/app/public/__diag.php', enc.encode(diagPhp));
-
-        const diagReq = new Request('https://localhost/__diag.php');
-        const diagResp = await instance.request(diagReq);
-        const diagBody = await diagResp.text();
-
-        // Clean up
-        try { FS.unlink('/app/public/__diag.php'); } catch {}
+        // First trigger the root request to compile views
+        const rootReq = new Request('https://localhost/');
+        const rootResp = await instance.request(rootReq);
+        const rootBody = await rootResp.text();
+        const stderrBytes = (instance as any).error;
+        const stderr = stderrBytes?.length
+          ? new TextDecoder().decode(new Uint8Array(stderrBytes).buffer)
+          : '(empty)';
 
         // Re-init MEMFS if refresh() wiped it
         if (!FS.analyzePath('/app/public/index.php').exists) {
           await initializeFilesystem(instance, env);
         }
 
+        const dumps: string[] = [];
+        dumps.push(`Root Status: ${rootResp.status}`);
+        dumps.push(`Root Body (300 chars): ${rootBody.substring(0, 300)}`);
+
+        // Dump compiled views
+        try {
+          const viewDir = '/app/storage/framework/views';
+          if (FS.analyzePath(viewDir).exists) {
+            const entries = FS.readdir(viewDir).filter((e: string) => e !== '.' && e !== '..');
+            dumps.push(`\n=== Compiled views (${entries.length}) ===`);
+            for (const entry of entries) {
+              if (entry.endsWith('.php')) {
+                try {
+                  const bytes = FS.readFile(`${viewDir}/${entry}`);
+                  const content = new TextDecoder().decode(bytes);
+                  // Show lines around line 20 (the error line)
+                  const lines = content.split('\n');
+                  const lineRange = lines.slice(Math.max(0, 14), Math.min(lines.length, 25))
+                    .map((l: string, i: number) => `${i + Math.max(1, 15)}: ${l.substring(0, 200)}`);
+                  dumps.push(`\n--- ${entry} (${content.length} bytes, ${lines.length} lines) ---`);
+                  dumps.push(`First 500 chars:\n${content.substring(0, 500)}`);
+                  dumps.push(`\nLines 15-25:\n${lineRange.join('\n')}`);
+                } catch {}
+              }
+            }
+          }
+        } catch (e: any) {
+          dumps.push(`Views error: ${e.message}`);
+        }
+
+        // Also write a diagnostic PHP file to check Blade compilation
+        const diagPhp = `<?php
+require __DIR__.'/../vendor/autoload.php';
+$app = require __DIR__.'/../bootstrap/app.php';
+$app->make(Illuminate\\Contracts\\Http\\Kernel::class)->bootstrap();
+
+echo "basePath: " . app()->basePath() . "\\n";
+echo "view.compiled: " . config('view.compiled') . "\\n";
+echo "view.paths: " . json_encode(config('view.paths')) . "\\n";
+
+$compiler = app('blade.compiler');
+$ref = new ReflectionProperty($compiler, 'basePath');
+echo "blade basePath: '" . $ref->getValue($compiler) . "'\\n";
+
+// Compile a small test
+echo "\\nSmall compile: " . $compiler->compileString('@if(true)ok @endif {{ "hi" }}') . "\\n";
+
+// Compile the welcome view
+$path = '/app/resources/views/welcome.blade.php';
+$content = file_get_contents($path);
+echo "\\nWelcome size: " . strlen($content) . "\\n";
+$compiled = $compiler->compileString($content);
+echo "Compiled size: " . strlen($compiled) . "\\n";
+echo "First 1000 chars of compiled:\\n" . substr($compiled, 0, 1000) . "\\n";
+
+// Check for uncompiled @if/@endif
+$uncompiled_if = substr_count($compiled, '@if');
+$uncompiled_endif = substr_count($compiled, '@endif');
+$compiled_if = substr_count($compiled, '<?php if');
+$compiled_endif = substr_count($compiled, '<?php endif');
+echo "\\nUncompiled @if: $uncompiled_if, @endif: $uncompiled_endif\\n";
+echo "Compiled <?php if: $compiled_if, <?php endif: $compiled_endif\\n";
+`;
+
+        const enc = new TextEncoder();
+        FS.writeFile('/app/public/__diag.php', enc.encode(diagPhp));
+
+        let diagOutput = '';
+        try {
+          const diagReq = new Request('https://localhost/__diag.php');
+          const diagResp = await instance.request(diagReq);
+          diagOutput = await diagResp.text();
+        } catch (e: any) {
+          diagOutput = `Diag error: ${e.message}`;
+        }
+
+        // Re-init MEMFS if refresh() wiped it
+        if (!FS.analyzePath('/app/public/index.php').exists) {
+          await initializeFilesystem(instance, env);
+        }
+
+        // Clean up
+        try { FS.unlink('/app/public/__diag.php'); } catch {}
+
         return new Response(
-          `Diag Status: ${diagResp.status}\n\n${diagBody}`,
+          `${dumps.join('\n')}\n\nSTDERR:\n${stderr.substring(0, 2000)}\n\n=== BLADE DIAG ===\n${diagOutput}`,
           { status: 200, headers: { 'Content-Type': 'text/plain' } },
         );
       }
