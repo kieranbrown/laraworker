@@ -82,6 +82,8 @@ jobs:
         run: |
           echo "CLOUDFLARE_ACCOUNT_ID=$CLOUDFLARE_ACCOUNT_ID" >> .env
           echo "LARAWORKER_NAME=laraworker" >> .env
+          # Temporarily enable debug to diagnose 500 error
+          sed -i "s/'APP_DEBUG' => 'false'/'APP_DEBUG' => 'true'/" config/laraworker.php
           php -r "
             \$config = file_get_contents('config/laraworker.php');
             \$config = str_replace(\"'routes' => [],\", \"'routes' => [['pattern' => 'laraworker.kswb.dev', 'custom_domain' => true]],\", \$config);

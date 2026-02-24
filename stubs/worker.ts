@@ -218,6 +218,16 @@ export default {
     try {
       const instance = await ensureInitialized(env);
 
+      // Temporary debug: capture PHP errors on 500 responses
+      if (url.pathname === '/__debug') {
+        const resp = await instance.request(new Request('https://localhost/'));
+        const body = await resp.text();
+        return new Response(
+          `Status: ${resp.status}\nBody (500 chars):\n${body.substring(0, 500)}`,
+          { status: 200, headers: { 'Content-Type': 'text/plain' } },
+        );
+      }
+
       // All requests go through PHP - static assets are served
       // by Cloudflare Static Assets before the worker is invoked
       const response = await instance.request(request);
