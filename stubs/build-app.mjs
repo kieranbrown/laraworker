@@ -779,6 +779,125 @@ phpModule = phpModule.replace(
 writeFileSync(phpModuleDest, phpModule);
 console.log(`  Patched ${phpModuleDest}`);
 
+// Patch PHP WASM binary to reduce INITIAL_MEMORY for Cloudflare Workers.
+// The npm binary declares min 2048 pages (128 MB) which fills the entire 128 MB
+// Workers memory budget. We patch it to 512 pages (32 MB) to leave room for
+// JS heap, MEMFS (~23 MB), OPcache (8 MB), and overhead.
+console.log('  Patching PHP WASM binary (INITIAL_MEMORY: 128 MB → 32 MB)...');
+
+const npmWasmDir = join(ROOT, 'node_modules', 'php-cgi-wasm');
+const npmWasmFiles = readdirSync(npmWasmDir).filter(f => f.endsWith('.wasm') && f !== 'libxml2.so');
+const npmWasmFile = npmWasmFiles.find(f => !f.startsWith('lib'));
+
+if (npmWasmFile) {
+  const wasmSrc = join(npmWasmDir, npmWasmFile);
+  const wasmDest = join(import.meta.dirname, 'php-cgi.wasm');
+  const wasmData = new Uint8Array(readFileSync(wasmSrc));
+
+  // Parse WASM binary to find memory import and patch min pages.
+  // WASM format: magic(4) + version(4) + sections. Import section = type 2.
+  // Memory import has: limits_flags(1) + min_pages(LEB128) [+ max_pages(LEB128)]
+  let patched = false;
+  let pos = 8; // skip magic + version
+
+  while (pos < wasmData.length && !patched) {
+    const sectionId = wasmData[pos++];
+    let sectionSize = 0, shift = 0;
+    // Read LEB128 section size
+    while (true) {
+      const b = wasmData[pos++];
+      sectionSize |= (b & 0x7F) << shift;
+      if ((b & 0x80) === 0) break;
+      shift += 7;
+    }
+    const sectionEnd = pos + sectionSize;
+
+    if (sectionId === 2) { // Import section
+      // Read number of imports
+      let numImports = 0;
+      shift = 0;
+      while (true) {
+        const b = wasmData[pos++];
+        numImports |= (b & 0x7F) << shift;
+        if ((b & 0x80) === 0) break;
+        shift += 7;
+      }
+
+      for (let i = 0; i < numImports && !patched; i++) {
+        // Skip module name
+        let len = 0; shift = 0;
+        while (true) { const b = wasmData[pos++]; len |= (b & 0x7F) << shift; if ((b & 0x80) === 0) break; shift += 7; }
+        pos += len;
+        // Skip field name
+        len = 0; shift = 0;
+        while (true) { const b = wasmData[pos++]; len |= (b & 0x7F) << shift; if ((b & 0x80) === 0) break; shift += 7; }
+        pos += len;
+
+        const kind = wasmData[pos++];
+        if (kind === 0) { // Function — skip type index
+          while (wasmData[pos++] & 0x80) {}
+        } else if (kind === 1) { // Table
+          pos++; // elem type
+          const flags = wasmData[pos++];
+          while (wasmData[pos++] & 0x80) {} // min
+          if (flags & 1) while (wasmData[pos++] & 0x80) {} // max
+        } else if (kind === 2) { // Memory — this is what we patch
+          const flags = wasmData[pos++];
+          const minStart = pos;
+          let minPages = 0; shift = 0;
+          while (true) {
+            const b = wasmData[pos++];
+            minPages |= (b & 0x7F) << shift;
+            if ((b & 0x80) === 0) break;
+            shift += 7;
+          }
+
+          if (minPages >= 2048) {
+            // Encode 512 as LEB128 (= 0x80 0x04, same byte count as 2048 = 0x80 0x10)
+            const TARGET_PAGES = 512; // 32 MB
+            const newBytes = [];
+            let val = TARGET_PAGES;
+            while (true) {
+              let byte = val & 0x7F;
+              val >>>= 7;
+              if (val) byte |= 0x80;
+              newBytes.push(byte);
+              if (!val) break;
+            }
+
+            if (newBytes.length === pos - minStart) {
+              for (let j = 0; j < newBytes.length; j++) {
+                wasmData[minStart + j] = newBytes[j];
+              }
+              patched = true;
+              console.log(`    Patched memory import: ${minPages} pages (${minPages * 64 / 1024} MB) → ${TARGET_PAGES} pages (${TARGET_PAGES * 64 / 1024} MB)`);
+            } else {
+              console.warn(`    Warning: LEB128 byte count mismatch (${pos - minStart} vs ${newBytes.length}), skipping patch`);
+            }
+          }
+
+          if (flags & 1) while (wasmData[pos++] & 0x80) {} // skip max
+        } else if (kind === 3) { // Global
+          pos += 2;
+        }
+      }
+    }
+
+    pos = sectionEnd;
+  }
+
+  if (patched) {
+    writeFileSync(wasmDest, wasmData);
+    console.log(`    Written patched WASM to ${wasmDest} (${fmt(wasmData.length)})`);
+  } else {
+    // Fallback: copy unpatched (will still work but may hit memory limits)
+    copyFileSync(wasmSrc, wasmDest);
+    console.warn('    Warning: Could not find memory import to patch, using original');
+  }
+} else {
+  console.warn('  Warning: No PHP WASM binary found in node_modules/php-cgi-wasm/');
+}
+
 // Copy shared library .so files as .wasm so Cloudflare pre-compiles them.
 // The set of files depends on which extensions are enabled.
 //

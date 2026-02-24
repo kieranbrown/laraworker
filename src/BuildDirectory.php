@@ -269,26 +269,12 @@ TS,
     /**
      * Resolve the WASM import path for php-cgi-wasm.
      *
-     * Globs node_modules/php-cgi-wasm/*.wasm to find the actual filename
-     * instead of hardcoding a hash that breaks on package updates.
+     * The build script (build-app.mjs) copies and patches the npm WASM binary
+     * to reduce INITIAL_MEMORY for Cloudflare Workers compatibility, saving it
+     * as php-cgi.wasm in the build directory.
      */
     public function resolvePhpWasmImport(): string
     {
-        $wasmDir = base_path('node_modules/php-cgi-wasm');
-        $fallback = '../node_modules/php-cgi-wasm/php-cgi.wasm';
-
-        if (! is_dir($wasmDir)) {
-            return $fallback;
-        }
-
-        $wasmFiles = glob($wasmDir.'/*.wasm');
-
-        if (empty($wasmFiles)) {
-            return $fallback;
-        }
-
-        $wasmFilename = basename($wasmFiles[0]);
-
-        return "../node_modules/php-cgi-wasm/{$wasmFilename}";
+        return './php-cgi.wasm';
     }
 }

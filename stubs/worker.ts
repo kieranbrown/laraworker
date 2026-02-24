@@ -57,6 +57,10 @@ async function ensureInitialized(env: Env): Promise<PhpCgiCloudflare> {
       docroot: '/app/public',
       prefix: '/',
       entrypoint: 'index.php',
+      // 32 MB WASM linear memory (512 pages). The npm binary defaults to 128 MB
+      // which fills the entire Cloudflare Workers memory budget. The build script
+      // patches the WASM binary to match this value.
+      INITIAL_MEMORY: 33_554_432,
       ini: [
         'auto_prepend_file=/app/php-stubs.php',
         'opcache.enable=1',
