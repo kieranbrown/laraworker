@@ -66,8 +66,10 @@ async function ensureInitialized(env: Env): Promise<PhpCgiCloudflare> {
         'opcache.interned_strings_buffer=4',
         'opcache.max_accelerated_files=2000',
       ].join('\n'),
-      // Reduce WASM linear memory from 128 MB default to fit Workers 128 MB limit
-      INITIAL_MEMORY: 64 * 1024 * 1024,
+      // The WASM binary requires 2048 pages (128 MB) minimum initial memory.
+      // Provide a WebAssembly.Memory with maximum=2048 to prevent unbounded growth
+      // that would exceed the Workers 128 MB memory limit.
+      wasmMemory: new WebAssembly.Memory({ initial: 2048, maximum: 2048 }),
     });
 
     initialized = initializeFilesystem(php, env);
