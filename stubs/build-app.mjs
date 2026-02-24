@@ -556,8 +556,11 @@ for (const file of INCLUDE_FILES) {
 
 // Add staging vendor files if available
 if (VENDOR_STAGING_DIR && existsSync(VENDOR_STAGING_DIR)) {
-  allFiles.push({ path: 'vendor/', isDir: true });
-  allFiles.push(...collectFiles(VENDOR_STAGING_DIR, 'vendor'));
+  const stagingVendorDir = join(VENDOR_STAGING_DIR, 'vendor');
+  if (existsSync(stagingVendorDir)) {
+    allFiles.push({ path: 'vendor/', isDir: true });
+    allFiles.push(...collectFiles(stagingVendorDir, 'vendor'));
+  }
 }
 
 // Copy .env.production as .env
