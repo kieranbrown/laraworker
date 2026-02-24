@@ -246,6 +246,32 @@ export default {
           dumps.push(`Stubs file error: ${e.message}`);
         }
 
+        // Dump lines around 273 of the compiled welcome view
+        try {
+          const viewDir = '/app/storage/framework/views';
+          const entries = FS.readdir(viewDir).filter((e: string) => e !== '.' && e !== '..' && e.endsWith('.php'));
+          for (const entry of entries) {
+            const bytes = FS.readFile(`${viewDir}/${entry}`);
+            const content = new TextDecoder().decode(bytes);
+            const lines = content.split('\n');
+            if (lines.length > 250) { // likely the welcome view (273 lines)
+              dumps.push(`\n=== ${entry} (${content.length} bytes, ${lines.length} lines) ===`);
+              const start = Math.max(0, 268);
+              const end = Math.min(lines.length, 278);
+              for (let ln = start; ln < end; ln++) {
+                dumps.push(`${ln + 1}: ${lines[ln].substring(0, 300)}`);
+              }
+              // Also show first 3 lines to check if it's valid compiled PHP
+              dumps.push(`\nFirst 3 lines:`);
+              for (let ln = 0; ln < Math.min(3, lines.length); ln++) {
+                dumps.push(`${ln + 1}: ${lines[ln].substring(0, 300)}`);
+              }
+            }
+          }
+        } catch (e: any) {
+          dumps.push(`View dump error: ${e.message}`);
+        }
+
         // Trigger root request and capture stderr
         const rootReq = new Request('https://localhost/');
         const rootResp = await instance.request(rootReq);
