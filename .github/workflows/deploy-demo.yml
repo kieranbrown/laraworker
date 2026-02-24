@@ -41,6 +41,10 @@ jobs:
           composer config repositories.laraworker path ../laraworker-package
           composer require kieranbrown/laraworker:@dev --no-interaction
 
+      - name: Replace welcome view
+        working-directory: demo
+        run: cp ../laraworker-package/playground/resources/views/welcome.blade.php resources/views/welcome.blade.php
+
       - name: Build frontend assets
         working-directory: demo
         run: bun install && bun run build
