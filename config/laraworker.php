@@ -7,17 +7,20 @@ return [
     | PHP Extensions
     |--------------------------------------------------------------------------
     |
-    | Enable or disable PHP WASM extensions. Each extension adds to the bundle
-    | size. Only enable what your application actually needs.
+    | When set to true, the extension is expected to be compiled into the WASM
+    | binary. When false, PHP stub functions are generated at build time.
     |
-    | mbstring (~742 KiB gzipped) — Multi-byte string functions
-    | openssl  (~936 KiB gzipped) — OpenSSL encryption/decryption
+    | The default WASM binary does NOT include these extensions. Set to true
+    | only if you build a custom WASM binary with the extension compiled in.
+    |
+    | mbstring — Multi-byte string functions (mb_split, mb_strlen, etc.)
+    | openssl  — OpenSSL encryption/decryption (openssl_encrypt, etc.)
     |
     */
 
     'extensions' => [
-        'mbstring' => true,
-        'openssl' => true,
+        'mbstring' => false,
+        'openssl' => false,
     ],
 
     /*

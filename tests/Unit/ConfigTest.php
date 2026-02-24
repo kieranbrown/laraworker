@@ -9,9 +9,9 @@ test('config has default extensions', function () {
         ->toHaveKey('openssl');
 });
 
-test('config default extensions are enabled', function () {
-    expect(config('laraworker.extensions.mbstring'))->toBeTrue();
-    expect(config('laraworker.extensions.openssl'))->toBeTrue();
+test('config default extensions are disabled', function () {
+    expect(config('laraworker.extensions.mbstring'))->toBeFalse();
+    expect(config('laraworker.extensions.openssl'))->toBeFalse();
 });
 
 test('config has default include dirs', function () {
@@ -52,10 +52,10 @@ test('config merging preserves package defaults', function () {
 });
 
 test('config can be overridden at runtime', function () {
-    config(['laraworker.extensions.mbstring' => false]);
+    config(['laraworker.extensions.mbstring' => true]);
 
-    expect(config('laraworker.extensions.mbstring'))->toBeFalse();
-    expect(config('laraworker.extensions.openssl'))->toBeTrue();
+    expect(config('laraworker.extensions.mbstring'))->toBeTrue();
+    expect(config('laraworker.extensions.openssl'))->toBeFalse();
 });
 
 test('config has inertia ssr settings', function () {
