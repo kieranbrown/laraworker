@@ -39,10 +39,20 @@ test('deploy calls build first', function () {
         'account_id' => 'test-account',
     ]));
 
-    // Build will fail because build-app.mjs doesn't exist, which means
-    // deploy should also fail (since build is a prerequisite)
-    $this->artisan('laraworker:deploy')
-        ->assertFailed();
+    // Replace the build-app.mjs stub temporarily to force build failure
+    $stubPath = dirname(dirname(__DIR__)).'/stubs/build-app.mjs';
+    $originalContent = file_get_contents($stubPath);
+    file_put_contents($stubPath, 'console.error("Build failed for test"); process.exit(1);');
+
+    try {
+        // Deploy should fail because build failed
+        $this->artisan('laraworker:deploy')
+            ->expectsOutputToContain('Build failed')
+            ->assertFailed();
+    } finally {
+        // Restore the original stub
+        file_put_contents($stubPath, $originalContent);
+    }
 });
 
 test('deploy has dry-run option', function () {
