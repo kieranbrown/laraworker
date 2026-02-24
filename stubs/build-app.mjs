@@ -781,6 +781,12 @@ console.log(`  Patched ${phpModuleDest}`);
 
 // Copy shared library .so files as .wasm so Cloudflare pre-compiles them.
 // The set of files depends on which extensions are enabled.
+//
+// NOTE: The php8.3-*.so filenames are the actual artifact names from the npm packages
+// `php-wasm-mbstring` and `php-wasm-openssl`, compiled against the npm PHP 8.3 binary.
+// These are ABI-incompatible with the custom PHP 8.5 WASM build. When the custom build
+// is used (with mbstring/openssl statically linked), these dynamic extensions are not
+// loaded — PHP stubs provide fallback functions instead.
 const soFiles = [
   // libxml2 is always required (PHP core dependency)
   { src: join(ROOT, 'node_modules', 'php-cgi-wasm', 'libxml2.so'), dest: 'libxml2.wasm', always: true },

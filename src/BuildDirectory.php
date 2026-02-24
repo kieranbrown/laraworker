@@ -23,7 +23,18 @@ class BuildDirectory
         'tsconfig.json',
     ];
 
-    /** @var array<string, array{imports: string, shared_libs: string[], preloaded_libs: array<string, string>, npm_packages: array<string, string>}> */
+    /**
+     * Registry of dynamically-loaded PHP extensions from npm packages.
+     *
+     * The php8.3 filenames (e.g. php8.3-mbstring.so) are the ACTUAL artifact names
+     * shipped by the npm packages `php-wasm-mbstring` and `php-wasm-openssl`, which
+     * are compiled against the npm `php-cgi-wasm` PHP 8.3 binary. These extensions
+     * are ABI-incompatible with the custom PHP 8.5 WASM build. When the custom build
+     * is used, mbstring and openssl are statically linked into the binary and PHP stubs
+     * provide fallback functions — these dynamic extensions are not loaded.
+     *
+     * @var array<string, array{imports: string, shared_libs: string[], preloaded_libs: array<string, string>, npm_packages: array<string, string>}>
+     */
     public const EXTENSION_REGISTRY = [
         'mbstring' => [
             'imports' => <<<'TS'
