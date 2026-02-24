@@ -246,7 +246,7 @@ export default {
           dumps.push(`Stubs file error: ${e.message}`);
         }
 
-        // Dump all PHP blocks from the compiled welcome view to find unclosed tags
+        // Check for stray <? in HTML between PHP blocks
         try {
           const viewDir = '/app/storage/framework/views';
           const bytes = FS.readFile(`${viewDir}/6b0ad6afa03b9561547100c7316e941b.php`);
@@ -254,12 +254,61 @@ export default {
           const lines = content.split('\n');
           dumps.push(`\n=== Welcome view: ${content.length} bytes, ${lines.length} lines ===`);
 
-          // Show all lines containing <?php or ?>
+          // Find ALL occurrences of <? (including <?php, <?=, and stray <?)
           for (let ln = 0; ln < lines.length; ln++) {
             const line = lines[ln];
-            if (line.includes('<?php') || line.includes('?>') || line.includes('<?=')) {
-              dumps.push(`${ln + 1}: ${line.substring(0, 400)}`);
+            let idx = -1;
+            while ((idx = line.indexOf('<?', idx + 1)) !== -1) {
+              const context = line.substring(Math.max(0, idx - 20), Math.min(line.length, idx + 30));
+              dumps.push(`Line ${ln + 1} pos ${idx}: ...${context}...`);
             }
+          }
+
+          // Also write a PHP diag that reads the file and checks bytes
+          const enc = new TextEncoder();
+          FS.writeFile('/app/public/__diag.php', enc.encode(`<?php
+// Read the compiled view and check for issues
+\$path = '/app/storage/framework/views/6b0ad6afa03b9561547100c7316e941b.php';
+\$content = file_get_contents(\$path);
+\$lines = explode("\\n", \$content);
+echo "PHP sees: " . strlen(\$content) . " bytes, " . count(\$lines) . " lines\\n";
+echo "Line 273: " . substr(\$lines[272], 0, 200) . "\\n";
+echo "Line 273 hex (first 100): " . substr(bin2hex(\$lines[272]), 0, 100) . "\\n";
+
+// Check for <? in lines 50-272 (HTML/CSS section)
+\$found = 0;
+for (\$i = 50; \$i < 272; \$i++) {
+    \$pos = strpos(\$lines[\$i], '<?');
+    if (\$pos !== false) {
+        \$found++;
+        \$ctx = substr(\$lines[\$i], max(0, \$pos - 10), 40);
+        echo "STRAY <? at line " . (\$i+1) . " pos \$pos: " . \$ctx . "\\n";
+    }
+}
+echo "Total stray <? in lines 51-272: \$found\\n";
+
+// Also check: is short_open_tag enabled?
+echo "short_open_tag: " . ini_get('short_open_tag') . "\\n";
+
+// Try to tokenize just the problematic section
+echo "\\nTokenizing line 273 in isolation:\\n";
+\$tokens = token_get_all('<?php ' . trim(\$lines[272]));
+echo "Tokens: " . count(\$tokens) . "\\n";
+foreach (\$tokens as \$t) {
+    if (is_array(\$t)) echo "  [" . token_name(\$t[0]) . "] " . substr(\$t[1], 0, 40) . "\\n";
+    else echo "  '$t'\\n";
+}
+`));
+
+          // Run PHP diagnostic
+          const diagReq = new Request('https://localhost/__diag.php');
+          const diagResp = await instance.request(diagReq);
+          const diagBody = await diagResp.text();
+          dumps.push(`\n=== PHP DIAG ===\n${diagBody}`);
+
+          // Clean up
+          if (FS.analyzePath('/app/public/__diag.php').exists) {
+            try { FS.unlink('/app/public/__diag.php'); } catch {}
           }
         } catch (e: any) {
           dumps.push(`View dump error: ${e.message}`);
