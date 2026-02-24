@@ -218,6 +218,26 @@ export default {
     try {
       const instance = await ensureInitialized(env);
 
+      // Debug endpoint — capture stderr from PHP execution
+      if (url.pathname === '/__debug') {
+        const rootReq = new Request('https://localhost/');
+        const rootResp = await instance.request(rootReq);
+        const rootBody = await rootResp.text();
+        const stderrBytes = (instance as any).error;
+        const stderr = stderrBytes?.length
+          ? new TextDecoder().decode(new Uint8Array(stderrBytes).buffer)
+          : '(empty)';
+        // Re-init MEMFS if refresh() wiped it
+        const FS = await instance.getFS();
+        if (!FS.analyzePath('/app/public/index.php').exists) {
+          await initializeFilesystem(instance, env);
+        }
+        return new Response(
+          `Status: ${rootResp.status}\nBody (500 chars): ${rootBody.substring(0, 500)}\n\nSTDERR:\n${stderr.substring(0, 3000)}`,
+          { status: 200, headers: { 'Content-Type': 'text/plain' } },
+        );
+      }
+
       // All requests go through PHP - static assets are served
       // by Cloudflare Static Assets before the worker is invoked
       const response = await instance.request(request);
