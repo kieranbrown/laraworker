@@ -462,6 +462,7 @@ class BuildCommand extends Command
         $this->components->task('Stripping unavailable service providers', function () use ($classmapPath) {
             $classmap = require $classmapPath;
             $stripped = [];
+            $configProviders = [];
 
             // Strip from cached config (app.providers)
             $configPath = base_path('bootstrap/cache/config.php');
@@ -474,6 +475,7 @@ class BuildCommand extends Command
                         array_filter($original, fn (string $provider) => isset($classmap[$provider]))
                     );
                     $stripped = array_diff($original, $config['app']['providers']);
+                    $configProviders = $config['app']['providers'];
 
                     file_put_contents(
                         $configPath,
@@ -500,6 +502,47 @@ class BuildCommand extends Command
                 file_put_contents(
                     $packagesPath,
                     '<?php return '.var_export($packages, true).';'.PHP_EOL
+                );
+            }
+
+            // Rebuild services.php to match the stripped config providers exactly.
+            // ProviderRepository::shouldRecompile() compares services.php['providers']
+            // with config('app.providers'). If they differ, Laravel tries to regenerate
+            // the manifest — which fails in the read-only WASM runtime.
+            $servicesPath = base_path('bootstrap/cache/services.php');
+            if (file_exists($servicesPath) && ! empty($configProviders)) {
+                $services = require $servicesPath;
+
+                // Set providers to exactly match config — prevents shouldRecompile()
+                $services['providers'] = array_values($configProviders);
+
+                // Filter eager, deferred, and when to only include kept providers
+                $providerSet = array_flip($configProviders);
+
+                if (isset($services['eager'])) {
+                    $services['eager'] = array_values(
+                        array_filter($services['eager'], fn (string $p) => isset($providerSet[$p]))
+                    );
+                }
+
+                if (isset($services['deferred'])) {
+                    $services['deferred'] = array_filter(
+                        $services['deferred'],
+                        fn (string $p) => isset($providerSet[$p])
+                    );
+                }
+
+                if (isset($services['when'])) {
+                    $services['when'] = array_filter(
+                        $services['when'],
+                        fn (array $events, string $p) => isset($providerSet[$p]),
+                        ARRAY_FILTER_USE_BOTH
+                    );
+                }
+
+                file_put_contents(
+                    $servicesPath,
+                    '<?php return '.var_export($services, true).';'.PHP_EOL
                 );
             }
 
