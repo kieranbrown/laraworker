@@ -59,8 +59,15 @@ async function ensureInitialized(env: Env): Promise<PhpCgiCloudflare> {
       entrypoint: 'index.php',
       ini: [
         'auto_prepend_file=/app/php-stubs.php',
-        'opcache.enable=0',
+        'opcache.enable=1',
+        'opcache.enable_cli=1',
+        'opcache.validate_timestamps=0',
+        'opcache.memory_consumption=8',
+        'opcache.interned_strings_buffer=4',
+        'opcache.max_accelerated_files=2000',
       ].join('\n'),
+      // Reduce WASM linear memory from 128 MB default to fit Workers 128 MB limit
+      INITIAL_MEMORY: 64 * 1024 * 1024,
     });
 
     initialized = initializeFilesystem(php, env);

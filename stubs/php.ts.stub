@@ -33,6 +33,8 @@ interface PhpCgiCloudflareOptions {
   rewrite?: (path: string) => string | { scriptName: string; path: string };
   env?: Record<string, string>;
   ini?: string;
+  /** Initial WASM linear memory in bytes. Defaults to Emscripten's 128 MB. */
+  INITIAL_MEMORY?: number;
 }
 
 export class PhpCgiCloudflare extends PhpCgiBase {
@@ -44,6 +46,7 @@ export class PhpCgiCloudflare extends PhpCgiBase {
       rewrite,
       env = {},
       ini = '',
+      INITIAL_MEMORY,
     } = options;
 
     super(PHP, {
@@ -63,6 +66,7 @@ export class PhpCgiCloudflare extends PhpCgiBase {
         ...env,
       },
       ini,
+      ...(INITIAL_MEMORY !== undefined ? { INITIAL_MEMORY } : {}),
       // Provide shared libraries as pre-compiled WebAssembly.Module objects.
       _preloadedLibs: {
         'libxml2.so': libxml2Module,
