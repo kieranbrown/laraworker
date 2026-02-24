@@ -218,6 +218,59 @@ export default {
     try {
       const instance = await ensureInitialized(env);
 
+      // Minimal debug endpoint
+      if (url.pathname === '/__debug') {
+        const FS = await instance.getFS();
+        const dumps: string[] = [];
+
+        // Check if compiled views exist
+        try {
+          const viewDir = '/app/storage/framework/views';
+          if (FS.analyzePath(viewDir).exists) {
+            const entries = FS.readdir(viewDir).filter((e: string) => e !== '.' && e !== '..');
+            dumps.push(`Compiled views: ${entries.length} files`);
+            entries.slice(0, 5).forEach((e: string) => dumps.push(`  - ${e}`));
+          } else {
+            dumps.push('Compiled views dir: NOT FOUND');
+          }
+        } catch {}
+
+        // Check stubs file structure
+        try {
+          const stubs = FS.readFile('/app/php-stubs.php');
+          const content = new TextDecoder().decode(stubs);
+          dumps.push(`\nStubs file: ${content.length} bytes`);
+          dumps.push(`Has namespace block: ${content.includes('namespace {')}`);
+          dumps.push(`Has Illuminate\\View\\Compilers namespace: ${content.includes('namespace Illuminate\\View\\Compilers')}`);
+        } catch (e: any) {
+          dumps.push(`Stubs file error: ${e.message}`);
+        }
+
+        // Trigger root request and capture stderr
+        const rootReq = new Request('https://localhost/');
+        const rootResp = await instance.request(rootReq);
+        const rootBody = await rootResp.text();
+        dumps.push(`\nRoot status: ${rootResp.status}`);
+        dumps.push(`Root body (200 chars): ${rootBody.substring(0, 200)}`);
+
+        // Check stderr for PHP errors
+        const stderrBytes = (instance as any).error;
+        const stderr = stderrBytes?.length
+          ? new TextDecoder().decode(new Uint8Array(stderrBytes).buffer)
+          : '(empty)';
+        dumps.push(`\nPHP STDERR:\n${stderr.substring(0, 2000)}`);
+
+        // Re-init MEMFS if refresh() wiped it
+        if (!FS.analyzePath('/app/public/index.php').exists) {
+          await initializeFilesystem(instance, env);
+        }
+
+        return new Response(dumps.join('\n'), {
+          status: 200,
+          headers: { 'Content-Type': 'text/plain' },
+        });
+      }
+
       // All requests go through PHP - static assets are served
       // by Cloudflare Static Assets before the worker is invoked
       const response = await instance.request(request);
