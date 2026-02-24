@@ -15,7 +15,6 @@ class BuildDirectory
      * Static stub files copied verbatim from the package stubs/ directory.
      */
     private const STUBS = [
-        'worker.ts',
         'shims.ts',
         'tar.ts',
         'inertia-ssr.ts',
@@ -83,6 +82,46 @@ class BuildDirectory
         $stubPath = dirname(__DIR__).'/stubs/php.ts.stub';
 
         copy($stubPath, $this->path('php.ts'));
+    }
+
+    /**
+     * Generate worker.ts from the stub template with config-driven OPcache INI values.
+     *
+     * Reads opcache settings from config/laraworker.php and injects them as INI
+     * directives into the worker stub, replacing the {{OPCACHE_INI}} placeholder.
+     */
+    public function generateWorkerTs(): void
+    {
+        $stubPath = dirname(__DIR__).'/stubs/worker.ts.stub';
+        $content = file_get_contents($stubPath);
+
+        /** @var array{enabled?: bool, enable_cli?: bool, memory_consumption?: int, interned_strings_buffer?: int, max_accelerated_files?: int, validate_timestamps?: bool, jit?: bool} $opcache */
+        $opcache = config('laraworker.opcache', []);
+
+        $iniLines = [];
+
+        if ($opcache['enabled'] ?? true) {
+            $iniLines[] = 'opcache.enable=1';
+            $iniLines[] = 'opcache.enable_cli='.($opcache['enable_cli'] ?? true ? '1' : '0');
+            $iniLines[] = 'opcache.validate_timestamps='.($opcache['validate_timestamps'] ?? false ? '1' : '0');
+            $iniLines[] = 'opcache.memory_consumption='.($opcache['memory_consumption'] ?? 16);
+            $iniLines[] = 'opcache.interned_strings_buffer='.($opcache['interned_strings_buffer'] ?? 4);
+            $iniLines[] = 'opcache.max_accelerated_files='.($opcache['max_accelerated_files'] ?? 1000);
+
+            if (($opcache['jit'] ?? false) === false) {
+                $iniLines[] = 'opcache.jit=0';
+                $iniLines[] = 'opcache.jit_buffer_size=0';
+            }
+        }
+
+        $formatted = implode("\n", array_map(
+            fn (string $line) => "        '{$line}',",
+            $iniLines
+        ));
+
+        $content = str_replace('{{OPCACHE_INI}}', $formatted, $content);
+
+        file_put_contents($this->path('worker.ts'), $content);
     }
 
     /**
@@ -182,6 +221,7 @@ class BuildDirectory
             'exclude_patterns' => config('laraworker.exclude_patterns', []),
             'strip_whitespace' => config('laraworker.strip_whitespace', false),
             'strip_providers' => config('laraworker.strip_providers', []),
+            'public_assets' => config('laraworker.public_assets', true),
         ];
 
         file_put_contents(
