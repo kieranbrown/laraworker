@@ -55,6 +55,7 @@ interface Env {
 }
 
 let php: PhpCgiCloudflare | null = null;
+let requestCount = 0;
 
 async function ensureInitialized(env: Env): Promise<PhpCgiCloudflare> {
   if (!php) {
@@ -236,14 +237,34 @@ export default {
     }
 
     try {
+      const t0 = performance.now();
       const instance = await ensureInitialized(env);
+      const tInit = performance.now();
 
       // All requests go through PHP - static assets are served
       // by Cloudflare Static Assets before the worker is invoked
       const response = await instance.request(request);
+      const tPhp = performance.now();
 
       // Optionally apply Inertia SSR to HTML responses
-      return await maybeApplySSR(response, env);
+      const ssrResponse = await maybeApplySSR(response, env);
+      const tSsr = performance.now();
+
+      // Add Server-Timing headers to PHP-routed responses
+      const headers = new Headers(ssrResponse.headers);
+      headers.set('Server-Timing', [
+        `init;dur=${(tInit - t0).toFixed(1)}`,
+        `php;dur=${(tPhp - tInit).toFixed(1)}`,
+        `ssr;dur=${(tSsr - tPhp).toFixed(1)}`,
+        `total;dur=${(tSsr - t0).toFixed(1)}`,
+      ].join(', '));
+      headers.set('X-Request-Count', String(++requestCount));
+
+      return new Response(ssrResponse.body, {
+        status: ssrResponse.status,
+        statusText: ssrResponse.statusText,
+        headers,
+      });
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Unknown error';
