@@ -41,6 +41,10 @@ jobs:
           composer config repositories.laraworker path ../laraworker-package
           composer require kieranbrown/laraworker:@dev --no-interaction
 
+      - name: Build frontend assets
+        working-directory: demo
+        run: bun install && bun run build
+
       - name: Install laraworker
         working-directory: demo
         run: php artisan laraworker:install --no-interaction
