@@ -292,44 +292,92 @@ echo "compileIf: " . (method_exists($compiler, 'compileIf') ? 'YES' : 'NO') . "\
 echo "compileEndif: " . (method_exists($compiler, 'compileEndif') ? 'YES' : 'NO') . "\\n";
 echo "compileElse: " . (method_exists($compiler, 'compileElse') ? 'YES' : 'NO') . "\\n";
 
-// Call compileStatements directly via Reflection
-echo "\\n=== DIRECT compileStatements TEST ===\\n";
-$stmtMethod = new ReflectionMethod($compiler, 'compileStatements');
-$stmtMethod->setAccessible(true);
+// Test hasEvenNumberOfParentheses via Reflection
+echo "\\n=== hasEvenNumberOfParentheses TEST ===\\n";
+$hepMethod = new ReflectionMethod($compiler, 'hasEvenNumberOfParentheses');
+$hepMethod->setAccessible(true);
+
+$testExprs = ['@if(true)', '(true)', '@if(1 + (2))', 'simple'];
+foreach ($testExprs as $expr) {
+    $result = $hepMethod->invoke($compiler, $expr);
+    echo "hasEvenNumberOfParentheses('$expr'): " . var_export($result, true) . "\\n";
+}
+
+// Test token_get_all directly
+echo "\\n=== token_get_all TEST ===\\n";
+$tokenTests = ['<?php @if(true)', '<?php (true)', '<?php @if(1+(2))'];
+foreach ($tokenTests as $code) {
+    echo "token_get_all('$code'):\\n";
+    try {
+        $tokens = token_get_all($code);
+        echo "  Count: " . count($tokens) . "\\n";
+        $last = end($tokens);
+        echo "  Last: " . json_encode($last) . "\\n";
+        echo "  Last === ')': " . var_export($last === ')', true) . "\\n";
+        // Count parens
+        $o = 0; $c = 0;
+        foreach ($tokens as $t) {
+            if ($t === '(') $o++;
+            elseif ($t === ')') $c++;
+        }
+        echo "  Open: $o, Close: $c, Equal: " . var_export($o === $c, true) . "\\n";
+    } catch (Throwable $e) {
+        echo "  EXCEPTION: " . get_class($e) . ": " . $e->getMessage() . "\\n";
+    }
+}
+
+// Step through compileStatements manually
+echo "\\n=== MANUAL compileStatements TRACE ===\\n";
 $input = '@if(true) hello @endif end';
-$output = $stmtMethod->invoke($compiler, $input);
-echo "Input:  " . $input . "\\n";
-echo "Output: " . $output . "\\n";
+preg_match_all('/\\\\B@(@?\\\\w+(?:::\\\\w+)?)([ \\\\t]*)(\\\\( ( [\\\\S\\\\s]*? ) \\\\))?/x', $input, $matches);
+echo "Regex matches: " . count($matches[0]) . "\\n";
 
-// Test compileIf directly
-echo "\\n=== DIRECT compileIf TEST ===\\n";
-$ifMethod = new ReflectionMethod($compiler, 'compileIf');
-$ifMethod->setAccessible(true);
-$ifResult = $ifMethod->invoke($compiler, '(true)');
-echo "compileIf('(true)'): " . $ifResult . "\\n";
+$offset = 0;
+for ($mi = 0; isset($matches[0][$mi]); $mi++) {
+    $match = [
+        $matches[0][$mi],
+        $matches[1][$mi],
+        $matches[2][$mi],
+        $matches[3][$mi] ?: null,
+        $matches[4][$mi] ?: null,
+    ];
+    echo "\\nMatch $mi: " . json_encode($match) . "\\n";
 
-// Test preg_match_all with the exact regex from compileStatements source
-echo "\\n=== REGEX IN WASM ===\\n";
-$testStr = '@if(true) hello @endif end';
-$regex = '/\\\\B@(@?\\\\w+(?:::\\\\w+)?)([ \\\\t]*)(\\\\( ( [\\\\S\\\\s]*? ) \\\\))?/x';
-$result = preg_match_all($regex, $testStr, $matches);
-echo "regex result: " . var_export($result, true) . "\\n";
-echo "preg_last_error: " . preg_last_error() . "\\n";
-echo "matches[0]: " . json_encode($matches[0] ?? []) . "\\n";
-echo "matches[1]: " . json_encode($matches[1] ?? []) . "\\n";
+    $whileIter = 0;
+    while (isset($match[4]) && Illuminate\\Support\\Str::endsWith($match[0], ')') && ! $hepMethod->invoke($compiler, $match[0])) {
+        $whileIter++;
+        echo "  While iter $whileIter: match[0]=" . substr($match[0], 0, 80) . "\\n";
+        echo "  hasEvenParens=" . var_export($hepMethod->invoke($compiler, $match[0]), true) . "\\n";
 
-// Check the actual source of compileStatements
-echo "\\n=== compileStatements SOURCE CHECK ===\\n";
-$refMethod = new ReflectionMethod($compiler, 'compileStatements');
-echo "File: " . $refMethod->getFileName() . "\\n";
-echo "Lines: " . $refMethod->getStartLine() . "-" . $refMethod->getEndLine() . "\\n";
-$source = file_get_contents($refMethod->getFileName());
-$lines = explode("\\n", $source);
-$start = $refMethod->getStartLine() - 1;
-$end = min($refMethod->getEndLine(), $start + 20);
-echo "Source:\\n";
-for ($i = $start; $i < $end; $i++) {
-    echo ($i+1) . ": " . $lines[$i] . "\\n";
+        $after = Illuminate\\Support\\Str::after($input, $match[0]);
+        if ($after === $input) {
+            echo "  BREAK: after === template\\n";
+            break;
+        }
+
+        $rest = Illuminate\\Support\\Str::before($after, ')');
+        echo "  rest: " . substr($rest, 0, 80) . "\\n";
+
+        if (isset($matches[0][$mi + 1]) && Illuminate\\Support\\Str::contains($rest.')', $matches[0][$mi + 1])) {
+            echo "  UNSETTING match " . ($mi+1) . " and incrementing i\\n";
+            unset($matches[0][$mi + 1]);
+            $mi++;
+        }
+
+        $match[0] = $match[0].$rest.')';
+        $match[3] = $match[3].$rest.')';
+        $match[4] = $match[4].$rest;
+
+        if ($whileIter > 5) { echo "  LOOP LIMIT\\n"; break; }
+    }
+
+    echo "  Final match[0]: " . substr($match[0], 0, 100) . "\\n";
+
+    // Compile statement
+    $csMethod = new ReflectionMethod($compiler, 'compileStatement');
+    $csMethod->setAccessible(true);
+    $compiled = $csMethod->invoke($compiler, $match);
+    echo "  Compiled: " . substr($compiled, 0, 100) . "\\n";
 }
 `;
 
