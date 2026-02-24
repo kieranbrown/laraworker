@@ -59,12 +59,7 @@ async function ensureInitialized(env: Env): Promise<PhpCgiCloudflare> {
       entrypoint: 'index.php',
       ini: [
         'auto_prepend_file=/app/php-stubs.php',
-        'opcache.enable=1',
-        'opcache.enable_cli=1',
-        'opcache.validate_timestamps=0',
-        'opcache.memory_consumption=8',
-        'opcache.interned_strings_buffer=4',
-        'opcache.max_accelerated_files=2000',
+        'opcache.enable=0',
       ].join('\n'),
     });
 
