@@ -218,8 +218,44 @@ export default {
     try {
       const instance = await ensureInitialized(env);
 
-      // Debug endpoint — capture stderr from PHP execution
+      // Debug endpoint — capture stderr from PHP execution + dump MEMFS files
       if (url.pathname === '/__debug') {
+        const FS = await instance.getFS();
+
+        // Dump key files from MEMFS before triggering PHP
+        const filesToDump = [
+          '/app/bootstrap/app.php',
+          '/app/resources/views/welcome.blade.php',
+          '/app/bootstrap/cache/config.php',
+        ];
+        const dumps: string[] = [];
+        for (const f of filesToDump) {
+          try {
+            if (FS.analyzePath(f).exists) {
+              const content = new TextDecoder().decode(FS.readFile(f));
+              dumps.push(`=== ${f} (${content.length} bytes) ===\n${content.substring(0, 2000)}`);
+            } else {
+              dumps.push(`=== ${f} === NOT FOUND`);
+            }
+          } catch (e: any) {
+            dumps.push(`=== ${f} === ERROR: ${e.message}`);
+          }
+        }
+
+        // List compiled views
+        try {
+          const viewDir = '/app/storage/framework/views';
+          if (FS.analyzePath(viewDir).exists) {
+            const entries = FS.readdir(viewDir).filter((e: string) => e !== '.' && e !== '..');
+            dumps.push(`=== ${viewDir} (${entries.length} entries) ===\n${entries.join('\n')}`);
+          } else {
+            dumps.push(`=== /app/storage/framework/views === NOT FOUND`);
+          }
+        } catch (e: any) {
+          dumps.push(`=== views dir error: ${e.message}`);
+        }
+
+        // Trigger PHP request
         const rootReq = new Request('https://localhost/');
         const rootResp = await instance.request(rootReq);
         const rootBody = await rootResp.text();
@@ -227,13 +263,36 @@ export default {
         const stderr = stderrBytes?.length
           ? new TextDecoder().decode(new Uint8Array(stderrBytes).buffer)
           : '(empty)';
+
         // Re-init MEMFS if refresh() wiped it
-        const FS = await instance.getFS();
         if (!FS.analyzePath('/app/public/index.php').exists) {
           await initializeFilesystem(instance, env);
         }
+
+        // Check for compiled views after request
+        const postDumps: string[] = [];
+        try {
+          const viewDir = '/app/storage/framework/views';
+          if (FS.analyzePath(viewDir).exists) {
+            const entries = FS.readdir(viewDir).filter((e: string) => e !== '.' && e !== '..');
+            postDumps.push(`=== AFTER REQUEST: ${viewDir} (${entries.length} entries) ===\n${entries.join('\n')}`);
+            // Dump the compiled view that caused the error
+            for (const entry of entries) {
+              if (entry.endsWith('.php')) {
+                try {
+                  const content = new TextDecoder().decode(FS.readFile(`${viewDir}/${entry}`));
+                  postDumps.push(`=== ${viewDir}/${entry} (${content.length} bytes) ===\n${content.substring(0, 3000)}`);
+                } catch {}
+              }
+            }
+          }
+        } catch {}
+
         return new Response(
-          `Status: ${rootResp.status}\nBody (500 chars): ${rootBody.substring(0, 500)}\n\nSTDERR:\n${stderr.substring(0, 3000)}`,
+          `Status: ${rootResp.status}\nBody (500 chars): ${rootBody.substring(0, 500)}\n\n` +
+          `MEMFS FILES:\n${dumps.join('\n\n')}\n\n` +
+          `POST-REQUEST:\n${postDumps.join('\n\n')}\n\n` +
+          `STDERR:\n${stderr.substring(0, 3000)}`,
           { status: 200, headers: { 'Content-Type': 'text/plain' } },
         );
       }
