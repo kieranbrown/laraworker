@@ -246,26 +246,19 @@ export default {
           dumps.push(`Stubs file error: ${e.message}`);
         }
 
-        // Dump lines around 273 of the compiled welcome view
+        // Dump all PHP blocks from the compiled welcome view to find unclosed tags
         try {
           const viewDir = '/app/storage/framework/views';
-          const entries = FS.readdir(viewDir).filter((e: string) => e !== '.' && e !== '..' && e.endsWith('.php'));
-          for (const entry of entries) {
-            const bytes = FS.readFile(`${viewDir}/${entry}`);
-            const content = new TextDecoder().decode(bytes);
-            const lines = content.split('\n');
-            if (lines.length > 250) { // likely the welcome view (273 lines)
-              dumps.push(`\n=== ${entry} (${content.length} bytes, ${lines.length} lines) ===`);
-              const start = Math.max(0, 268);
-              const end = Math.min(lines.length, 278);
-              for (let ln = start; ln < end; ln++) {
-                dumps.push(`${ln + 1}: ${lines[ln].substring(0, 300)}`);
-              }
-              // Also show first 3 lines to check if it's valid compiled PHP
-              dumps.push(`\nFirst 3 lines:`);
-              for (let ln = 0; ln < Math.min(3, lines.length); ln++) {
-                dumps.push(`${ln + 1}: ${lines[ln].substring(0, 300)}`);
-              }
+          const bytes = FS.readFile(`${viewDir}/6b0ad6afa03b9561547100c7316e941b.php`);
+          const content = new TextDecoder().decode(bytes);
+          const lines = content.split('\n');
+          dumps.push(`\n=== Welcome view: ${content.length} bytes, ${lines.length} lines ===`);
+
+          // Show all lines containing <?php or ?>
+          for (let ln = 0; ln < lines.length; ln++) {
+            const line = lines[ln];
+            if (line.includes('<?php') || line.includes('?>') || line.includes('<?=')) {
+              dumps.push(`${ln + 1}: ${line.substring(0, 400)}`);
             }
           }
         } catch (e: any) {
