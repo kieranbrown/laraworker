@@ -1,0 +1,32 @@
+{
+    "$schema": "https://www.schemastore.org/package.json",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vite build",
+        "dev": "vite",
+        "build:worker": "php artisan laraworker:build",
+        "dev:worker": "php artisan laraworker:dev",
+        "deploy:worker": "php artisan laraworker:deploy"
+    },
+    "devDependencies": {
+        "@tailwindcss/vite": "^4.0.0",
+        "axios": "^1.11.0",
+        "binaryen": "^125.0.0",
+        "concurrently": "^9.0.1",
+        "laravel-vite-plugin": "^2.0.0",
+        "php-cgi-wasm": "^0.0.9-alpha-32",
+        "php-wasm": "^0.0.9-alpha-32",
+        "tailwindcss": "^4.0.0",
+        "vite": "^7.0.7",
+        "wrangler": "^4.0.0"
+    },
+    "dependencies": {
+        "@inertiajs/vue3": "^2.3.16",
+        "@vitejs/plugin-vue": "^6.0.4",
+        "@vue/server-renderer": "^3.5.29",
+        "php-wasm-mbstring": "^0.0.9-alpha-32",
+        "php-wasm-openssl": "^0.0.9-alpha-32",
+        "vue": "^3.5.29"
+    }
+}
