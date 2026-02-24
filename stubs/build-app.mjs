@@ -781,9 +781,9 @@ console.log(`  Patched ${phpModuleDest}`);
 
 // Patch PHP WASM binary to reduce INITIAL_MEMORY for Cloudflare Workers.
 // The npm binary declares min 2048 pages (128 MB) which fills the entire 128 MB
-// Workers memory budget. We patch it to 512 pages (32 MB) to leave room for
+// Workers memory budget. We patch it to 1024 pages (64 MB) to leave room for
 // JS heap, MEMFS (~23 MB), OPcache (8 MB), and overhead.
-console.log('  Patching PHP WASM binary (INITIAL_MEMORY: 128 MB → 32 MB)...');
+console.log('  Patching PHP WASM binary (INITIAL_MEMORY: 128 MB → 64 MB)...');
 
 const npmWasmDir = join(ROOT, 'node_modules', 'php-cgi-wasm');
 const npmWasmFiles = readdirSync(npmWasmDir).filter(f => f.endsWith('.wasm') && f !== 'libxml2.so');
@@ -853,8 +853,8 @@ if (npmWasmFile) {
           }
 
           if (minPages >= 2048) {
-            // Encode 512 as LEB128 (= 0x80 0x04, same byte count as 2048 = 0x80 0x10)
-            const TARGET_PAGES = 512; // 32 MB
+            // Encode 1024 as LEB128 (= 0x80 0x08, same byte count as 2048 = 0x80 0x10)
+            const TARGET_PAGES = 1024; // 64 MB
             const newBytes = [];
             let val = TARGET_PAGES;
             while (true) {
