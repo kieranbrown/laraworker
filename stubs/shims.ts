@@ -31,3 +31,22 @@ if (typeof globalThis.window === 'undefined') {
   // @ts-expect-error — minimal shim for Emscripten compatibility
   globalThis.window = globalThis;
 }
+
+// Cloudflare Workers' global addEventListener() throws when useCapture is
+// truthy. Emscripten calls addEventListener(type, handler, true) on `window`
+// which resolves to globalThis. Since the worker uses ES module syntax (export
+// default), the global addEventListener is unused — wrap it to force useCapture
+// to false so Emscripten's calls succeed without error.
+{
+  const _real = globalThis.addEventListener.bind(globalThis);
+  // @ts-expect-error — overriding global addEventListener signature
+  globalThis.addEventListener = (
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | AddEventListenerOptions,
+  ) => {
+    const safe =
+      typeof options === 'boolean' ? false : options ? { ...options, capture: false } : options;
+    _real(type, listener, safe);
+  };
+}
