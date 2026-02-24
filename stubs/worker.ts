@@ -218,81 +218,106 @@ export default {
     try {
       const instance = await ensureInitialized(env);
 
-      // Debug endpoint — capture stderr from PHP execution + dump MEMFS files
+      // Debug endpoint — PHP diagnostics via a temp PHP file
       if (url.pathname === '/__debug') {
         const FS = await instance.getFS();
 
-        // Dump key files from MEMFS before triggering PHP
-        const filesToDump = [
-          '/app/bootstrap/app.php',
-          '/app/resources/views/welcome.blade.php',
-          '/app/bootstrap/cache/config.php',
-        ];
-        const dumps: string[] = [];
-        for (const f of filesToDump) {
-          try {
-            if (FS.analyzePath(f).exists) {
-              const content = new TextDecoder().decode(FS.readFile(f));
-              dumps.push(`=== ${f} (${content.length} bytes) ===\n${content.substring(0, 2000)}`);
-            } else {
-              dumps.push(`=== ${f} === NOT FOUND`);
-            }
-          } catch (e: any) {
-            dumps.push(`=== ${f} === ERROR: ${e.message}`);
-          }
-        }
+        // Write a PHP diagnostic script to MEMFS
+        const diagPhp = `<?php
+error_reporting(E_ALL);
+ini_set('display_errors', '1');
 
-        // List compiled views
-        try {
-          const viewDir = '/app/storage/framework/views';
-          if (FS.analyzePath(viewDir).exists) {
-            const entries = FS.readdir(viewDir).filter((e: string) => e !== '.' && e !== '..');
-            dumps.push(`=== ${viewDir} (${entries.length} entries) ===\n${entries.join('\n')}`);
-          } else {
-            dumps.push(`=== /app/storage/framework/views === NOT FOUND`);
-          }
-        } catch (e: any) {
-          dumps.push(`=== views dir error: ${e.message}`);
-        }
+// Boot the application
+$app = require_once __DIR__ . '/../bootstrap/app.php';
+$kernel = $app->make(Illuminate\\Contracts\\Http\\Kernel::class);
 
-        // Trigger PHP request
-        const rootReq = new Request('https://localhost/');
-        const rootResp = await instance.request(rootReq);
-        const rootBody = await rootResp.text();
-        const stderrBytes = (instance as any).error;
-        const stderr = stderrBytes?.length
-          ? new TextDecoder().decode(new Uint8Array(stderrBytes).buffer)
-          : '(empty)';
+echo "=== PHP DIAGNOSTICS ===\\n";
+echo "PHP version: " . PHP_VERSION . "\\n";
+echo "__DIR__ (diag): " . __DIR__ . "\\n";
+
+// Check basePath
+echo "app()->basePath(): " . $app->basePath() . "\\n";
+echo "base_path(): " . base_path() . "\\n";
+
+// Check PCRE settings
+echo "\\n=== PCRE CONFIG ===\\n";
+echo "pcre.backtrack_limit: " . ini_get('pcre.backtrack_limit') . "\\n";
+echo "pcre.recursion_limit: " . ini_get('pcre.recursion_limit') . "\\n";
+echo "pcre.jit: " . ini_get('pcre.jit') . "\\n";
+echo "PCRE version: " . PCRE_VERSION . "\\n";
+
+// Test PCRE on a large string with the Blade regex
+echo "\\n=== PCRE REGEX TEST ===\\n";
+$testStr = str_repeat("x", 80000) . "@if (true) hello @endif";
+$result = preg_match_all('/\\\\B@(@?\\\\w+(?:::\\\\w+)?)([ \\\\t]*)(\\\\( ( [\\\\S\\\\s]*? ) \\\\))?/x', $testStr, $matches);
+echo "preg_match_all result: " . var_export($result, true) . "\\n";
+echo "preg_last_error: " . preg_last_error() . "\\n";
+$errors = [0=>'NONE',1=>'INTERNAL',2=>'BACKTRACK_LIMIT',3=>'RECURSION_LIMIT',4=>'BAD_UTF8',5=>'BAD_UTF8_OFFSET',6=>'JIT_STACKLIMIT'];
+echo "preg_last_error_msg: " . ($errors[preg_last_error()] ?? 'unknown') . "\\n";
+
+// Test on actual welcome view content
+echo "\\n=== BLADE COMPILE TEST ===\\n";
+$welcomePath = '/app/resources/views/welcome.blade.php';
+if (file_exists($welcomePath)) {
+    $content = file_get_contents($welcomePath);
+    echo "welcome.blade.php size: " . strlen($content) . "\\n";
+
+    // Test the statement regex on the actual content
+    $result2 = preg_match_all('/\\\\B@(@?\\\\w+(?:::\\\\w+)?)([ \\\\t]*)(\\\\( ( [\\\\S\\\\s]*? ) \\\\))?/x', $content, $matches2);
+    echo "preg_match_all on welcome: " . var_export($result2, true) . "\\n";
+    echo "preg_last_error: " . preg_last_error() . " (" . ($errors[preg_last_error()] ?? 'unknown') . ")\\n";
+    if ($result2 !== false && $result2 > 0) {
+        echo "Matches found: " . $result2 . "\\n";
+        for ($i = 0; $i < min(5, $result2); $i++) {
+            echo "  Match $i: " . substr($matches2[0][$i], 0, 80) . "\\n";
+        }
+    }
+
+    // Test Blade compiler directly
+    try {
+        $compiler = $app->make('blade.compiler');
+        echo "\\nBladeCompiler basePath: " . (new ReflectionProperty($compiler, 'basePath'))->getValue($compiler) . "\\n";
+        echo "BladeCompiler cachePath: " . (new ReflectionProperty($compiler, 'cachePath'))->getValue($compiler) . "\\n";
+
+        // Compile a small test
+        $small = '@if(true) hello @endif {{ "world" }}';
+        $compiled = $compiler->compileString($small);
+        echo "Small test compiled: " . $compiled . "\\n";
+
+        // Compile the first 500 chars of welcome
+        $partial = substr($content, 0, 500);
+        $compiledPartial = $compiler->compileString($partial);
+        echo "Partial (500 chars) compiled: " . substr($compiledPartial, 0, 500) . "\\n";
+    } catch (Throwable $e) {
+        echo "Blade test error: " . $e->getMessage() . "\\n";
+    }
+} else {
+    echo "welcome.blade.php not found\\n";
+}
+
+// Check view.compiled path from config
+echo "\\n=== VIEW CONFIG ===\\n";
+echo "view.compiled: " . config('view.compiled') . "\\n";
+echo "view.paths: " . json_encode(config('view.paths')) . "\\n";
+`;
+
+        const enc = new TextEncoder();
+        FS.writeFile('/app/public/__diag.php', enc.encode(diagPhp));
+
+        const diagReq = new Request('https://localhost/__diag.php');
+        const diagResp = await instance.request(diagReq);
+        const diagBody = await diagResp.text();
+
+        // Clean up
+        try { FS.unlink('/app/public/__diag.php'); } catch {}
 
         // Re-init MEMFS if refresh() wiped it
         if (!FS.analyzePath('/app/public/index.php').exists) {
           await initializeFilesystem(instance, env);
         }
 
-        // Check for compiled views after request
-        const postDumps: string[] = [];
-        try {
-          const viewDir = '/app/storage/framework/views';
-          if (FS.analyzePath(viewDir).exists) {
-            const entries = FS.readdir(viewDir).filter((e: string) => e !== '.' && e !== '..');
-            postDumps.push(`=== AFTER REQUEST: ${viewDir} (${entries.length} entries) ===\n${entries.join('\n')}`);
-            // Dump the compiled view that caused the error
-            for (const entry of entries) {
-              if (entry.endsWith('.php')) {
-                try {
-                  const content = new TextDecoder().decode(FS.readFile(`${viewDir}/${entry}`));
-                  postDumps.push(`=== ${viewDir}/${entry} (${content.length} bytes) ===\n${content.substring(0, 3000)}`);
-                } catch {}
-              }
-            }
-          }
-        } catch {}
-
         return new Response(
-          `Status: ${rootResp.status}\nBody (500 chars): ${rootBody.substring(0, 500)}\n\n` +
-          `MEMFS FILES:\n${dumps.join('\n\n')}\n\n` +
-          `POST-REQUEST:\n${postDumps.join('\n\n')}\n\n` +
-          `STDERR:\n${stderr.substring(0, 3000)}`,
+          `Diag Status: ${diagResp.status}\n\n${diagBody}`,
           { status: 200, headers: { 'Content-Type': 'text/plain' } },
         );
       }
