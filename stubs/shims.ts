@@ -32,6 +32,33 @@ if (typeof globalThis.window === 'undefined') {
   globalThis.window = globalThis;
 }
 
+// PhpCgiBase._request uses `new URL(globalThis.location)` for HTTP_HOST and
+// REQUEST_SCHEME. In Cloudflare Workers module format, `self.location` is not
+// defined. Provide a fallback — the actual host/scheme come from the request URL.
+if (typeof globalThis.location === 'undefined') {
+  // @ts-expect-error — minimal shim for PhpCgiBase compatibility
+  globalThis.location = new URL('https://localhost');
+}
+
+// PhpCgiBase._request uses `navigator.userAgent` for SERVER_SOFTWARE.
+if (typeof globalThis.navigator === 'undefined') {
+  // @ts-expect-error — minimal shim for PhpCgiBase compatibility
+  globalThis.navigator = { userAgent: 'Cloudflare-Workers' };
+} else if (typeof globalThis.navigator.userAgent === 'undefined') {
+  // @ts-expect-error — adding missing property
+  globalThis.navigator.userAgent = 'Cloudflare-Workers';
+}
+
+// PhpCgiBase._request uses `navigator.locks.request()` for request serialization.
+// Cloudflare Workers don't have the Web Locks API. Since WASM execution is
+// single-threaded, we can safely shim it to just call the callback directly.
+if (typeof navigator !== 'undefined' && !navigator.locks) {
+  // @ts-expect-error — minimal shim for PhpCgiBase compatibility
+  navigator.locks = {
+    request: (_name: string, callback: () => unknown) => callback(),
+  };
+}
+
 // Cloudflare Workers' global addEventListener() throws when useCapture is
 // truthy. Emscripten calls addEventListener(type, handler, true) on `window`
 // which resolves to globalThis. Since the worker uses ES module syntax (export

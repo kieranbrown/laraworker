@@ -753,68 +753,25 @@ if (existsSync(viteBuildDir)) {
   console.log('  Done.');
 }
 
-// Copy custom PHP 8.5 WASM binary and Emscripten module from php-wasm-build/.
-// The custom build has INITIAL_MEMORY baked in and OPcache statically linked —
-// no binary patching or dynamic extension loading needed.
-console.log('  Copying custom PHP 8.5 WASM binary...');
+// Verify custom PHP 8.5 WASM binary and helper modules are present.
+// These are copied into the build directory by the PHP BuildCommand
+// (BuildDirectory::copyWasmBinary) before build-app.mjs runs.
+console.log('  Verifying custom PHP 8.5 WASM binary...');
 
-const phpWasmBuildDir = join(ROOT, 'php-wasm-build');
-
-// Copy the custom Emscripten JS module and patch for Workers compatibility.
-// The custom module needs fewer patches than the npm one since it's built
-// with MAIN_MODULE=0 (no dynamic library loading).
-const customModuleSrc = join(phpWasmBuildDir, 'php8.5-cgi-worker.mjs');
-const phpModuleDest = join(import.meta.dirname, 'php-cgi.mjs');
-
-if (!existsSync(customModuleSrc)) {
-  console.error(`  ERROR: Custom PHP module not found at ${customModuleSrc}`);
-  console.error('  Run: bash php-wasm-build/build.sh');
-  process.exit(1);
-}
-
-let phpModule = readFileSync(customModuleSrc, 'utf8');
-
-// Patch: Replace `new URL("...wasm", import.meta.url).href` with a try/catch fallback.
-// Cloudflare Workers may not support import.meta.url in all contexts.
-phpModule = phpModule.replace(
-  /new URL\("([^"]+\.wasm)",\s*import\.meta\.url\)\.href/g,
-  '(() => { try { return new URL("$1", import.meta.url).href; } catch { return "$1"; } })()'
-);
-
-writeFileSync(phpModuleDest, phpModule);
-console.log(`  Copied and patched ${phpModuleDest}`);
-
-// Copy the custom WASM binary
-const customWasmFiles = existsSync(phpWasmBuildDir)
-  ? readdirSync(phpWasmBuildDir).filter(f => f.endsWith('.wasm'))
-  : [];
-const customWasmFile = customWasmFiles[0];
-
-if (customWasmFile) {
-  const wasmSrc = join(phpWasmBuildDir, customWasmFile);
-  const wasmDest = join(import.meta.dirname, 'php-cgi.wasm');
-  copyFileSync(wasmSrc, wasmDest);
-  const wasmSize = statSync(wasmDest).size;
-  console.log(`  Copied ${customWasmFile} → php-cgi.wasm (${fmt(wasmSize)})`);
-} else {
-  console.error('  ERROR: No .wasm file found in php-wasm-build/');
-  console.error('  Run: bash php-wasm-build/build.sh');
-  process.exit(1);
-}
-
-// Copy PhpCgiBase and helper modules from php-wasm-build/
-const helperModules = ['PhpCgiBase.mjs', 'breakoutRequest.mjs', 'parseResponse.mjs'];
-for (const mod of helperModules) {
-  const src = join(phpWasmBuildDir, mod);
-  const dest = join(import.meta.dirname, mod);
-  if (existsSync(src)) {
-    copyFileSync(src, dest);
-    console.log(`  Copied ${mod}`);
-  } else {
-    console.error(`  ERROR: ${mod} not found in php-wasm-build/`);
+const requiredFiles = ['php-cgi.mjs', 'php-cgi.wasm', 'PhpCgiBase.mjs', 'breakoutRequest.mjs', 'parseResponse.mjs', 'fsOps.mjs', 'resolveDependencies.mjs'];
+for (const file of requiredFiles) {
+  const filePath = join(import.meta.dirname, file);
+  if (!existsSync(filePath)) {
+    console.error(`  ERROR: ${file} not found in build directory`);
+    console.error('  Ensure BuildDirectory::copyWasmBinary() ran successfully.');
+    console.error('  To rebuild WASM: bash php-wasm-build/build.sh');
     process.exit(1);
   }
 }
+
+const wasmSize = statSync(join(import.meta.dirname, 'php-cgi.wasm')).size;
+console.log(`  ✓ php-cgi.wasm (${fmt(wasmSize)})`);
+console.log(`  ✓ php-cgi.mjs + ${requiredFiles.length - 2} helper modules`);
 
 console.log('Build complete.');
 

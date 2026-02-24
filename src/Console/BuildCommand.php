@@ -24,6 +24,7 @@ class BuildCommand extends Command
             $this->buildDirectory->ensureDirectory();
             $this->buildDirectory->copyStubs();
             $this->buildDirectory->generatePhpTs();
+            $this->buildDirectory->copyWasmBinary();
             $this->buildDirectory->generateWranglerConfig();
             $this->buildDirectory->generateEnvProduction();
             $this->buildDirectory->writeBuildConfig();

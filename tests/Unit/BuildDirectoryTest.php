@@ -83,32 +83,27 @@ test('copyStubs files match package stubs', function () {
         ->toBe(file_get_contents($stubDir.'/worker.ts'));
 });
 
-test('generatePhpTs creates php.ts with extension placeholders replaced', function () {
+test('generatePhpTs copies stub as php.ts', function () {
     $this->buildDir->ensureDirectory();
-    $this->buildDir->generatePhpTs(['mbstring' => true, 'openssl' => false]);
+    $this->buildDir->generatePhpTs();
 
     $content = file_get_contents($this->buildDir->path('php.ts'));
+    $stubContent = file_get_contents(dirname(__DIR__, 2).'/stubs/php.ts.stub');
 
-    expect($content)
-        ->toContain('mbstring')
-        ->toContain('libonigModule')
-        ->toContain('mbstringModule')
-        ->not->toContain('{{EXTENSION_IMPORTS}}')
-        ->not->toContain('{{SHARED_LIBS}}')
-        ->not->toContain('{{PRELOADED_LIBS}}')
-        ->not->toContain('{{EXTENSIONS_COMMENT}}')
-        ->not->toContain('{{PHP_WASM_IMPORT}}');
+    expect($content)->toBe($stubContent);
 });
 
-test('generatePhpTs with no extensions produces clean output', function () {
+test('generatePhpTs creates php.ts with custom PhpCgiBase import', function () {
     $this->buildDir->ensureDirectory();
-    $this->buildDir->generatePhpTs([]);
+    $this->buildDir->generatePhpTs();
 
     $content = file_get_contents($this->buildDir->path('php.ts'));
 
     expect($content)
-        ->toContain('Extensions: none')
-        ->not->toContain('{{');
+        ->toContain("from './PhpCgiBase.mjs'")
+        ->toContain("from './php-cgi.mjs'")
+        ->toContain("from './php-cgi.wasm'")
+        ->toContain('PhpCgiCloudflare');
 });
 
 test('generateWranglerConfig creates wrangler.jsonc from config', function () {
@@ -283,23 +278,11 @@ test('writeBuildConfig creates build-config.json from config', function () {
     expect($json['strip_whitespace'])->toBeTrue();
 });
 
-test('EXTENSION_REGISTRY contains mbstring and openssl', function () {
-    expect(BuildDirectory::EXTENSION_REGISTRY)
-        ->toHaveKey('mbstring')
-        ->toHaveKey('openssl');
-
-    expect(BuildDirectory::EXTENSION_REGISTRY['mbstring'])
-        ->toHaveKey('imports')
-        ->toHaveKey('shared_libs')
-        ->toHaveKey('preloaded_libs')
-        ->toHaveKey('npm_packages');
-});
-
 test('DIRECTORY constant is .laraworker', function () {
     expect(BuildDirectory::DIRECTORY)->toBe('.laraworker');
 });
 
-test('resolvePhpWasmImport returns fallback when node_modules missing', function () {
+test('resolvePhpWasmImport returns custom binary path', function () {
     expect($this->buildDir->resolvePhpWasmImport())
-        ->toContain('node_modules/php-cgi-wasm/');
+        ->toBe('./php-cgi.wasm');
 });

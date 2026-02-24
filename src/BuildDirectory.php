@@ -24,54 +24,12 @@ class BuildDirectory
     ];
 
     /**
-     * Registry of dynamically-loaded PHP extensions from npm packages.
+     * Extensions provided via PHP stubs (no dynamic loading needed).
      *
-     * The php8.3 filenames (e.g. php8.3-mbstring.so) are the ACTUAL artifact names
-     * shipped by the npm packages `php-wasm-mbstring` and `php-wasm-openssl`, which
-     * are compiled against the npm `php-cgi-wasm` PHP 8.3 binary. These extensions
-     * are ABI-incompatible with the custom PHP 8.5 WASM build. When the custom build
-     * is used, mbstring and openssl are statically linked into the binary and PHP stubs
-     * provide fallback functions — these dynamic extensions are not loaded.
-     *
-     * @var array<string, array{imports: string, shared_libs: string[], preloaded_libs: array<string, string>, npm_packages: array<string, string>}>
+     * The custom PHP 8.5 WASM binary is built with MAIN_MODULE=0 (static linking).
+     * All extensions are either compiled in (OPcache, session) or provided as PHP
+     * stub functions (iconv, mbstring, openssl). No npm extension packages needed.
      */
-    public const EXTENSION_REGISTRY = [
-        'mbstring' => [
-            'imports' => <<<'TS'
-// @ts-expect-error — wasm import (mbstring dependency)
-import libonigModule from './libonig.wasm';
-// @ts-expect-error — wasm import
-import mbstringModule from './php8.3-mbstring.wasm';
-TS,
-            'shared_libs' => ['php8.3-mbstring.so'],
-            'preloaded_libs' => [
-                'libonig.so' => 'libonigModule',
-                'php8.3-mbstring.so' => 'mbstringModule',
-            ],
-            'npm_packages' => [
-                'php-wasm-mbstring' => '^0.0.9-alpha-32',
-            ],
-        ],
-        'openssl' => [
-            'imports' => <<<'TS'
-// @ts-expect-error — wasm import (openssl dependency)
-import libcryptoModule from './libcrypto.wasm';
-// @ts-expect-error — wasm import (openssl dependency)
-import libsslModule from './libssl.wasm';
-// @ts-expect-error — wasm import
-import opensslModule from './php8.3-openssl.wasm';
-TS,
-            'shared_libs' => ['php8.3-openssl.so'],
-            'preloaded_libs' => [
-                'libcrypto.so' => 'libcryptoModule',
-                'libssl.so' => 'libsslModule',
-                'php8.3-openssl.so' => 'opensslModule',
-            ],
-            'npm_packages' => [
-                'php-wasm-openssl' => '^0.0.9-alpha-32',
-            ],
-        ],
-    ];
 
     /**
      * Return the absolute path to the build directory, optionally appending a relative path.
@@ -114,51 +72,17 @@ TS,
     }
 
     /**
-     * Generate php.ts from the stub template using the extension registry.
+     * Copy php.ts from the stub template.
      *
-     * @param  array<string, bool>  $extensionRegistry  Enabled extensions map (e.g. ['mbstring' => true])
+     * The custom PHP 8.5 WASM build uses static linking (MAIN_MODULE=0), so
+     * no dynamic extension imports or shared library configuration is needed.
+     * The stub is copied verbatim.
      */
-    public function generatePhpTs(array $extensionRegistry): void
+    public function generatePhpTs(): void
     {
-        $enabledExtensions = array_keys(array_filter($extensionRegistry));
-
         $stubPath = dirname(__DIR__).'/stubs/php.ts.stub';
-        $content = file_get_contents($stubPath);
 
-        $imports = [];
-        $sharedLibs = [];
-        $preloadedLibs = [];
-
-        foreach ($enabledExtensions as $ext) {
-            if (! isset(self::EXTENSION_REGISTRY[$ext])) {
-                continue;
-            }
-
-            $reg = self::EXTENSION_REGISTRY[$ext];
-            $imports[] = $reg['imports'];
-
-            foreach ($reg['shared_libs'] as $lib) {
-                $sharedLibs[] = "'{$lib}'";
-            }
-
-            foreach ($reg['preloaded_libs'] as $soName => $varName) {
-                $preloadedLibs[] = "        '{$soName}': {$varName},";
-            }
-        }
-
-        $extensionsComment = empty($enabledExtensions) ? 'none' : implode(', ', $enabledExtensions);
-        $importsBlock = empty($imports) ? '' : "\n".implode("\n", $imports);
-        $sharedLibsStr = implode(', ', $sharedLibs);
-        $preloadedLibsBlock = implode("\n", $preloadedLibs);
-        $phpWasmImport = $this->resolvePhpWasmImport();
-
-        $content = str_replace('{{EXTENSIONS_COMMENT}}', $extensionsComment, $content);
-        $content = str_replace('{{EXTENSION_IMPORTS}}', $importsBlock, $content);
-        $content = str_replace('{{SHARED_LIBS}}', $sharedLibsStr, $content);
-        $content = str_replace('{{PRELOADED_LIBS}}', $preloadedLibsBlock, $content);
-        $content = str_replace('{{PHP_WASM_IMPORT}}', $phpWasmImport, $content);
-
-        file_put_contents($this->path('php.ts'), $content);
+        copy($stubPath, $this->path('php.ts'));
     }
 
     /**
@@ -267,11 +191,59 @@ TS,
     }
 
     /**
-     * Resolve the WASM import path for php-cgi-wasm.
+     * Copy the custom PHP 8.5 WASM binary and helper modules into the build directory.
      *
-     * The build script (build-app.mjs) copies and patches the npm WASM binary
-     * to reduce INITIAL_MEMORY for Cloudflare Workers compatibility, saving it
-     * as php-cgi.wasm in the build directory.
+     * The php-wasm-build/ directory in the package root contains the output of
+     * `bash php-wasm-build/build.sh`: the Emscripten JS module, WASM binary,
+     * and PhpCgiBase helper files. These are copied into the build directory
+     * so build-app.mjs can find them at runtime.
+     */
+    public function copyWasmBinary(): void
+    {
+        $this->ensureDirectory();
+
+        $wasmBuildDir = dirname(__DIR__).'/php-wasm-build';
+        $buildDir = $this->path();
+
+        // Copy Emscripten JS module → php-cgi.mjs (with Workers compatibility patch)
+        $moduleSrc = $wasmBuildDir.'/php8.5-cgi-worker.mjs';
+        if (! file_exists($moduleSrc)) {
+            throw new \RuntimeException("Custom PHP module not found at {$moduleSrc}. Run: bash php-wasm-build/build.sh");
+        }
+
+        $moduleContent = file_get_contents($moduleSrc);
+
+        // Patch: Replace `new URL("...wasm", import.meta.url).href` with try/catch fallback
+        $moduleContent = preg_replace(
+            '/new URL\("([^"]+\.wasm)",\s*import\.meta\.url\)\.href/',
+            '(() => { try { return new URL("$1", import.meta.url).href; } catch { return "$1"; } })()',
+            $moduleContent
+        );
+
+        file_put_contents($buildDir.'/php-cgi.mjs', $moduleContent);
+
+        // Copy WASM binary
+        $wasmFiles = glob($wasmBuildDir.'/*.wasm');
+        if (empty($wasmFiles)) {
+            throw new \RuntimeException("No .wasm file found in {$wasmBuildDir}. Run: bash php-wasm-build/build.sh");
+        }
+        copy($wasmFiles[0], $buildDir.'/php-cgi.wasm');
+
+        // Copy helper modules that PhpCgiBase.mjs depends on
+        $helpers = ['PhpCgiBase.mjs', 'breakoutRequest.mjs', 'parseResponse.mjs', 'fsOps.mjs', 'resolveDependencies.mjs'];
+        foreach ($helpers as $helper) {
+            $src = $wasmBuildDir.'/'.$helper;
+            if (file_exists($src)) {
+                copy($src, $buildDir.'/'.$helper);
+            }
+        }
+    }
+
+    /**
+     * Resolve the WASM import path for the custom PHP 8.5 binary.
+     *
+     * The build script (build-app.mjs) copies the custom binary from
+     * php-wasm-build/ into the build directory as php-cgi.wasm.
      */
     public function resolvePhpWasmImport(): string
     {

@@ -83,3 +83,10 @@ WITH_MBSTRING=0
 WITH_ONIGURUMA=0
 WITH_OPENSSL=0
 WITH_INTL=0
+
+# ── Memory: 64 MB initial (1024 WASM pages) ──
+# Cloudflare Workers has a 128 MB memory budget. 64 MB for WASM linear memory
+# leaves room for JS heap, MEMFS (~23 MB), and overhead.
+# The linker requires ~35 MB minimum (TOTAL_STACK=32MB + static data + heap).
+# 48 MB was too tight; 64 MB provides headroom for OPcache SHM and runtime allocations.
+INITIAL_MEMORY=67108864

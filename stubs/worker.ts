@@ -57,7 +57,7 @@ async function ensureInitialized(env: Env): Promise<PhpCgiCloudflare> {
       docroot: '/app/public',
       prefix: '/',
       entrypoint: 'index.php',
-      // INITIAL_MEMORY is baked into the custom PHP 8.5 WASM binary (32 MB).
+      // INITIAL_MEMORY is baked into the custom PHP 8.5 WASM binary (64 MB).
       // No need to set it here — the binary's memory import specifies min pages.
       ini: [
         'auto_prepend_file=/app/php-stubs.php',
@@ -130,10 +130,30 @@ async function initializeFilesystem(
   for (const dir of dirs) {
     mkdirp(FS, dir);
   }
+
+  // Fix MEMFS permissions — Emscripten's default umask (0777) can prevent
+  // file_put_contents() from writing to directories created by untar.
+  // chmod writable dirs to 0777 so Laravel can write cache files.
+  const writableDirs = [
+    '/app/storage',
+    '/app/storage/framework',
+    '/app/storage/framework/sessions',
+    '/app/storage/framework/views',
+    '/app/storage/framework/cache',
+    '/app/storage/framework/cache/data',
+    '/app/storage/logs',
+    '/app/bootstrap/cache',
+  ];
+
+  for (const dir of writableDirs) {
+    if (FS.analyzePath(dir).exists) {
+      FS.chmod(dir, 0o777);
+    }
+  }
 }
 
 function mkdirp(
-  FS: { analyzePath(p: string): { exists: boolean }; mkdir(p: string): void },
+  FS: { analyzePath(p: string): { exists: boolean }; mkdir(p: string): void; chmod(p: string, mode: number): void },
   path: string,
 ): void {
   const parts = path.split('/').filter(Boolean);

@@ -1,34 +1,14 @@
-import { PhpCgiBase } from './PhpCgiBase.mjs';
-import PHP from './php-cgi-worker.mjs';
+import { PhpCgiWebBase } from './PhpCgiWebBase.mjs';
 
-export class PhpCgiWorker extends PhpCgiBase
+const defaultVersion = '8.4';
+
+export class PhpCgiWorker extends PhpCgiWebBase
 {
-	constructor({docroot, prefix, rewrite, cookies, types, onRequest, notFound, ...args} = {})
+	constructor({version, docroot, prefix, rewrite, cookies, types, onRequest, notFound, ...args} = {})
 	{
-		super(PHP, {docroot, prefix, rewrite, cookies, types, onRequest, notFound, ...args});
-	}
-
-	async _enqueue(method, params = [])
-	{
-		let accept, reject;
-
-		const coordinator = new Promise((a,r) => [accept, reject] = [a, r]);
-
-		this.queue.push([method, params, accept, reject]);
-
-		await navigator.locks.request('php-wasm-fs-lock', async () => {
-			if(!this.queue.length)
-			{
-				return;
-			}
-
-			while(this.queue.length)
-			{
-				const [method, params, accept, reject] = this.queue.shift();
-				await this[method](...params).then(accept).catch(reject);
-			}
-		});
-
-		return coordinator;
+		super(
+			import(`./php${version ?? defaultVersion}-cgi-worker.mjs`)
+			, {version, docroot, prefix, rewrite, cookies, types, onRequest, notFound, ...args}
+		);
 	}
 }

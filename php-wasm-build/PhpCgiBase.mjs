@@ -1,5 +1,28 @@
 import { parseResponse } from './parseResponse.mjs';
 import { breakoutRequest } from './breakoutRequest.mjs';
+import { fsOps } from './fsOps.mjs';
+import { resolveDependencies } from './resolveDependencies.mjs';
+
+/**
+ * An object representing a dynamically loaded data file.
+ * @typedef {string|object} FileDef
+ * @property {string} url
+ * @property {string} path
+ * @property {string} parent
+ */
+
+/**
+ * A string or object representing a dynamically loaded shared library.
+ * @typedef {string|object} LibDef
+ * @property {string} name
+ * @property {string} url
+ * @property {boolean} ini
+ * @property {function():libDef[]} getLibs
+ * @property {function():fileDef[]} getFiles
+ */
+
+const STR = 'string';
+const NUM = 'number';
 
 const putEnv = (php, key, value) => php.ccall(
 	'wasm_sapi_cgi_putenv'
@@ -10,18 +33,124 @@ const putEnv = (php, key, value) => php.ccall(
 
 const requestTimes = new WeakMap;
 
+const noTrailingSlash = s => s.slice(-1) !== '/' ? s : s.slice(0, -1);
+const noLeadingSlash = s => s.slice(0, 1) !== '/' ? s : s.slice(1);
+const joinPaths = (...args) => [
+	noTrailingSlash(args[0]), // Don't strip the leading slash on the first segment...
+	...args.slice(1).map( a => noLeadingSlash(noTrailingSlash(a)) )
+].join('/');
+
+class CookieJar
+{
+	cookies = new Map;
+	store(rawCookie)
+	{
+		let name = null;
+
+		const cookie = {created: Date.now(), raw: rawCookie};
+
+		const parts = rawCookie.split(';').map(p => p.trim() );
+
+		for(const part of parts)
+		{
+			const equal = part.indexOf('=');
+
+			const key   = part.substr(0, equal);
+			const value = part.substr(1 + equal);
+
+			const lowerKey = key.toLowerCase();
+
+			if(!name)
+			{
+				name = key;
+				cookie.name = key;
+				cookie.value = value;
+			}
+			else if(lowerKey === 'expires')
+			{
+				cookie[lowerKey] = new Date(value).getTime();
+			}
+			else if(lowerKey === 'max-age')
+			{
+				cookie[lowerKey] = 1000 * Number(value);
+			}
+			else
+			{
+				cookie[lowerKey] = value;
+			}
+		}
+
+		if(cookie.expires && cookie.created >= cookie.expires)
+		{
+			this.cookies.delete(cookie.name);
+		}
+		else
+		{
+			this.cookies.set(cookie.name, cookie);
+		}
+	}
+
+	retrieve(path = null)
+	{
+		const cookies = [];
+
+		const now = Date.now();
+
+		for(const cookie of this.cookies.values())
+		{
+			if(cookie.expires && cookie.expires <= now)
+			{
+				this.cookies.delete(cookie.name);
+				continue;
+			}
+
+			if(cookie['max-age'] && cookie['max-age'] >= now - cookie.created)
+			{
+				this.cookies.delete(cookie.name);
+				continue;
+			}
+
+			if(path === null || !cookie.path || cookie.path === path.substr(0, cookie.path.length))
+			{
+				cookies.push(cookie);
+			}
+		}
+
+		return cookies;
+	}
+
+	dump(path = null)
+	{
+		return this.retrieve(path).map(c => c.raw).join('\n');
+	}
+
+	load(rawCookies)
+	{
+		rawCookies.trim().split('\n').map(line => this.store(line));
+	}
+
+	toEnv(path = null)
+	{
+		return this.retrieve(path).map(e => `${e.name}=${e.value}`).join(';');
+	}
+}
+
 export class PhpCgiBase
 {
 	docroot    = null;
 	prefix     = '/php-wasm';
+	exclude    = [];
 	rewrite    = path => path;
 	cookies    = null;
 	types      = {};
 	onRequest  = () => {};
+	notFound   = () => {};
+	sharedLibs = [];
+	files      = [];
 	phpArgs    = {};
 
 	maxRequestAge    = 0;
-	staticCacheTime  = 0;
+	staticCacheTime  = 60_000;
 	dynamicCacheTime = 0;
 	vHosts = [];
 
@@ -33,23 +162,53 @@ export class PhpCgiBase
 
 	queue = [];
 
-	constructor(PHP, {docroot, prefix, rewrite, entrypoint, cookies, types, onRequest, notFound, ...args} = {})
+	/**
+	 * Creates a new PHP instance (async)
+	 * @param {*} binLoader
+	 * @param {string} options.prefix The URL path prefix to look for when routing to PHP.
+	 * @param {string} options.docroot The internal directory to use as the public document root.
+	 * @param {string[]} options.exclude Array of URL prefixes to exclude from routing to PHP.
+	 * @param {Array.<{pathPrefix: string, directory: string, entrypoint: string}>} options.vHosts A list of prefixes, directories and entrypoints to serve multiple PHP applications by URL prefix.
+	 * @param {string} options.entrypoint Path to PHP file under docroot to serve as an entrypoint
+	 * @param {function(string):string} options.rewrite Function to rewrite URLs
+	 * @param {object<string, string>} options.types Mapping of file extensions to mime types to populate the `Content-type` header.
+	 * @param {function()} options.onRequest Function to be executed on each request.
+	 * @param {function(Request):Response|string} options.notFound Function to handle 404s.
+	 * @param {LibDef[]} options.sharedLibs Dynamically load shared libraries with LibDefs
+	 * @param {LibDef[]} options.dynamicLibs Similar to sharedLibs but will NEVER use the ini based loader.
+	 * @param {FileDef[]} options.files Dynamically load files with FileDefs
+	 * @param {boolean} options.autoTransaction Automatically handle FS transactions on each request
+	 * @param {number} options.maxRequestAge Oldest request to process (ms)
+	 * @param {number} options.staticCacheTime Static cache time (ms)
+	 * @param {number} options.dynamicCacheTime Dynamic cache time (ms)
+	 * @param {object<string, string}>} options.env Mapping of environment variable names to values to set inside the server.
+	 */
+	constructor(phpBinLoader, {version, docroot, prefix, exclude, rewrite, entrypoint, cookies, types, onRequest, notFound, sharedLibs, dynamicLibs, actions, files, ...args} = {})
 	{
-		this.PHP        = PHP;
-		this.docroot    = docroot    || this.docroot;
-		this.prefix     = prefix     || this.prefix;
-		this.rewrite    = rewrite    || this.rewrite;
-		this.entrypoint = entrypoint || this.entrypoint;
-		this.cookies    = cookies    || new Map;
-		this.types      = types      || this.types;
-		this.onRequest  = onRequest  || this.onRequest;
-		this.notFound   = notFound   || this.notFound;
+		this.binLoader  = phpBinLoader;
+		this.phpVersion = version;
+		this.docroot    = docroot      || this.docroot;
+		this.prefix     = prefix       || this.prefix;
+		this.exclude    = exclude      || this.exclude;
+		this.rewrite    = rewrite      || this.rewrite;
+		this.entrypoint = entrypoint   || this.entrypoint;
+		this.cookieJar  = new CookieJar(cookies);
+		this.types      = types        || this.types;
+		this.onRequest  = onRequest    || this.onRequest;
+		this.notFound   = notFound     || this.notFound;
+		this.sharedLibs = sharedLibs   || this.sharedLibs;
+		this.dynamicLibs = dynamicLibs || this.dynamicLibs;
+		this.files      = files        || this.files;
+		this.extraActions = actions    || {};
 
-		this.phpArgs   = args;
+		this.phpArgs = args;
 
-		this.maxRequestAge    = args.maxRequestAge    || 0;
-		this.staticCacheTime  = args.staticCacheTime  || 0;
-		this.dynamicCacheTime = args.dynamicCacheTime || 0;
+		this.autoTransaction = ('autoTransaction' in args) ? args.autoTransaction : true;
+		this.transactionStarted = false;
+
+		this.maxRequestAge    = args.maxRequestAge    || this.maxRequestAge;
+		this.staticCacheTime  = args.staticCacheTime  || this.staticCacheTime;
+		this.dynamicCacheTime = args.dynamicCacheTime || this.dynamicCacheTime;
 		this.vHosts = args.vHosts || [];
 
 		this.env = {};
@@ -74,67 +233,115 @@ export class PhpCgiBase
 		const { data, source } = event;
 		const { action, token, params = [] } = data;
 
-		switch(action)
-		{
-			case 'analyzePath':
-			case 'readdir':
-			case 'readFile':
-			case 'stat':
-			case 'mkdir':
-			case 'rmdir':
-			case 'writeFile':
-			case 'rename':
-			case 'unlink':
-			case 'putEnv':
-			case 'refresh':
-			case 'getSettings':
-			case 'setSettings':
-			case 'getEnvs':
-			case 'setEnvs':
-			case 'storeInit':
-				let result, error;
-				try
-				{
-					result = await this[action](...params);
-				}
-				catch(_error)
-				{
-					error = JSON.parse(JSON.stringify(_error));
-					console.warn(_error);
-				}
-				finally
-				{
-					source.postMessage({re: token, result, error});
-				}
+		const actions = [
+			'analyzePath',
+			'readdir',
+			'readFile',
+			'stat',
+			'mkdir',
+			'rmdir',
+			'writeFile',
+			'rename',
+			'unlink',
+			'putEnv',
+			'refresh',
+			'getSettings',
+			'setSettings',
+			'getEnvs',
+			'setEnvs',
+			'storeInit',
+		];
 
-			break;
+		await this.binary;
+
+		if(actions.includes(action))
+		{
+			let result, error;
+
+			try
+			{
+				result = await this[action](...params);
+			}
+			catch(_error)
+			{
+				error = JSON.parse(JSON.stringify(_error));
+				console.warn(_error);
+			}
+			finally
+			{
+				source.postMessage({re: token, result, error});
+			}
+		}
+		else if(action in this.extraActions)
+		{
+			let result, error;
+
+			try
+			{
+				result = await this.extraActions[action](this, ...params);
+			}
+			catch(_error)
+			{
+				error = JSON.parse(JSON.stringify(_error));
+				console.warn(_error);
+			}
+			finally
+			{
+				source.postMessage({re: token, result, error});
+			}
 		}
 	}
 
 	handleFetchEvent(event)
 	{
-		const url     = new URL(event.request.url);
-		const prefix  = this.prefix;
+		const url = new URL(event.request.url);
+		const prefix = this.prefix;
 
-		if(url.pathname.substr(0, prefix.length) === prefix && url.hostname === self.location.hostname)
+		const {files: sharedLibFiles, urlLibs: sharedLibUrls} = resolveDependencies(this.sharedLibs, this);
+		const {files: dynamicLibFiles, urlLibs: dynamicLibUrls} = resolveDependencies(this.dynamicLibs, this);
+
+		let isWhitelisted = false;
+		let isBlacklisted = false;
+
+		if(globalThis.location)
 		{
-			requestTimes.set(event.request, Date.now());
+			const libFiles = [...sharedLibFiles, ...dynamicLibFiles];
+			const libUrls = {...sharedLibUrls, ...dynamicLibUrls};
 
-			return event.respondWith(this.request(event.request));
+			const staticUrls = [self.location.pathname, ...libFiles.map(file => file.url), ...Object.values(libUrls)]
+			.map(url => new URL(url, self.location.origin))
+			.filter(url => url.origin === self.location.origin)
+			.map(url => url.pathname);
+
+			isWhitelisted = url.pathname.substr(0, prefix.length) === prefix && url.hostname === self.location.hostname;
+			isBlacklisted = url.pathname.match(/\.wasm$/i)
+			|| staticUrls.includes(url.pathname)
+			|| (this.exclude.findIndex(exclude => url.pathname.substr(0, exclude.length) === exclude) > -1)
+			|| false;
 		}
 		else
 		{
-			return fetch(event.request);
+			isWhitelisted = url.pathname.substr(0, prefix.length) === prefix;
+			isBlacklisted = url.pathname.match(/\.wasm$/i)
+			|| (this.exclude.findIndex(exclude => url.pathname.substr(0, exclude.length) === exclude) > -1)
+			|| false;
+		}
+
+		if(isWhitelisted && !isBlacklisted)
+		{
+			requestTimes.set(event.request, Date.now());
+			const response = this.request(event.request);
+			return event.respondWith(response);
 		}
 	}
 
-	async _enqueue(method, params = [])
+	async _enqueue(callback, params = [], readOnly = false)
 	{
 		let accept, reject;
 
 		const coordinator = new Promise((a,r) => [accept, reject] = [a, r]);
 
-		this.queue.push([method, params, accept, reject]);
+		this.queue.push([callback, params, accept, reject]);
 
 		if(!this.queue.length)
 		{
@@ -143,49 +350,143 @@ export class PhpCgiBase
 
 		while(this.queue.length)
 		{
-			const [method, params, accept, reject] = this.queue.shift();
-			await this[method](...params).then(accept).catch(reject);
+			const [callback, params, accept, reject] = this.queue.shift();
+			await callback(...params).then(accept).catch(reject);
 		}
 
 		return coordinator;
 	}
 
-	refresh(request)
+	refresh()
 	{
-		return this._enqueue('_refresh', [request]);
-	}
+		const {files: sharedLibFiles, libs: sharedLibs, urlLibs: sharedLibUrls} = resolveDependencies(this.sharedLibs, this);
+		const {files: dynamicLibFiles, libs: dynamicLibs, urlLibs: dynamicLibUrls} = resolveDependencies(this.dynamicLibs, this);
 
-	async _refresh()
-	{
-		this.php = new this.PHP({
-			stdin: () =>  this.input
+		const userLocateFile = this.phpArgs.locateFile || (() => undefined);
+
+		const locateFile = (path, directory) => {
+			let located = userLocateFile(path, directory);
+			if(located !== undefined)
+			{
+				return located;
+			}
+
+			if(sharedLibUrls[path])
+			{
+				if(sharedLibUrls[path].protocol === 'file:')
+				{
+					return sharedLibUrls[path].pathname;
+				}
+
+				return String(sharedLibUrls[path]);
+			}
+
+			if(dynamicLibUrls[path])
+			{
+				if(dynamicLibUrls[path].protocol === 'file:')
+				{
+					return dynamicLibUrls[path].pathname;
+				}
+
+				return String(dynamicLibUrls[path]);
+			}
+
+			// Suppress attempt to load libxml when
+			// it hasn't been provided in sharedLibs
+			if(path === 'libxml2.so')
+			{
+				return 'data:,';
+			}
+		};
+
+		const phpArgs = {
+			persist: [{mountPath:'/persist'}, {mountPath:'/config'}]
+			, ...this.phpArgs
+			, stdin: () => this.input
 				? String(this.input.shift()).charCodeAt(0)
 				: null
 			, stdout: x => this.output.push(x)
 			, stderr: x => this.error.push(x)
-			, persist: [{mountPath:'/persist'}, {mountPath:'/config'}]
-			, ...this.phpArgs
+			, locateFile
+		};
+
+		return this.binary = this.binLoader.then(({default: PHP}) => new PHP(phpArgs)).then(async php => {
+			await php.ccall(
+				'pib_storage_init'
+				, NUM
+				, []
+				, []
+				, {async: true}
+			);
+
+			if(!php.FS.analyzePath('/preload').exists)
+			{
+				php.FS.mkdir('/preload');
+			}
+
+			const allFiles = this.files.concat(sharedLibFiles).concat(dynamicLibFiles);
+
+			// Make sure folder structure exists before preloading files
+			allFiles.forEach(fileDef => {
+				const segments = fileDef.parent.split('/');
+				let currentPath = '';
+				for (const segment of segments) {
+					if (!segment) continue;
+
+					currentPath += segment + '/';
+					if (!php.FS.analyzePath(currentPath).exists) {
+						php.FS.mkdir(currentPath);
+					}
+				}
+			});
+
+			await Promise.all(allFiles.map(fileDef => php.FS.createPreloadedFile(
+				fileDef.parent, fileDef.name, userLocateFile(fileDef.url) ?? fileDef.url, true, false
+			)));
+
+			const iniLines = sharedLibs.map(lib => {
+				if(typeof lib === 'string' || lib instanceof URL)
+				{
+					return `extension=${lib}`;
+				}
+				else if(typeof lib === 'object' && lib.ini)
+				{
+					return `extension=${String(lib.url).split('/').pop()}`;
+				}
+			});
+
+			this.phpArgs.ini && iniLines.push(this.phpArgs.ini.replace(/\n\s+/g, '\n'));
+
+			php.FS.writeFile('/php.ini', iniLines.join("\n") + "\n", {encoding: 'utf8'});
+
+			await php.ccall(
+				'wasm_sapi_cgi_init'
+				, 'number'
+				, []
+				, []
+				, {async: true}
+			);
+
+			const cookieStat = php.FS.analyzePath('/config/.cookies');
+
+			if(cookieStat.exists)
+			{
+				this.cookieJar.load(php.FS.readFile('/config/.cookies', {encoding: 'utf8'}));
+			}
+
+			this.loadInit(php);
+
+			return php;
 		});
-
-		const php = await this.php;
-
-		php.ccall('pib_storage_init',   'number' , [] , []);
-		php.ccall('wasm_sapi_cgi_init', 'number' , [] , []);
-
-		await new Promise((accept,reject) => php.FS.syncfs(true, err => {
-			if(err) reject(err);
-			else    accept();
-		}));
-
-		await this.loadInit();
 	}
 
-	request(request)
-	{
-		return this._enqueue('_request', [request]);
-	}
+	async _beforeRequest()
+	{}
 
-	async _request(request)
+	async _afterRequest()
+	{}
+
+	async request(request)
 	{
 		const {
 			url
@@ -195,8 +496,29 @@ export class PhpCgiBase
 			, contentType
 		} = await breakoutRequest(request);
 
+		if(globalThis.caches)
+		{
+			const cache = await caches.open('static-v1');
+			const cached = await cache.match(url);
+
+			if(cached)
+			{
+				const cacheTime = Number(cached.headers.get('x-php-wasm-cache-time'));
+
+				if(this.staticCacheTime > 0 && this.staticCacheTime > Date.now() - cacheTime)
+				{
+					this.onRequest(request, cached);
+					return cached;
+				}
+			}
+		}
+
+		const php = await this.binary;
+
+		await this._beforeRequest();
+
 		let docroot = this.docroot;
-		let vHostEntrypoint, vHostPrefix;
+		let vHostEntrypoint, vHostPrefix = this.prefix;
 
 		for(const {pathPrefix, directory, entrypoint} of this.vHosts)
 		{
@@ -221,355 +543,263 @@ export class PhpCgiBase
 		else
 		{
 
-			path = docroot + rewrite.substr((vHostPrefix || this.prefix).length);
+			path = joinPaths(docroot, rewrite.substr((vHostPrefix || this.prefix).length));
 			scriptName = path;
 		}
 
+		const aboutPath = php.FS.analyzePath(path);
+
 		if(vHostEntrypoint)
 		{
-			scriptName = vHostPrefix + '/' + vHostEntrypoint;
-		}
-
-		const cache  = await caches.open('static-v1');
-		const cached = await cache.match(url);
-
-		// this.maxRequestAge
-
-		if(cached)
-		{
-			const cacheTime = Number(cached.headers.get('x-php-wasm-cache-time'));
-
-			if(this.staticCacheTime > 0 && this.staticCacheTime < Date.now() - cacheTime)
+			if(!aboutPath.exists || aboutPath.object.isFolder) // Rewrite SCRIPT_NAME to the entrypoint if we don't have a php file...
 			{
-				return cached;
+				scriptName = joinPaths(vHostPrefix, vHostEntrypoint);
+			}
+			else
+			{
+				scriptName = joinPaths(vHostPrefix, rewrite.substr(vHostPrefix.length));
 			}
 		}
 
-		const php = await this.php;
+		let originalPath = url.pathname;
 
-		return new Promise(async accept => {
+		const extension = path.split('.').pop();
 
-			let originalPath = url.pathname;
-
-			const extension = path.split('.').pop();
-
-			if(extension !== 'php')
+		if(extension !== 'php' && extension !== 'phar')
+		{
+			if(aboutPath.exists && php.FS.isFile(aboutPath.object.mode))
 			{
-				const aboutPath = php.FS.analyzePath(path);
-
 				// Return static file
-				if(aboutPath.exists && php.FS.isFile(aboutPath.object.mode))
+				const response = new Response(php.FS.readFile(path, { encoding: 'binary', url }), {});
+				response.headers.append('x-php-wasm-cache-time', new Date().getTime());
+				if(extension in this.types)
 				{
-					const response = new Response(php.FS.readFile(path, { encoding: 'binary', url }), {});
-					response.headers.append('x-php-wasm-cache-time', new Date().getTime());
+					response.headers.append('Content-type', this.types[extension]);
+				}
+				if(globalThis.caches)
+				{
+					const cache = await caches.open('static-v1');
+					cache.put(url, response.clone());
+				}
+				this.onRequest(request, response);
+				return response;
+			}
+			else if(aboutPath.exists && php.FS.isDir(aboutPath.object.mode) && '/' !== originalPath[ -1 + originalPath.length ])
+			{
+				originalPath += '/'
+			}
+
+			// Rewrite to entrypoint or index.php
+			path = joinPaths(docroot, vHostEntrypoint ?? 'index.php');
+		}
+
+		// Ensure query parameters are preserved.
+		originalPath += url.search
+
+		if(this.maxRequestAge > 0 && Date.now() - requestTimes.get(request) > this.maxRequestAge)
+		{
+			const response = new Response('408: Request Timed Out.', { status: 408 });
+			this.onRequest(request, response);
+			return response;
+		}
+
+		// path may have changed, so re-check it:
+		if(!php.FS.analyzePath(path).exists)
+		{
+			const rawResponse = this.notFound
+				? this.notFound(request)
+				: '404 - Not Found.';
+
+			if(rawResponse)
+			{
+				return rawResponse instanceof Response
+					? rawResponse
+					: new Response(rawResponse, {status: 404});
+			}
+		}
+
+		let exitCode = -1;
+
+		try
+		{
+			// We need "return await" otherwise the finally block will run before the lock releases.
+			return await navigator.locks.request('php-wasm-request-lock', async () => {
+				this.input = ['POST', 'PUT', 'PATCH'].includes(method) ? post.split('') : [];
+				this.output = [];
+				this.error = [];
+
+				const selfUrl = new URL(globalThis.location || request.url);
+
+				putEnv(php, 'PHP_VERSION', this.phpVersion);
+				putEnv(php, 'PHP_INI_SCAN_DIR', `/config:/preload:${docroot}`);
+				putEnv(php, 'PHPRC', '/php.ini');
+
+				for(const [name, value] of Object.entries(this.env))
+				{
+					putEnv(php, name, value);
+				}
+
+				const protocol = selfUrl.protocol.substr(0, selfUrl.protocol.length - 1);
+
+				putEnv(php, 'SERVER_SOFTWARE', globalThis.navigator ? globalThis.navigator.userAgent : (globalThis.process ? 'Node ' + globalThis.process.version : 'Javascript - Unknown'));
+				putEnv(php, 'REQUEST_METHOD', method);
+				putEnv(php, 'REMOTE_ADDR', '127.0.0.1');
+				putEnv(php, 'HTTP_HOST', selfUrl.host);
+				putEnv(php, 'REQUEST_SCHEME', protocol);
+				putEnv(php, 'HTTPS', protocol === 'https' ? 'on' : 'off');
+
+				putEnv(php, 'DOCUMENT_ROOT', docroot);
+				putEnv(php, 'REQUEST_URI', originalPath);
+				putEnv(php, 'SCRIPT_NAME', scriptName);
+				putEnv(php, 'SCRIPT_FILENAME', path);
+				putEnv(php, 'PATH_TRANSLATED', path);
+
+				putEnv(php, 'QUERY_STRING', get);
+				putEnv(php, 'HTTP_COOKIE', this.cookieJar.toEnv());
+				putEnv(php, 'REDIRECT_STATUS', '200');
+				putEnv(php, 'CONTENT_TYPE', contentType);
+				putEnv(php, 'CONTENT_LENGTH', String(this.input.length));
+
+				this.output = [];
+
+				exitCode = await php.ccall(
+					'main'
+					, 'number'
+					, ['number', 'string']
+					, []
+					, {async: true}
+				);
+
+				++this.count;
+
+				const parsedResponse = parseResponse(this.output);
+
+				let status = 200;
+
+				if(parsedResponse.headers.has('Status'))
+				{
+					status = parsedResponse.headers.get('Status').substr(0, 3);
+				}
+
+				for(const rawCookie of parsedResponse.headers.getSetCookie())
+				{
+					this.cookieJar.store(rawCookie);
+				}
+
+				php.FS.writeFile('/config/.cookies', this.cookieJar.dump());
+
+				const headers = new Headers(parsedResponse.headers);
+
+				if(!headers.has('Content-type'))
+				{
 					if(extension in this.types)
 					{
-						response.headers.append('Content-type', this.types[extension]);
+						headers.set('Content-type', this.types[extension]);
 					}
-					cache.put(url, response.clone());
-					this.onRequest(request, response);
-					return accept(response);
+					else
+					{
+						headers.set('Content-type', 'text/html; charset=utf-8');
+					}
 				}
-				else if(aboutPath.exists && php.FS.isDir(aboutPath.object.mode) && '/' !== originalPath[ -1 + originalPath.length  ])
+
+				if(parsedResponse.headers.has('Location'))
 				{
-					originalPath += '/'
+					headers.set('Location', parsedResponse.headers.get('Location'));
 				}
 
-				// Rewrite to index
-				path = docroot + '/index.php';
-			}
+				const response = new Response(parsedResponse.body || '', { status, headers, url });
 
-			if(this.maxRequestAge > 0 && Date.now() - requestTimes.get(request) > this.maxRequestAge)
-			{
-				const response = new Response('408: Request Timed Out.', { status: 408 });
-				this.onRequest(request, response);
-				return accept(response);
-			}
-
-			const aboutPath = php.FS.analyzePath(path);
-
-			if(!aboutPath.exists && this.notFound)
-			{
-				const rawResponse = this.notFound(request);
-
-				if(rawResponse)
-				{
-					return accept(rawResponse instanceof Response
-						? rawResponse
-						: new Response(rawResponse, {status: 404})
-					);
-				}
-			}
-
-			this.input  = ['POST', 'PUT', 'PATCH'].includes(method) ? post.split('') : [];
-			this.output = [];
-			this.error  = [];
-
-			const selfUrl = new URL(globalThis.location);
-
-			putEnv(php, 'PHP_INI_SCAN_DIR', '/config');
-
-			for(const [name, value] of Object.entries(this.env))
-			{
-				putEnv(php, name, value);
-			}
-
-			putEnv(php, 'SERVER_SOFTWARE', navigator.userAgent);
-			putEnv(php, 'REQUEST_METHOD', method);
-			putEnv(php, 'REMOTE_ADDR', '127.0.0.1');
-			putEnv(php, 'HTTP_HOST', selfUrl.host);
-			putEnv(php, 'REQUEST_SCHEME', selfUrl.protocol.substr(0, selfUrl.protocol.length - 0));
-
-			putEnv(php, 'DOCUMENT_ROOT', docroot);
-			putEnv(php, 'REQUEST_URI', originalPath);
-			putEnv(php, 'SCRIPT_NAME', scriptName);
-			putEnv(php, 'SCRIPT_FILENAME', path);
-			putEnv(php, 'PATH_TRANSLATED', path);
-
-			putEnv(php, 'QUERY_STRING', get);
-			putEnv(php, 'HTTP_COOKIE', [...this.cookies.entries()].map(e => `${e[0]}=${e[1]}`).join(';') );
-			putEnv(php, 'REDIRECT_STATUS', '200');
-			putEnv(php, 'CONTENT_TYPE', contentType);
-			putEnv(php, 'CONTENT_LENGTH', String(this.input.length));
-
-			try
-			{
-				if(php._main() === 0) // PHP exited with code 0
-				{
-					await new Promise((accept,reject) => php.FS.syncfs(false, err => {
-						if(err) reject(err);
-						else    accept();
-					}));
-				}
-			}
-			catch (error)
-			{
-				console.error(error);
-
-				this.refresh();
-
-				const response = new Response(
-					`500: Internal Server Error.\n`
-						+ `=`.repeat(80) + `\n\n`
-						+ `Stacktrace:\n${error.stack}\n`
-						+ `=`.repeat(80) + `\n\n`
-						+ `STDERR:\n${new TextDecoder().decode(new Uint8Array(this.error).buffer)}\n`
-						+ `=`.repeat(80) + `\n\n`
-						+ `STDOUT:\n${new TextDecoder().decode(new Uint8Array(this.output).buffer)}\n`
-						+ `=`.repeat(80) + `\n\n`
-					, { status: 500 }
-				);
 				this.onRequest(request, response);
 
-				accept(response);
-			}
+				return response;
+			});
+		}
+		catch (error)
+		{
+			console.error(error);
 
-			++this.count;
-
-			const parsedResponse = parseResponse(this.output);
-
-			let status = 200;
-
-			for(const [name, value] of Object.entries(parsedResponse.headers))
-			{
-				if(name === 'Status')
-				{
-					status = value.substr(0, 3);
-				}
-			}
-
-			if(parsedResponse.headers['Set-Cookie'])
-			{
-				const raw = parsedResponse.headers['Set-Cookie'];
-				const semi  = raw.indexOf(';');
-				const equal = raw.indexOf('=');
-				const key   = raw.substr(0, equal);
-				const value = raw.substr(1 + equal, -1 + semi - equal);
-
-				this.cookies.set(key, value,);
-			}
-
-			const headers = {
-				'Content-Type': parsedResponse.headers["Content-Type"] ?? 'text/html; charset=utf-8'
-			};
-
-			if(parsedResponse.headers.Location)
-			{
-				headers.Location = parsedResponse.headers.Location;
-			}
-
-			const response = new Response(parsedResponse.body || '', { headers, status, url });
+			const response = new Response(
+				`500: Internal Server Error.\n`
+					+ `=`.repeat(80) + `\n\n`
+					+ `Stacktrace:\n${error.stack}\n`
+					+ `=`.repeat(80) + `\n\n`
+					+ `STDERR:\n${new TextDecoder().decode(new Uint8Array(this.error).buffer)}\n`
+					+ `=`.repeat(80) + `\n\n`
+					+ `STDOUT:\n${new TextDecoder().decode(new Uint8Array(this.output).buffer)}\n`
+					+ `=`.repeat(80) + `\n\n`
+				, { status: 500 }
+			);
 
 			this.onRequest(request, response);
 
-			accept(response);
-		});
-	}
+			this.refresh();
 
-	run(code)
-	{
-		return this._enqueue('_run', [code]);
-	}
+			return response;
+		}
+		finally
+		{
+			if(exitCode === 0)
+			{
+				this._afterRequest();
+			}
+			else
+			{
+				console.warn(new TextDecoder().decode(new Uint8Array(this.output).buffer));
+				console.error(new TextDecoder().decode(new Uint8Array(this.error).buffer));
 
-	async _run(code)
-	{
-		return (await this.php).run(code);
+				this.refresh();
+			}
+		}
 	}
 
 	analyzePath(path)
 	{
-		return this._enqueue('_analyzePath', [path]);
-	}
-
-	async _analyzePath(path)
-	{
-		const result = (await this.php).FS.analyzePath(path);
-
-		if(!result.object)
-		{
-			return { exists: false };
-		}
-
-		const object = {
-			exists: true
-			, id: result.object.id
-			, mode : result.object.mode
-			, mount: {
-				mountpoint: result.object.mount.mountpoint
-				, mounts: result.object.mount.mounts.map(m => m.mountpoint)
-			}
-			, isDevice: result.object.isDevice
-			, isFolder: result.object.isFolder
-			, read: result.object.read
-			, write: result.object.write
-		};
-
-		return {...result, object, parentObject: undefined};
+		return this._enqueue(fsOps.analyzePath, [this.binary, path]);
 	}
 
 	readdir(path)
 	{
-		return this._enqueue('_readdir', [path]);
+		return this._enqueue(fsOps.readdir, [this.binary, path]);
 	}
 
-	async _readdir(path)
+	readFile(path, options)
 	{
-		return (await this.php).FS.readdir(path);
-	}
-
-	readFile(path)
-	{
-		return this._enqueue('_readFile', [path]);
-	}
-
-	async _readFile(path)
-	{
-		return (await this.php).FS.readFile(path);
+		return this._enqueue(fsOps.readFile, [this.binary, path, options]);
 	}
 
 	stat(path)
 	{
-		return this._enqueue('_stat', [path]);
-	}
-
-	async _stat(path)
-	{
-		return (await this.php).FS.stat(path);
+		return this._enqueue(fsOps.stat, [this.binary, path]);
 	}
 
 	mkdir(path)
 	{
-		return this._enqueue('_mkdir', [path]);
+		return this._enqueue(fsOps.mkdir, [this.binary, path]);
 	}
 
-	async _mkdir(path)
+	rmdir(path)
 	{
-		const php = (await this.php);
-		const _result = php.FS.mkdir(path);
-		const result = {
-			id: _result.id
-			, mode : _result.mode
-			, mount: {
-				mountpoint: _result.mount.mountpoint
-				, mounts: _result.mount.mounts.map(m => m.mountpoint)
-			}
-			, isDevice: _result.isDevice
-			, isFolder: _result.isFolder
-			, read: _result.read
-			, write: _result.write
-		};
-
-		return new Promise(accept => php.FS.syncfs(false, err => {
-			if(err) throw err;
-			accept(result);
-		}));
+		return this._enqueue(fsOps.rmdir, [this.binary, path]);
 	}
 
-	async rmdir(path)
+	rename(path, newPath)
 	{
-		return this._enqueue('_rmdir', [path]);
+		return this._enqueue(fsOps.rename, [this.binary, path, newPath]);
 	}
 
-	async _rmdir(path)
+	writeFile(path, data, options)
 	{
-		const php = (await this.php);
-		const result = php.FS.rmdir(path);
-		return new Promise(accept => php.FS.syncfs(false, err => {
-			if(err) throw err;
-			accept(result);
-		}));
+		return this._enqueue(fsOps.writeFile, [this.binary, path, data, options]);
 	}
 
-	async rename(path, newPath)
+	unlink(path)
 	{
-		console.trace({path, newPath});
-
-		return this._enqueue('_rename', [path, newPath]);
-	}
-
-	async _rename(path, newPath)
-	{
-		const php = (await this.php);
-		const result = php.FS.rename(path, newPath);
-		return new Promise(accept => php.FS.syncfs(false, err => {
-			if(err) throw err;
-			accept(result);
-		}));
-	}
-
-	async writeFile(path, data, options)
-	{
-		return this._enqueue('_writeFile', [path, data, options]);
-	}
-
-	async _writeFile(path, data, options)
-	{
-		const php = (await this.php);
-		const result = php.FS.writeFile(path, data, options);
-		return new Promise(accept => php.FS.syncfs(false, err => {
-			if(err) throw err;
-			accept(result);
-		}));
-	}
-
-	async unlink(path)
-	{
-		return this._enqueue('_unlink', [path]);
-	}
-
-	async _unlink(path)
-	{
-		const php = (await this.php);
-		const result = php.FS.unlink(path);
-		return new Promise(accept => php.FS.syncfs(false, err => {
-			if(err) throw err;
-			accept(result);
-		}));
+		return this._enqueue(fsOps.unlink, [this.binary, path]);
 	}
 
 	async putEnv(name, value)
 	{
-		return (await this.php).ccall('wasm_sapi_cgi_putenv', 'number', ['string', 'string'], [name, value]);
+		return (await this.binary).ccall('wasm_sapi_cgi_putenv', 'number', ['string', 'string'], [name, value]);
 	}
 
 	async getSettings()
@@ -583,7 +813,7 @@ export class PhpCgiBase
 		};
 	}
 
-	async setSettings({docroot, maxRequestAge, staticCacheTime, dynamicCacheTime, vHosts})
+	setSettings({docroot, maxRequestAge, staticCacheTime, dynamicCacheTime, vHosts})
 	{
 		this.docroot = docroot ?? this.docroot;
 		this.maxRequestAge = maxRequestAge ?? this.maxRequestAge;
@@ -597,7 +827,7 @@ export class PhpCgiBase
 		return {...this.env};
 	}
 
-	async setEnvs(env)
+	setEnvs(env)
 	{
 		for(const key of Object.keys(this.env))
 		{
@@ -611,22 +841,25 @@ export class PhpCgiBase
 	{
 		const settings = await this.getSettings();
 		const env = await this.getEnvs();
-		this.writeFile('/config/init.json', JSON.stringify({settings, env}), {encoding: 'utf8'});
+		await this.writeFile(
+			'/config/init.json'
+			, JSON.stringify({settings, env}, null, 4)
+			, {encoding: 'utf8'}
+		);
 	}
 
-	async loadInit()
+	loadInit(binary)
 	{
 		const initPath = '/config/init.json';
-		const php = (await this.php);
-		const check = php.FS.analyzePath(initPath);
+		const check = binary.FS.analyzePath(initPath);
 
 		if(!check.exists)
 		{
 			return;
 		}
 
-		const initJson = php.FS.readFile(initPath, {encoding: 'utf8'});
-		const init = JSON.parse(initJson || {});
+		const initJson = binary.FS.readFile(initPath, {encoding: 'utf8'});
+		const init = JSON.parse(initJson || '{}');
 		const {settings, env} = init;
 
 		this.setSettings(settings);
