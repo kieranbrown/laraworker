@@ -415,7 +415,7 @@ class BuildCommand extends Command
             base_path(),
             null,
             null,
-            300
+            600
         );
 
         $process->run(function (string $type, string $buffer): void {

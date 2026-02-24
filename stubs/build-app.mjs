@@ -937,11 +937,13 @@ for (const { src, dest } of soFiles) {
 }
 
 // Optimize WASM files with wasm-opt (binaryen) for size reduction.
+// Skip the main PHP binary (php-cgi.wasm) — it's already optimized by the npm build,
+// takes minutes to process (~13 MB), and binaryen may introduce incompatible heap types.
 const wasmOptBin = join(ROOT, 'node_modules', '.bin', 'wasm-opt');
 if (existsSync(wasmOptBin)) {
   console.log('Optimizing WASM files with wasm-opt...');
-  const wasmFiles = readdirSync(import.meta.dirname).filter(f => f.endsWith('.wasm'));
-  console.log(`  Found ${wasmFiles.length} WASM files to optimize`);
+  const wasmFiles = readdirSync(import.meta.dirname).filter(f => f.endsWith('.wasm') && f !== 'php-cgi.wasm');
+  console.log(`  Found ${wasmFiles.length} WASM files to optimize (skipping php-cgi.wasm)`);
 
   for (const wasmFile of wasmFiles) {
     const wasmPath = join(import.meta.dirname, wasmFile);
