@@ -52,12 +52,16 @@ cp "$SCRIPT_DIR/.php-wasm-rc" "$BUILD_DIR/.env"
 # Without these, OPcache compiles but has no shared memory backend, rendering
 # it non-functional at runtime.
 cp "$SCRIPT_DIR/patches/opcache-wasm-support.sh" "$BUILD_DIR/"
+cp "$SCRIPT_DIR/patches/cgi-persistent-module.sh" "$BUILD_DIR/"
 
-# Insert our patch script into the Makefile's "patched" target, right after
+# Insert our patch scripts into the Makefile's "patched" target, right after
 # git apply runs the base patches. Uses a literal tab for the Makefile recipe.
+# Order matters: opcache-wasm-support runs first (fixes build), then
+# cgi-persistent-module (patches runtime behavior).
 TAB=$'\t'
 sed -i.bak "/git apply --no-index patch\/php\${PHP_VERSION}.patch/a\\
-${TAB}\${DOCKER_RUN} bash opcache-wasm-support.sh \${PHP_VERSION}" \
+${TAB}\${DOCKER_RUN} bash opcache-wasm-support.sh \${PHP_VERSION}\\
+${TAB}\${DOCKER_RUN} bash cgi-persistent-module.sh \${PHP_VERSION}" \
   "$BUILD_DIR/Makefile"
 rm -f "$BUILD_DIR/Makefile.bak"
 

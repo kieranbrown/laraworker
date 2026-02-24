@@ -28,17 +28,18 @@ curl http://localhost:8787
 - No CI wait time (5-10 minutes → instant)
 - Live reload on file changes
 
-### Direct Deploy (Skip CI Entirely)
+### Direct Deploy to Production
 
-When local testing passes, deploy directly without CI:
+Cloudflare credentials are in `.env` (gitignored). Deploy directly:
 
 ```bash
-# From the .laraworker directory
 cd playground/.laraworker
 npx wrangler deploy
 ```
 
-**Deploy time:** ~30 seconds vs 5+ minutes via CI
+**Deploy time:** ~30 seconds. The demo site is at `https://laraworker.kswb.dev`.
+
+**IMPORTANT:** `wrangler dev` uses miniflare locally. For WASM-specific behavior (memory, OPcache, isolate lifecycle), always verify with `wrangler deploy` against the real Cloudflare runtime. Local miniflare may behave differently.
 
 ### Live Production Logs
 
@@ -49,23 +50,129 @@ cd playground/.laraworker
 npx wrangler tail
 ```
 
-### CI as Final Validation Only
+### Recommended Iteration Loop
 
-Only push to git and run CI as a final validation step, not for every iteration:
-
-1. **Iterate locally** with `wrangler dev` (fast)
-2. **Deploy directly** with `wrangler deploy` when ready (30s)
+1. **Iterate locally** with `wrangler dev` (fast, catches most issues)
+2. **Deploy directly** with `wrangler deploy` when ready (30s, real CF runtime)
 3. **Push to git** and let CI run as final validation (slow, but confirms everything)
 
 ### Artisan Commands Available
 
-The following commands are available in any app using laraworker:
-
 - `php artisan laraworker:dev` — Builds app + starts `wrangler dev` locally
 - `php artisan laraworker:build` — Just builds (generates `.laraworker/` directory)
 - `php artisan laraworker:deploy` — Builds + runs `wrangler deploy` (direct deploy, no CI)
-- `bun run dev:worker` — Same as `laraworker:dev` (via package.json)
-- `bun run deploy:worker` — Same as `laraworker:deploy` (via package.json)
+
+## Performance Testing
+
+### OPcache Diagnostic Endpoint
+
+The worker exposes `/__opcache-status` when `OPCACHE_DEBUG=true` is set as a Worker env var. Use it to verify OPcache is actually caching opcodes.
+
+```bash
+# After deploying, make two sequential requests:
+curl -s https://laraworker.kswb.dev/__opcache-status | jq .
+
+# First request:  opcache_statistics.hits should be 0, misses > 0
+# Second request: hits should increase — proves OPcache persists between requests
+# If hits stays 0 on subsequent requests, OPcache is NOT persisting.
+```
+
+### Timing Requests
+
+```bash
+# Warm request timing (run multiple times, ignore the first cold start):
+for i in {1..5}; do
+  curl -s -o /dev/null -w "Request $i: %{time_total}s\n" https://laraworker.kswb.dev/
+done
+
+# Expected with working OPcache:
+#   Request 1: ~0.5-2.5s (cold start or OPcache cold miss)
+#   Request 2+: <0.1-0.2s (OPcache hot — cached opcodes)
+```
+
+### Health Check (No PHP)
+
+```bash
+# Responds without initializing PHP — baseline worker overhead:
+curl -s -o /dev/null -w "%{time_total}s\n" https://laraworker.kswb.dev/__health
+```
+
+## Rebuilding the PHP WASM Binary
+
+When modifying PHP internals (CGI SAPI patches, extension changes, php.ini defaults), you must rebuild the WASM binary.
+
+### Prerequisites
+
+- Docker (OrbStack, Rancher, or Docker Desktop)
+- The builder image: `docker pull seanmorris/phpwasm-emscripten-builder:latest`
+
+### Build Process
+
+```bash
+cd php-wasm-build && ./build.sh
+```
+
+**Build time: 20-60 minutes.** The script:
+1. Clones `seanmorris/php-wasm` sm-8.5 branch into a temp dir
+2. Copies `.php-wasm-rc` (build config) and patches from `patches/`
+3. Runs `make worker-cgi-mjs` via Docker (Emscripten cross-compilation)
+4. Copies output (`php8.5-cgi-worker.mjs` + `.wasm`) back to `php-wasm-build/`
+
+### Adding New Patches
+
+Patches go in `php-wasm-build/patches/` as shell scripts. They are injected into the Makefile's patch flow and run inside Docker after the base php-wasm patches.
+
+Example: `patches/opcache-wasm-support.sh` patches `cgi_main.c` to fix OPcache shared memory for Emscripten.
+
+To add a new patch:
+1. Create `patches/my-patch.sh` that modifies files under `third_party/php8.5-src/`
+2. Add to `build.sh` after the existing patch injection (same `sed` pattern)
+3. Rebuild with `./build.sh`
+
+### After Rebuilding
+
+```bash
+# The new binary is in php-wasm-build/. Rebuild the playground to use it:
+cd playground && php artisan laraworker:build
+
+# Test locally:
+cd .laraworker && npx wrangler dev
+
+# Deploy to production:
+npx wrangler deploy
+```
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `php-wasm-build/.php-wasm-rc` | Build flags (PHP version, OPTIMIZE, extensions, memory) |
+| `php-wasm-build/patches/` | Custom patches applied to PHP source during build |
+| `php-wasm-build/build.sh` | Orchestrates the full WASM build via Docker |
+| `php-wasm-build/PhpCgiBase.mjs` | JS-side PHP CGI runtime (request lifecycle, SAPI calls) |
+| `php-wasm-build/php8.5-cgi-worker.mjs` | Emscripten JS module (generated) |
+| `php-wasm-build/php8.5-cgi-worker.mjs.wasm` | PHP WASM binary (generated, ~13 MB uncompressed) |
+
+### PHP CGI SAPI Lifecycle (OPcache Persistence Fix)
+
+`PhpCgiBase.mjs` calls these WASM-exported functions:
+
+| Function | Called When | What It Does |
+|----------|-----------|--------------|
+| `pib_storage_init` | Once during `refresh()` | Initializes Emscripten FS mounts |
+| `wasm_sapi_cgi_init` | Once during `refresh()` | Sets `USE_ZEND_ALLOC=0` |
+| `wasm_sapi_cgi_putenv` | Before each request | Sets CGI env vars (REQUEST_URI, etc.) |
+| `main` | Every request (but startup only once) | **First call:** full startup → execute → (shutdown guarded) <br>**Subsequent calls:** skip startup, handle request directly |
+
+**The Fix:** The `cgi-persistent-module.sh` patch adds a static `_wasm_module_started` flag to `cgi_main.c`:
+- First call to `main()`: runs full `php_module_startup()`, sets flag, handles request
+- Subsequent calls: skips startup via if-guard, jumps directly to request handling
+- `php_module_shutdown()` and `sapi_shutdown()` are guarded with `#ifndef __EMSCRIPTEN__` — they never run between requests
+- This keeps OPcache's shared memory alive across all requests within an isolate
+
+**Results:** Warm TTFB ~17ms locally, 781+ hits observed in production. OPcache now truly persists between requests.
+
+**Note:** The patch uses an if-guard approach instead of goto (which confused Asyncify's stack transformation). See `php-wasm-build/patches/cgi-persistent-module.sh` for the full implementation.
 
 ## Testing Changes Locally
 
@@ -116,8 +223,12 @@ Removes the playground directory entirely. Use this when you're done testing or 
 
 - `src/` — Main composer package source
 - `src/Console/` — Artisan commands (InstallCommand.php, BuildCommand.php, DevCommand.php, DeployCommand.php, StatusCommand.php)
-- `stubs/` — Worker stubs (worker.ts, build-app.mjs, wrangler.jsonc.stub)
-- `config/laraworker.php` — Package configuration
+- `src/BuildDirectory.php` — Helper for `.laraworker/` directory operations
+- `stubs/` — Worker stubs (worker.ts.stub, build-app.mjs, wrangler.jsonc.stub)
+- `config/laraworker.php` — Package configuration (OPcache, extensions, build options)
 - `scripts/` — Playground and testing scripts
 - `php-wasm-build/` — Custom PHP WASM builder toolchain
+- `php-wasm-build/patches/` — Patches applied to PHP source during WASM build
+- `php-wasm-build/PhpCgiBase.mjs` — JS-side request lifecycle (calls WASM-exported functions)
 - `tests/` — Pest test suite
+- `.fuel/docs/performance-investigation.md` — Performance analysis and benchmarks
