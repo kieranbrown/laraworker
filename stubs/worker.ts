@@ -218,14 +218,78 @@ export default {
     try {
       const instance = await ensureInitialized(env);
 
-      // Temporary debug: capture PHP errors on 500 responses
+      // Temporary debug: check compiled views and Blade compilation
       if (url.pathname === '/__debug') {
-        const resp = await instance.request(new Request('https://localhost/'));
-        const body = await resp.text();
-        return new Response(
-          `Status: ${resp.status}\nBody (500 chars):\n${body.substring(0, 500)}`,
-          { status: 200, headers: { 'Content-Type': 'text/plain' } },
-        );
+        const FS = await instance.getFS();
+        const dumps: string[] = [];
+
+        // List compiled views
+        try {
+          const viewDir = '/app/storage/framework/views';
+          if (FS.analyzePath(viewDir).exists) {
+            const entries = FS.readdir(viewDir).filter((e: string) => e !== '.' && e !== '..');
+            dumps.push(`Compiled views: ${entries.length} files`);
+            entries.forEach((e: string) => {
+              try {
+                const bytes = FS.readFile(`${viewDir}/${e}`);
+                dumps.push(`  ${e}: ${bytes.length} bytes`);
+                // Show first 150 chars of each compiled view
+                const content = new TextDecoder().decode(bytes);
+                dumps.push(`    start: ${content.substring(0, 150).replace(/\n/g, '\\n')}`);
+              } catch {}
+            });
+          } else {
+            dumps.push('Compiled views dir: NOT FOUND');
+          }
+        } catch (e: any) {
+          dumps.push(`View dir error: ${e.message}`);
+        }
+
+        // Check config for view.compiled path
+        const enc = new TextEncoder();
+        FS.writeFile('/app/public/__diag.php', enc.encode(`<?php
+require_once '/app/vendor/autoload.php';
+${'$'}app = require_once '/app/bootstrap/app.php';
+${'$'}app->make('Illuminate\\Contracts\\Console\\Kernel')->bootstrap();
+echo "view.compiled: " . config('view.compiled') . "\\n";
+echo "view.relative_hash: " . (config('view.relative_hash') ? 'true' : 'false') . "\\n";
+echo "app.debug: " . (config('app.debug') ? 'true' : 'false') . "\\n";
+echo "basePath: " . app()->basePath() . "\\n";
+
+// Check view resolver
+${'$'}factory = app('view');
+try {
+    ${'$'}view = ${'$'}factory->make('welcome');
+    echo "View path: " . ${'$'}view->getPath() . "\\n";
+    echo "View engine: " . get_class(${'$'}view->getEngine()) . "\\n";
+
+    // Check compiled path
+    ${'$'}compiler = app('blade.compiler');
+    echo "Compiled path: " . ${'$'}compiler->getCompiledPath(${'$'}view->getPath()) . "\\n";
+    echo "Compiled exists: " . (file_exists(${'$'}compiler->getCompiledPath(${'$'}view->getPath())) ? 'yes' : 'no') . "\\n";
+    echo "isExpired: " . (${'$'}compiler->isExpired(${'$'}view->getPath()) ? 'true' : 'false') . "\\n";
+} catch (Throwable ${'$'}e) {
+    echo "View error: " . ${'$'}e->getMessage() . "\\n" . ${'$'}e->getTraceAsString() . "\\n";
+}
+`));
+
+        const diagReq = new Request('https://localhost/__diag.php');
+        const diagResp = await instance.request(diagReq);
+        const diagBody = await diagResp.text();
+        dumps.push(`\n=== PHP DIAG ===\n${diagBody}`);
+
+        // Clean up
+        try { FS.unlink('/app/public/__diag.php'); } catch {}
+
+        // Re-init MEMFS if refresh() wiped it
+        if (!FS.analyzePath('/app/public/index.php').exists) {
+          await initializeFilesystem(instance, env);
+        }
+
+        return new Response(dumps.join('\n'), {
+          status: 200,
+          headers: { 'Content-Type': 'text/plain' },
+        });
       }
 
       // All requests go through PHP - static assets are served
