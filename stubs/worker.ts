@@ -83,6 +83,12 @@ async function initializeFilesystem(
 ): Promise<void> {
   const FS = await php.getFS();
 
+  // Disable MEMFS permission enforcement entirely. Our tar unpacker doesn't
+  // set file modes, so permissions depend on the Emscripten umask at creation
+  // time. Since we're running in a WASM sandbox with no real users, there's
+  // no security benefit to enforcing file permissions.
+  FS.ignorePermissions = true;
+
   // Fetch the compressed Laravel application from Static Assets
   const tarResponse = await env.ASSETS.fetch(
     new Request('http://assets.local/app.tar.gz'),
@@ -131,29 +137,10 @@ async function initializeFilesystem(
     mkdirp(FS, dir);
   }
 
-  // Fix MEMFS permissions — Emscripten's default umask (0777) can prevent
-  // file_put_contents() from writing to directories created by untar.
-  // chmod writable dirs to 0777 so Laravel can write cache files.
-  const writableDirs = [
-    '/app/storage',
-    '/app/storage/framework',
-    '/app/storage/framework/sessions',
-    '/app/storage/framework/views',
-    '/app/storage/framework/cache',
-    '/app/storage/framework/cache/data',
-    '/app/storage/logs',
-    '/app/bootstrap/cache',
-  ];
-
-  for (const dir of writableDirs) {
-    if (FS.analyzePath(dir).exists) {
-      FS.chmod(dir, 0o777);
-    }
-  }
 }
 
 function mkdirp(
-  FS: { analyzePath(p: string): { exists: boolean }; mkdir(p: string): void; chmod(p: string, mode: number): void },
+  FS: { analyzePath(p: string): { exists: boolean }; mkdir(p: string): void },
   path: string,
 ): void {
   const parts = path.split('/').filter(Boolean);
@@ -243,6 +230,51 @@ export default {
 
     try {
       const instance = await ensureInitialized(env);
+
+      // Debug endpoint — returns filesystem state for diagnostics
+      if (url.pathname === '/__debug') {
+        const FS = await instance.getFS();
+        const checks: string[] = [];
+        const paths = [
+          '/app', '/app/public', '/app/public/index.php',
+          '/app/vendor', '/app/vendor/autoload.php',
+          '/app/bootstrap', '/app/bootstrap/app.php',
+          '/app/.env', '/app/php-stubs.php',
+          '/app/bootstrap/cache/config.php',
+          '/app/bootstrap/cache/routes-v7.php',
+          '/php.ini',
+        ];
+        for (const p of paths) {
+          const info = FS.analyzePath(p);
+          const mode = info.exists && info.object ? (info.object.mode >>> 0).toString(8) : 'N/A';
+          checks.push(`${info.exists ? '✓' : '✗'} ${p} (mode: ${mode})`);
+        }
+        // List /app/public/ contents
+        try {
+          const publicDir = FS.readdir('/app/public');
+          checks.push(`\n/app/public/ contents: ${JSON.stringify(publicDir)}`);
+        } catch (e: unknown) {
+          checks.push(`\n/app/public/ readdir error: ${e}`);
+        }
+        // List /app/ contents
+        try {
+          const appDir = FS.readdir('/app');
+          checks.push(`/app/ contents: ${JSON.stringify(appDir)}`);
+        } catch (e: unknown) {
+          checks.push(`/app/ readdir error: ${e}`);
+        }
+        // Check php.ini contents
+        try {
+          const ini = FS.readFile('/php.ini', { encoding: 'utf8' });
+          checks.push(`\n/php.ini contents:\n${ini}`);
+        } catch (e: unknown) {
+          checks.push(`\n/php.ini read error: ${e}`);
+        }
+        return new Response(checks.join('\n'), {
+          status: 200,
+          headers: { 'Content-Type': 'text/plain' },
+        });
+      }
 
       // All requests go through PHP - static assets are served
       // by Cloudflare Static Assets before the worker is invoked
