@@ -144,8 +144,8 @@ const DEFAULT_EXCLUDE_PATTERNS = [
   '/vendor\\/laravel\\/framework\\/src\\/Illuminate\\/Foundation\\/resources\\/exceptions\\/renderer\\/package/',
   '/vendor\\/laravel\\/framework\\/src\\/Illuminate\\/Foundation\\/resources\\/exceptions\\/renderer\\/vite/',
 
-  // Laravel framework testing utilities (not needed at runtime)
-  '/vendor\\/laravel\\/framework\\/src\\/Illuminate\\/Testing\\//',
+  // NOTE: Illuminate/Testing/ is NOT excluded — FoundationServiceProvider
+  // unconditionally registers ParallelTestingServiceProvider at boot.
 
   // Laravel framework fixtures & stubs (dev-only)
   '/vendor\\/laravel\\/framework\\/src\\/Illuminate\\/Foundation\\/Console\\/stubs\\//',
@@ -240,6 +240,323 @@ if (!function_exists('mb_substr')) {
 if (!function_exists('mb_strpos')) {
     function mb_strpos($haystack, $needle, $offset = 0, $encoding = null) {
         return strpos($haystack, $needle, $offset);
+    }
+}`);
+  }
+
+  // filter stubs - only if filter extension is not enabled
+  if (!extensions.filter) {
+    stubs.push(`
+// filter extension constants
+if (!defined('FILTER_VALIDATE_INT')) {
+    define('FILTER_VALIDATE_INT', 257);
+    define('FILTER_VALIDATE_BOOLEAN', 258);
+    define('FILTER_VALIDATE_FLOAT', 259);
+    define('FILTER_VALIDATE_EMAIL', 274);
+    define('FILTER_VALIDATE_URL', 273);
+    define('FILTER_VALIDATE_IP', 275);
+    define('FILTER_VALIDATE_MAC', 281);
+    define('FILTER_VALIDATE_DOMAIN', 277);
+    define('FILTER_VALIDATE_REGEXP', 272);
+    define('FILTER_DEFAULT', 516);
+    define('FILTER_UNSAFE_RAW', 516);
+    define('FILTER_SANITIZE_STRING', 513);
+    define('FILTER_SANITIZE_STRIPPED', 513);
+    define('FILTER_SANITIZE_ENCODED', 514);
+    define('FILTER_SANITIZE_SPECIAL_CHARS', 515);
+    define('FILTER_SANITIZE_NUMBER_INT', 519);
+    define('FILTER_SANITIZE_NUMBER_FLOAT', 520);
+    define('FILTER_SANITIZE_URL', 518);
+    define('FILTER_SANITIZE_EMAIL', 517);
+    define('FILTER_SANITIZE_ADD_SLASHES', 523);
+    define('FILTER_SANITIZE_FULL_SPECIAL_CHARS', 522);
+    define('FILTER_CALLBACK', 1024);
+    define('FILTER_FLAG_NONE', 0);
+    define('FILTER_FLAG_ALLOW_OCTAL', 1);
+    define('FILTER_FLAG_ALLOW_HEX', 2);
+    define('FILTER_FLAG_STRIP_LOW', 4);
+    define('FILTER_FLAG_STRIP_HIGH', 8);
+    define('FILTER_FLAG_ENCODE_LOW', 16);
+    define('FILTER_FLAG_ENCODE_HIGH', 32);
+    define('FILTER_FLAG_ENCODE_AMP', 64);
+    define('FILTER_FLAG_NO_ENCODE_QUOTES', 128);
+    define('FILTER_FLAG_EMPTY_STRING_NULL', 256);
+    define('FILTER_FLAG_STRIP_BACKTICK', 512);
+    define('FILTER_FLAG_ALLOW_FRACTION', 1024);
+    define('FILTER_FLAG_ALLOW_THOUSAND', 2048);
+    define('FILTER_FLAG_ALLOW_SCIENTIFIC', 4096);
+    define('FILTER_FLAG_PATH_REQUIRED', 262144);
+    define('FILTER_FLAG_QUERY_REQUIRED', 524288);
+    define('FILTER_FLAG_IPV4', 1048576);
+    define('FILTER_FLAG_IPV6', 2097152);
+    define('FILTER_FLAG_NO_RES_RANGE', 4194304);
+    define('FILTER_FLAG_NO_PRIV_RANGE', 8388608);
+    define('FILTER_FLAG_HOSTNAME', 1048576);
+    define('FILTER_FLAG_EMAIL_UNICODE', 1048576);
+    define('FILTER_REQUIRE_SCALAR', 33554432);
+    define('FILTER_REQUIRE_ARRAY', 16777216);
+    define('FILTER_FORCE_ARRAY', 67108864);
+    define('FILTER_NULL_ON_FAILURE', 134217728);
+    define('INPUT_GET', 1);
+    define('INPUT_POST', 2);
+    define('INPUT_COOKIE', 4);
+    define('INPUT_SERVER', 5);
+    define('INPUT_ENV', 16);
+}
+if (!function_exists('filter_var')) {
+    function filter_var($value, $filter = 516, $options = 0) {
+        if (is_array($options)) {
+            $flags = $options['flags'] ?? 0;
+            $opts = $options['options'] ?? [];
+        } else {
+            $flags = $options;
+            $opts = [];
+        }
+        switch ($filter) {
+            case 257: // FILTER_VALIDATE_INT
+                $min = $opts['min_range'] ?? null;
+                $max = $opts['max_range'] ?? null;
+                if (is_int($value)) { $v = $value; }
+                elseif (is_string($value) && preg_match('/^[+-]?\\d+$/', trim($value))) { $v = (int) trim($value); }
+                else { return false; }
+                if ($min !== null && $v < $min) return false;
+                if ($max !== null && $v > $max) return false;
+                return $v;
+            case 259: // FILTER_VALIDATE_FLOAT
+                if (is_float($value) || is_int($value)) return (float) $value;
+                if (is_string($value) && is_numeric(trim($value))) return (float) trim($value);
+                return false;
+            case 258: // FILTER_VALIDATE_BOOLEAN
+                if ($value === true || $value === 1 || $value === '1' || strtolower((string)$value) === 'true' || strtolower((string)$value) === 'on' || strtolower((string)$value) === 'yes') return true;
+                if ($value === false || $value === 0 || $value === '0' || $value === '' || strtolower((string)$value) === 'false' || strtolower((string)$value) === 'off' || strtolower((string)$value) === 'no') return false;
+                if ($flags & 134217728) return null;
+                return false;
+            case 274: // FILTER_VALIDATE_EMAIL
+                return preg_match('/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/', (string) $value) ? (string) $value : false;
+            case 273: // FILTER_VALIDATE_URL
+                return preg_match('/^https?:\\/\\/.+/i', (string) $value) ? (string) $value : false;
+            case 275: // FILTER_VALIDATE_IP
+                $v = (string) $value;
+                if (($flags & 1048576) && filter_var_ipv4($v)) return $v;
+                if (($flags & 2097152) && filter_var_ipv6($v)) return $v;
+                if (!$flags || ($flags & ~(4194304|8388608|1048576|2097152)) === 0) {
+                    if (filter_var_ipv4($v) || filter_var_ipv6($v)) return $v;
+                }
+                return false;
+            case 272: // FILTER_VALIDATE_REGEXP
+                $regexp = $opts['regexp'] ?? '';
+                return preg_match($regexp, (string) $value) ? (string) $value : false;
+            case 519: // FILTER_SANITIZE_NUMBER_INT
+                return preg_replace('/[^0-9+\\-]/', '', (string) $value);
+            case 520: // FILTER_SANITIZE_NUMBER_FLOAT
+                $allow = '';
+                if ($flags & 1024) $allow .= '.';
+                if ($flags & 2048) $allow .= ',';
+                if ($flags & 4096) $allow .= 'eE';
+                return preg_replace('/[^0-9+\\-' . preg_quote($allow, '/') . ']/', '', (string) $value);
+            case 515: // FILTER_SANITIZE_SPECIAL_CHARS
+            case 522: // FILTER_SANITIZE_FULL_SPECIAL_CHARS
+                return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+            case 518: // FILTER_SANITIZE_URL
+                return (string) $value;
+            case 517: // FILTER_SANITIZE_EMAIL
+                return (string) $value;
+            case 514: // FILTER_SANITIZE_ENCODED
+                return rawurlencode((string) $value);
+            case 523: // FILTER_SANITIZE_ADD_SLASHES
+                return addslashes((string) $value);
+            case 513: // FILTER_SANITIZE_STRING
+                return strip_tags((string) $value);
+            case 1024: // FILTER_CALLBACK
+                $callback = $opts['callback'] ?? $opts ?? null;
+                return is_callable($callback) ? $callback($value) : $value;
+            default: // FILTER_DEFAULT
+                return (string) $value;
+        }
+    }
+    function filter_var_ipv4($ip) { return preg_match('/^(\\d{1,3}\\.){3}\\d{1,3}$/', $ip) && !preg_match('/\\d{4,}/', $ip); }
+    function filter_var_ipv6($ip) { return strpos($ip, ':') !== false && preg_match('/^[0-9a-fA-F:]+$/', str_replace(['[', ']'], '', $ip)); }
+}
+if (!function_exists('filter_input')) {
+    function filter_input($type, $var_name, $filter = 516, $options = 0) {
+        switch ($type) {
+            case 1: $source = $_GET ?? []; break;
+            case 2: $source = $_POST ?? []; break;
+            case 4: $source = $_COOKIE ?? []; break;
+            case 5: $source = $_SERVER ?? []; break;
+            case 16: $source = $_ENV ?? []; break;
+            default: return null;
+        }
+        if (!isset($source[$var_name])) return null;
+        return filter_var($source[$var_name], $filter, $options);
+    }
+}
+if (!function_exists('filter_has_var')) {
+    function filter_has_var($type, $var_name) {
+        switch ($type) {
+            case 1: return isset($_GET[$var_name]);
+            case 2: return isset($_POST[$var_name]);
+            case 4: return isset($_COOKIE[$var_name]);
+            case 5: return isset($_SERVER[$var_name]);
+            case 16: return isset($_ENV[$var_name]);
+            default: return false;
+        }
+    }
+}
+if (!function_exists('filter_input_array')) {
+    function filter_input_array($type, $options = null, $add_empty = true) {
+        switch ($type) {
+            case 1: $source = $_GET ?? []; break;
+            case 2: $source = $_POST ?? []; break;
+            case 4: $source = $_COOKIE ?? []; break;
+            case 5: $source = $_SERVER ?? []; break;
+            case 16: $source = $_ENV ?? []; break;
+            default: return null;
+        }
+        if ($options === null || is_int($options)) {
+            $result = [];
+            foreach ($source as $k => $v) {
+                $result[$k] = is_int($options) ? filter_var($v, $options) : $v;
+            }
+            return $result;
+        }
+        return $source;
+    }
+}
+if (!function_exists('filter_var_array')) {
+    function filter_var_array($array, $options = null, $add_empty = true) {
+        if ($options === null || is_int($options)) {
+            $result = [];
+            foreach ($array as $k => $v) {
+                $result[$k] = is_int($options) ? filter_var($v, $options) : $v;
+            }
+            return $result;
+        }
+        return $array;
+    }
+}
+if (!function_exists('filter_list')) {
+    function filter_list() {
+        return ['int', 'boolean', 'float', 'validate_regexp', 'validate_domain', 'validate_url', 'validate_email', 'validate_ip', 'validate_mac', 'string', 'stripped', 'encoded', 'special_chars', 'full_special_chars', 'unsafe_raw', 'email', 'url', 'number_int', 'number_float', 'add_slashes', 'callback'];
+    }
+}
+if (!function_exists('filter_id')) {
+    function filter_id($name) {
+        $map = ['int' => 257, 'boolean' => 258, 'float' => 259, 'validate_regexp' => 272, 'validate_url' => 273, 'validate_email' => 274, 'validate_ip' => 275, 'string' => 513, 'stripped' => 513, 'encoded' => 514, 'special_chars' => 515, 'unsafe_raw' => 516, 'email' => 517, 'url' => 518, 'number_int' => 519, 'number_float' => 520, 'full_special_chars' => 522, 'add_slashes' => 523, 'callback' => 1024];
+        return $map[$name] ?? false;
+    }
+}`);
+  }
+
+  // ctype stubs - only if ctype extension is not enabled
+  if (!extensions.ctype) {
+    stubs.push(`
+// ctype stub functions
+if (!function_exists('ctype_alnum')) {
+    function ctype_alnum($text) { return is_string($text) && $text !== '' && preg_match('/^[a-zA-Z0-9]+$/', $text); }
+    function ctype_alpha($text) { return is_string($text) && $text !== '' && preg_match('/^[a-zA-Z]+$/', $text); }
+    function ctype_cntrl($text) { return is_string($text) && $text !== '' && preg_match('/^[\\x00-\\x1f\\x7f]+$/', $text); }
+    function ctype_digit($text) { return is_string($text) && $text !== '' && preg_match('/^[0-9]+$/', $text); }
+    function ctype_graph($text) { return is_string($text) && $text !== '' && preg_match('/^[\\x21-\\x7e]+$/', $text); }
+    function ctype_lower($text) { return is_string($text) && $text !== '' && preg_match('/^[a-z]+$/', $text); }
+    function ctype_print($text) { return is_string($text) && $text !== '' && preg_match('/^[\\x20-\\x7e]+$/', $text); }
+    function ctype_punct($text) { return is_string($text) && $text !== '' && preg_match('/^[^a-zA-Z0-9\\s]+$/', $text); }
+    function ctype_space($text) { return is_string($text) && $text !== '' && preg_match('/^[\\s]+$/', $text); }
+    function ctype_upper($text) { return is_string($text) && $text !== '' && preg_match('/^[A-Z]+$/', $text); }
+    function ctype_xdigit($text) { return is_string($text) && $text !== '' && preg_match('/^[0-9a-fA-F]+$/', $text); }
+}`);
+  }
+
+  // tokenizer stubs - only if tokenizer extension is not enabled
+  if (!extensions.tokenizer) {
+    stubs.push(`
+// tokenizer stub constants
+if (!defined('T_OPEN_TAG')) {
+    define('T_OPEN_TAG', 379);
+    define('T_OPEN_TAG_WITH_ECHO', 380);
+    define('T_CLOSE_TAG', 381);
+    define('T_WHITESPACE', 396);
+    define('T_COMMENT', 397);
+    define('T_DOC_COMMENT', 398);
+    define('T_STRING', 319);
+    define('T_VARIABLE', 320);
+    define('T_INLINE_HTML', 323);
+    define('T_ECHO', 328);
+    define('T_CONSTANT_ENCAPSED_STRING', 323);
+    define('T_LNUMBER', 311);
+    define('T_DNUMBER', 312);
+    define('TOKEN_PARSE', 1);
+}
+if (!function_exists('token_get_all')) {
+    /**
+     * Minimal tokenizer that splits PHP open/close tags from inline HTML.
+     * Required by Blade compiler which tokenizes compiled templates to
+     * separate T_INLINE_HTML (for Blade directives) from PHP code blocks.
+     */
+    function token_get_all($code, $flags = 0) {
+        $tokens = [];
+        $line = 1;
+        $pos = 0;
+        $len = strlen($code);
+        while ($pos < $len) {
+            $nextOpen = strpos($code, '<?', $pos);
+            if ($nextOpen === false) {
+                $html = substr($code, $pos);
+                if ($html !== '') {
+                    $tokens[] = [T_INLINE_HTML, $html, $line];
+                    $line += substr_count($html, "\\n");
+                }
+                break;
+            }
+            if ($nextOpen > $pos) {
+                $html = substr($code, $pos, $nextOpen - $pos);
+                $tokens[] = [T_INLINE_HTML, $html, $line];
+                $line += substr_count($html, "\\n");
+            }
+            if (substr($code, $nextOpen, 5) === '<?php' && ($nextOpen + 5 >= $len || !ctype_alnum($code[$nextOpen + 5]))) {
+                $tagEnd = $nextOpen + 5;
+                if ($tagEnd < $len && ($code[$tagEnd] === ' ' || $code[$tagEnd] === "\\n" || $code[$tagEnd] === "\\r" || $code[$tagEnd] === "\\t")) {
+                    $tagEnd++;
+                }
+                $tokens[] = [T_OPEN_TAG, substr($code, $nextOpen, $tagEnd - $nextOpen), $line];
+                $pos = $tagEnd;
+            } elseif (substr($code, $nextOpen, 3) === '<?=') {
+                $tokens[] = [T_OPEN_TAG_WITH_ECHO, '<?= ', $line];
+                $pos = $nextOpen + 3;
+                if ($pos < $len && $code[$pos] === ' ') $pos++;
+            } else {
+                $tokens[] = [T_INLINE_HTML, '<?', $line];
+                $pos = $nextOpen + 2;
+                continue;
+            }
+            $closePos = strpos($code, '?>', $pos);
+            if ($closePos === false) {
+                $phpCode = substr($code, $pos);
+                if ($phpCode !== '') {
+                    $tokens[] = [T_STRING, $phpCode, $line];
+                    $line += substr_count($phpCode, "\\n");
+                }
+                break;
+            }
+            $phpCode = substr($code, $pos, $closePos - $pos);
+            if ($phpCode !== '') {
+                $tokens[] = [T_STRING, $phpCode, $line];
+                $line += substr_count($phpCode, "\\n");
+            }
+            $closeEnd = $closePos + 2;
+            if ($closeEnd < $len && $code[$closeEnd] === "\\n") $closeEnd++;
+            $closeTag = substr($code, $closePos, $closeEnd - $closePos);
+            $tokens[] = [T_CLOSE_TAG, $closeTag, $line];
+            $line += substr_count($closeTag, "\\n");
+            $pos = $closeEnd;
+        }
+        return $tokens;
+    }
+}
+if (!function_exists('token_name')) {
+    function token_name($id) {
+        $names = [379 => 'T_OPEN_TAG', 380 => 'T_OPEN_TAG_WITH_ECHO', 381 => 'T_CLOSE_TAG', 396 => 'T_WHITESPACE', 397 => 'T_COMMENT', 398 => 'T_DOC_COMMENT', 319 => 'T_STRING', 320 => 'T_VARIABLE', 323 => 'T_INLINE_HTML', 328 => 'T_ECHO'];
+        return $names[$id] ?? 'UNKNOWN';
     }
 }`);
   }

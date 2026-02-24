@@ -49,7 +49,6 @@ interface Env {
 }
 
 let php: PhpCgiCloudflare | null = null;
-let initialized: Promise<void> | null = null;
 
 async function ensureInitialized(env: Env): Promise<PhpCgiCloudflare> {
   if (!php) {
@@ -69,11 +68,16 @@ async function ensureInitialized(env: Env): Promise<PhpCgiCloudflare> {
         'opcache.max_accelerated_files=2000',
       ].join('\n'),
     });
-
-    initialized = initializeFilesystem(php, env);
   }
 
-  await initialized;
+  // PhpCgiBase.request() calls refresh() when PHP exits with non-zero code,
+  // which creates a brand new Emscripten module with empty MEMFS. This wipes
+  // all previously extracted files. Check if MEMFS needs (re-)initialization.
+  const FS = await php.getFS();
+  if (!FS.analyzePath('/app/public/index.php').exists) {
+    await initializeFilesystem(php, env);
+  }
+
   return php;
 }
 
@@ -246,66 +250,13 @@ export default {
         ];
         for (const p of paths) {
           const info = FS.analyzePath(p);
-          const mode = info.exists && info.object ? (info.object.mode >>> 0).toString(8) : 'N/A';
-          checks.push(`${info.exists ? '✓' : '✗'} ${p} (mode: ${mode})`);
+          checks.push(`${info.exists ? '✓' : '✗'} ${p}`);
         }
-        // List /app/public/ contents
-        try {
-          const publicDir = FS.readdir('/app/public');
-          checks.push(`\n/app/public/ contents: ${JSON.stringify(publicDir)}`);
-        } catch (e: unknown) {
-          checks.push(`\n/app/public/ readdir error: ${e}`);
-        }
-        // List /app/ contents
         try {
           const appDir = FS.readdir('/app');
-          checks.push(`/app/ contents: ${JSON.stringify(appDir)}`);
+          checks.push(`\n/app/ contents: ${JSON.stringify(appDir)}`);
         } catch (e: unknown) {
-          checks.push(`/app/ readdir error: ${e}`);
-        }
-        // Check php.ini contents
-        try {
-          const ini = FS.readFile('/php.ini', { encoding: 'utf8' });
-          checks.push(`\n/php.ini contents:\n${ini}`);
-        } catch (e: unknown) {
-          checks.push(`\n/php.ini read error: ${e}`);
-        }
-        // Check index.php content
-        try {
-          const indexPhp = FS.readFile('/app/public/index.php', { encoding: 'utf8' });
-          checks.push(`\n/app/public/index.php (${indexPhp.length} bytes):\n${indexPhp.substring(0, 500)}`);
-        } catch (e: unknown) {
-          checks.push(`\n/app/public/index.php read error: ${e}`);
-        }
-        // Test 1: simple PHP file through PhpCgiBase
-        try {
-          FS.writeFile('/app/public/test.php', '<?php echo "HELLO_FROM_PHP";');
-          const testReq = new Request('https://laraworker.kswb.dev/test.php');
-          const testResp = await instance.request(testReq);
-          const testBody = await testResp.text();
-          checks.push(`\nTest /test.php: status=${testResp.status} body="${testBody.substring(0, 100)}"`);
-        } catch (e: unknown) {
-          checks.push(`\nTest /test.php error: ${e instanceof Error ? e.stack : e}`);
-        }
-        // Test 2: root route through PhpCgiBase (the one that fails)
-        try {
-          const rootReq = new Request('https://laraworker.kswb.dev/');
-          const rootResp = await instance.request(rootReq);
-          const rootBody = await rootResp.text();
-          checks.push(`\nTest /: status=${rootResp.status} body="${rootBody.substring(0, 200)}"`);
-          checks.push(`Test / headers:`);
-          rootResp.headers.forEach((v: string, k: string) => checks.push(`  ${k}: ${v}`));
-        } catch (e: unknown) {
-          checks.push(`\nTest / error: ${e instanceof Error ? e.stack : e}`);
-        }
-        // Test 3: direct index.php through PhpCgiBase
-        try {
-          const idxReq = new Request('https://laraworker.kswb.dev/index.php');
-          const idxResp = await instance.request(idxReq);
-          const idxBody = await idxResp.text();
-          checks.push(`\nTest /index.php: status=${idxResp.status} body="${idxBody.substring(0, 200)}"`);
-        } catch (e: unknown) {
-          checks.push(`\nTest /index.php error: ${e instanceof Error ? e.stack : e}`);
+          checks.push(`\n/app/ readdir error: ${e}`);
         }
         return new Response(checks.join('\n'), {
           status: 200,
