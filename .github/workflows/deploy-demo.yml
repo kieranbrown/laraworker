@@ -43,7 +43,31 @@ jobs:
 
       - name: Replace welcome view
         working-directory: demo
-        run: cp ../laraworker-package/playground/resources/views/welcome.blade.php resources/views/welcome.blade.php
+        run: |
+          cat > resources/views/welcome.blade.php << 'BLADE'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <title>{{ config('app.name', 'Laravel') }}</title>
+              <style>
+                  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #f8fafc; color: #1a202c; }
+                  .container { text-align: center; padding: 2rem; }
+                  h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
+                  p { color: #718096; font-size: 1.1rem; }
+                  .badge { display: inline-block; background: #edf2f7; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; color: #4a5568; margin-top: 1rem; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>Laravel on Cloudflare Workers</h1>
+                  <p>Powered by PHP {{ PHP_VERSION }} via WebAssembly</p>
+                  <span class="badge">{{ date('Y-m-d H:i:s T') }}</span>
+              </div>
+          </body>
+          </html>
+          BLADE
 
       - name: Build frontend assets
         working-directory: demo
