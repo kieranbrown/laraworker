@@ -66,22 +66,6 @@ test('install updates package.json with dependencies', function () {
         ->toHaveKey('deploy:worker');
 });
 
-test('install adds extension npm packages when extensions are enabled', function () {
-    config(['laraworker.extensions' => ['mbstring' => true, 'openssl' => true]]);
-
-    file_put_contents(base_path('package.json'), json_encode(['name' => 'test']));
-    file_put_contents(base_path('.env'), "APP_NAME=Test\n");
-
-    $this->artisan('laraworker:install')
-        ->assertSuccessful();
-
-    $packageJson = json_decode(file_get_contents(base_path('package.json')), true);
-
-    expect($packageJson['dependencies'])
-        ->toHaveKey('php-wasm-mbstring')
-        ->toHaveKey('php-wasm-openssl');
-});
-
 test('install updates .gitignore with .laraworker entry', function () {
     file_put_contents(base_path('package.json'), json_encode(['name' => 'test']));
     file_put_contents(base_path('.env'), "APP_NAME=Test\n");

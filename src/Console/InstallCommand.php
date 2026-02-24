@@ -76,19 +76,6 @@ class InstallCommand extends Command
             $versions = self::npmVersions();
             $packageJson['devDependencies'] = array_merge($packageJson['devDependencies'] ?? [], $versions);
 
-            // Add extension npm packages
-            /** @var array<string, bool> $extensions */
-            $extensions = config('laraworker.extensions', []);
-            foreach (array_keys(array_filter($extensions)) as $ext) {
-                if (isset(BuildDirectory::EXTENSION_REGISTRY[$ext])) {
-                    foreach (BuildDirectory::EXTENSION_REGISTRY[$ext]['npm_packages'] as $pkg => $version) {
-                        $packageJson['dependencies'] = array_merge($packageJson['dependencies'] ?? [], [
-                            $pkg => $version,
-                        ]);
-                    }
-                }
-            }
-
             // Sort dependencies
             if (isset($packageJson['devDependencies'])) {
                 ksort($packageJson['devDependencies']);
