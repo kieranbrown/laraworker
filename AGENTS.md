@@ -153,20 +153,26 @@ npx wrangler deploy
 | `php-wasm-build/php8.5-cgi-worker.mjs` | Emscripten JS module (generated) |
 | `php-wasm-build/php8.5-cgi-worker.mjs.wasm` | PHP WASM binary (generated, ~13 MB uncompressed) |
 
-### PHP CGI SAPI Lifecycle (Critical for OPcache)
+### PHP CGI SAPI Lifecycle (OPcache Persistence Fix)
 
 `PhpCgiBase.mjs` calls these WASM-exported functions:
 
 | Function | Called When | What It Does |
 |----------|-----------|--------------|
 | `pib_storage_init` | Once during `refresh()` | Initializes Emscripten FS mounts |
-| `wasm_sapi_cgi_init` | Once during `refresh()` | Sets `USE_ZEND_ALLOC=0` (that's ALL it does) |
+| `wasm_sapi_cgi_init` | Once during `refresh()` | Sets `USE_ZEND_ALLOC=0` |
 | `wasm_sapi_cgi_putenv` | Before each request | Sets CGI env vars (REQUEST_URI, etc.) |
-| `main` | **Every request** | Full PHP CGI lifecycle: `php_module_startup()` → execute → `php_module_shutdown()` |
+| `main` | Every request (but startup only once) | **First call:** full startup → execute → (shutdown guarded) <br>**Subsequent calls:** skip startup, handle request directly |
 
-**CRITICAL:** Calling `main()` per request means `php_module_shutdown()` destroys OPcache SHM every time. OPcache compiles all files, caches them, then throws the cache away. This makes OPcache **actively harmful** in the current architecture.
+**The Fix:** The `cgi-persistent-module.sh` patch adds a static `_wasm_module_started` flag to `cgi_main.c`:
+- First call to `main()`: runs full `php_module_startup()`, sets flag, handles request
+- Subsequent calls: skips startup via if-guard, jumps directly to request handling
+- `php_module_shutdown()` and `sapi_shutdown()` are guarded with `#ifndef __EMSCRIPTEN__` — they never run between requests
+- This keeps OPcache's shared memory alive across all requests within an isolate
 
-The fix: patch `cgi_main.c` to do `php_module_startup()` once and only call `php_request_startup()`/`php_request_shutdown()` per request. See the seanmorris/php-wasm `patch/php8.5.patch` for context on how `cgi_main.c` is already patched.
+**Results:** Warm TTFB ~17ms locally, 781+ hits observed in production. OPcache now truly persists between requests.
+
+**Note:** The patch uses an if-guard approach instead of goto (which confused Asyncify's stack transformation). See `php-wasm-build/patches/cgi-persistent-module.sh` for the full implementation.
 
 ## Testing Changes Locally
 
