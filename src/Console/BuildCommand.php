@@ -23,7 +23,7 @@ class BuildCommand extends Command
         $this->components->task('Preparing build directory', function () {
             $this->buildDirectory->ensureDirectory();
             $this->buildDirectory->copyStubs();
-            $this->buildDirectory->generatePhpTs(config('laraworker.extensions', []));
+            $this->buildDirectory->generatePhpTs();
             $this->buildDirectory->generateWranglerConfig();
             $this->buildDirectory->generateEnvProduction();
             $this->buildDirectory->writeBuildConfig();
@@ -121,6 +121,13 @@ class BuildCommand extends Command
         }
         file_put_contents($stagingDir.'/composer.json', json_encode($composerJson, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n");
 
+        // Copy the project's autoload source directories (app/, database/, etc.) into the
+        // staging directory. Without these, Composer's --classmap-authoritative flag generates
+        // a classmap that only covers vendor packages, missing all App\* classes. At runtime,
+        // the authoritative classloader won't fall back to PSR-4 directory scanning, so any
+        // attempt to load App\Providers\AppServiceProvider (or any app class) causes a fatal error.
+        $this->copyAutoloadSources($composerJson, $basePath, $stagingDir);
+
         // Run composer update (not install) because the lock file contains relative path
         // repository source paths that don't resolve from the staging directory
         $process = new Process(
@@ -150,6 +157,85 @@ class BuildCommand extends Command
         file_put_contents($buildConfigPath, json_encode($config, JSON_PRETTY_PRINT)."\n");
 
         return true;
+    }
+
+    /**
+     * Copy the project's autoload source directories into the staging directory.
+     *
+     * Composer's --classmap-authoritative only uses the classmap (no PSR-4 fallback).
+     * The classmap is built by scanning directories declared in composer.json's autoload
+     * section. Since the staging directory only contains vendor/, the app's own classes
+     * (App\*, Database\*) would be missing from the classmap without this step.
+     *
+     * @param  array<string, mixed>  $composerJson
+     */
+    private function copyAutoloadSources(array $composerJson, string $basePath, string $stagingDir): void
+    {
+        $autoload = $composerJson['autoload'] ?? [];
+
+        foreach ($autoload['psr-4'] ?? [] as $paths) {
+            foreach ((array) $paths as $path) {
+                $src = $basePath.'/'.rtrim($path, '/');
+                $dst = $stagingDir.'/'.rtrim($path, '/');
+
+                if (is_dir($src) && ! is_dir($dst)) {
+                    $this->copyDirectoryRecursive($src, $dst);
+                }
+            }
+        }
+
+        foreach ($autoload['classmap'] ?? [] as $path) {
+            $src = $basePath.'/'.rtrim($path, '/');
+            $dst = $stagingDir.'/'.rtrim($path, '/');
+
+            if (is_dir($src) && ! is_dir($dst)) {
+                $this->copyDirectoryRecursive($src, $dst);
+            } elseif (is_file($src) && ! file_exists($dst)) {
+                $dir = dirname($dst);
+                if (! is_dir($dir)) {
+                    mkdir($dir, 0755, true);
+                }
+                copy($src, $dst);
+            }
+        }
+
+        foreach ($autoload['files'] ?? [] as $file) {
+            $src = $basePath.'/'.$file;
+            $dst = $stagingDir.'/'.$file;
+
+            if (is_file($src) && ! file_exists($dst)) {
+                $dir = dirname($dst);
+                if (! is_dir($dir)) {
+                    mkdir($dir, 0755, true);
+                }
+                copy($src, $dst);
+            }
+        }
+    }
+
+    /**
+     * Recursively copy a directory.
+     */
+    private function copyDirectoryRecursive(string $source, string $dest): void
+    {
+        mkdir($dest, 0755, true);
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($source, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::SELF_FIRST
+        );
+
+        foreach ($iterator as $item) {
+            $destPath = $dest.'/'.$iterator->getSubPathname();
+
+            if ($item->isDir()) {
+                if (! is_dir($destPath)) {
+                    mkdir($destPath, 0755, true);
+                }
+            } else {
+                copy($item->getPathname(), $destPath);
+            }
+        }
     }
 
     /**

@@ -175,6 +175,14 @@ const STRIP_PROVIDERS = config.strip_providers ?? [];
 function generatePhpStubs(extensions) {
   const stubs = [];
 
+  // Enable error reporting so PHP errors appear in Cloudflare logs (stderr).
+  // display_errors sends output to stderr in CGI mode, not to the HTTP response body.
+  stubs.push(`
+// Report PHP errors to stderr (visible in Cloudflare Workers logs)
+error_reporting(E_ALL);
+ini_set('display_errors', 'stderr');
+ini_set('display_startup_errors', '1');`);
+
   // umask fix for MEMFS - always needed
   stubs.push(`
 // Fix for MEMFS umask issue
@@ -745,227 +753,67 @@ if (existsSync(viteBuildDir)) {
   console.log('  Done.');
 }
 
-// Patch the Emscripten PHP module for Cloudflare Workers compatibility.
-console.log('  Patching PHP module for Workers compatibility...');
-const phpModuleSrc = join(ROOT, 'node_modules', 'php-cgi-wasm', 'php-cgi-web.mjs');
-const phpModuleDest = join(import.meta.dirname, 'php-cgi.mjs');
-let phpModule = readFileSync(phpModuleSrc, 'utf8');
+// Copy custom PHP 8.5 WASM binary and Emscripten module from php-wasm-build/.
+// The custom build has INITIAL_MEMORY baked in and OPcache statically linked —
+// no binary patching or dynamic extension loading needed.
+console.log('  Copying custom PHP 8.5 WASM binary...');
 
-// Patch 1: Replace `new URL("...wasm", import.meta.url).href` with a try/catch fallback.
+const phpWasmBuildDir = join(ROOT, 'php-wasm-build');
+
+// Copy the custom Emscripten JS module and patch for Workers compatibility.
+// The custom module needs fewer patches than the npm one since it's built
+// with MAIN_MODULE=0 (no dynamic library loading).
+const customModuleSrc = join(phpWasmBuildDir, 'php8.5-cgi-worker.mjs');
+const phpModuleDest = join(import.meta.dirname, 'php-cgi.mjs');
+
+if (!existsSync(customModuleSrc)) {
+  console.error(`  ERROR: Custom PHP module not found at ${customModuleSrc}`);
+  console.error('  Run: bash php-wasm-build/build.sh');
+  process.exit(1);
+}
+
+let phpModule = readFileSync(customModuleSrc, 'utf8');
+
+// Patch: Replace `new URL("...wasm", import.meta.url).href` with a try/catch fallback.
+// Cloudflare Workers may not support import.meta.url in all contexts.
 phpModule = phpModule.replace(
   /new URL\("([^"]+\.wasm)",\s*import\.meta\.url\)\.href/g,
   '(() => { try { return new URL("$1", import.meta.url).href; } catch { return "$1"; } })()'
 );
 
-// Patch 2: Intercept dynamic library loading to use pre-provided WebAssembly.Module objects.
-phpModule = phpModule.replace(
-  /var readAsync,readBinary;/,
-  'var readAsync,readBinary;var __preloadedLibs=Module["_preloadedLibs"]||{};'
-);
-phpModule = phpModule.replace(
-  'var libFile=locateFile(libName);if(flags.loadAsync)',
-  'if(__preloadedLibs[libName]){var _m=__preloadedLibs[libName];return flags.loadAsync?Promise.resolve(_m):_m}var libFile=locateFile(libName);if(flags.loadAsync)'
-);
-
-// Patch 3: Add error recovery to loadDylibs.
-phpModule = phpModule.replace(
-  'dynamicLibraries.reduce((chain,lib)=>chain.then(()=>loadDynamicLibrary(lib,{loadAsync:true,global:true,nodelete:true,allowUndefined:true})),Promise.resolve()).then(()=>{reportUndefinedSymbols();removeRunDependency("loadDylibs")})',
-  'dynamicLibraries.reduce((chain,lib)=>chain.then(()=>loadDynamicLibrary(lib,{loadAsync:true,global:true,nodelete:true,allowUndefined:true})),Promise.resolve()).then(()=>{reportUndefinedSymbols();removeRunDependency("loadDylibs")}).catch(e=>{console.error("loadDylibs error:",e);removeRunDependency("loadDylibs")})'
-);
-
-// Patch 4: Patch reportUndefinedSymbols to catch CompileError from addFunction.
-phpModule = phpModule.replace(
-  'entry.value=addFunction(value,value.sig)',
-  'try{entry.value=addFunction(value,value.sig)}catch(_e){if(!(_e instanceof WebAssembly.CompileError))throw _e}'
-);
-
 writeFileSync(phpModuleDest, phpModule);
-console.log(`  Patched ${phpModuleDest}`);
+console.log(`  Copied and patched ${phpModuleDest}`);
 
-// Patch PHP WASM binary to reduce INITIAL_MEMORY for Cloudflare Workers.
-// The npm binary declares min 2048 pages (128 MB) which fills the entire 128 MB
-// Workers memory budget. We patch it to 1024 pages (64 MB) to leave room for
-// JS heap, MEMFS (~23 MB), OPcache (8 MB), and overhead.
-console.log('  Patching PHP WASM binary (INITIAL_MEMORY: 128 MB → 64 MB)...');
+// Copy the custom WASM binary
+const customWasmFiles = existsSync(phpWasmBuildDir)
+  ? readdirSync(phpWasmBuildDir).filter(f => f.endsWith('.wasm'))
+  : [];
+const customWasmFile = customWasmFiles[0];
 
-const npmWasmDir = join(ROOT, 'node_modules', 'php-cgi-wasm');
-const npmWasmFiles = readdirSync(npmWasmDir).filter(f => f.endsWith('.wasm') && f !== 'libxml2.so');
-const npmWasmFile = npmWasmFiles.find(f => !f.startsWith('lib'));
-
-if (npmWasmFile) {
-  const wasmSrc = join(npmWasmDir, npmWasmFile);
+if (customWasmFile) {
+  const wasmSrc = join(phpWasmBuildDir, customWasmFile);
   const wasmDest = join(import.meta.dirname, 'php-cgi.wasm');
-  const wasmData = new Uint8Array(readFileSync(wasmSrc));
-
-  // Parse WASM binary to find memory import and patch min pages.
-  // WASM format: magic(4) + version(4) + sections. Import section = type 2.
-  // Memory import has: limits_flags(1) + min_pages(LEB128) [+ max_pages(LEB128)]
-  let patched = false;
-  let pos = 8; // skip magic + version
-
-  while (pos < wasmData.length && !patched) {
-    const sectionId = wasmData[pos++];
-    let sectionSize = 0, shift = 0;
-    // Read LEB128 section size
-    while (true) {
-      const b = wasmData[pos++];
-      sectionSize |= (b & 0x7F) << shift;
-      if ((b & 0x80) === 0) break;
-      shift += 7;
-    }
-    const sectionEnd = pos + sectionSize;
-
-    if (sectionId === 2) { // Import section
-      // Read number of imports
-      let numImports = 0;
-      shift = 0;
-      while (true) {
-        const b = wasmData[pos++];
-        numImports |= (b & 0x7F) << shift;
-        if ((b & 0x80) === 0) break;
-        shift += 7;
-      }
-
-      for (let i = 0; i < numImports && !patched; i++) {
-        // Skip module name
-        let len = 0; shift = 0;
-        while (true) { const b = wasmData[pos++]; len |= (b & 0x7F) << shift; if ((b & 0x80) === 0) break; shift += 7; }
-        pos += len;
-        // Skip field name
-        len = 0; shift = 0;
-        while (true) { const b = wasmData[pos++]; len |= (b & 0x7F) << shift; if ((b & 0x80) === 0) break; shift += 7; }
-        pos += len;
-
-        const kind = wasmData[pos++];
-        if (kind === 0) { // Function — skip type index
-          while (wasmData[pos++] & 0x80) {}
-        } else if (kind === 1) { // Table
-          pos++; // elem type
-          const flags = wasmData[pos++];
-          while (wasmData[pos++] & 0x80) {} // min
-          if (flags & 1) while (wasmData[pos++] & 0x80) {} // max
-        } else if (kind === 2) { // Memory — this is what we patch
-          const flags = wasmData[pos++];
-          const minStart = pos;
-          let minPages = 0; shift = 0;
-          while (true) {
-            const b = wasmData[pos++];
-            minPages |= (b & 0x7F) << shift;
-            if ((b & 0x80) === 0) break;
-            shift += 7;
-          }
-
-          if (minPages >= 2048) {
-            // Encode 1024 as LEB128 (= 0x80 0x08, same byte count as 2048 = 0x80 0x10)
-            const TARGET_PAGES = 1024; // 64 MB
-            const newBytes = [];
-            let val = TARGET_PAGES;
-            while (true) {
-              let byte = val & 0x7F;
-              val >>>= 7;
-              if (val) byte |= 0x80;
-              newBytes.push(byte);
-              if (!val) break;
-            }
-
-            if (newBytes.length === pos - minStart) {
-              for (let j = 0; j < newBytes.length; j++) {
-                wasmData[minStart + j] = newBytes[j];
-              }
-              patched = true;
-              console.log(`    Patched memory import: ${minPages} pages (${minPages * 64 / 1024} MB) → ${TARGET_PAGES} pages (${TARGET_PAGES * 64 / 1024} MB)`);
-            } else {
-              console.warn(`    Warning: LEB128 byte count mismatch (${pos - minStart} vs ${newBytes.length}), skipping patch`);
-            }
-          }
-
-          if (flags & 1) while (wasmData[pos++] & 0x80) {} // skip max
-        } else if (kind === 3) { // Global
-          pos += 2;
-        }
-      }
-    }
-
-    pos = sectionEnd;
-  }
-
-  if (patched) {
-    writeFileSync(wasmDest, wasmData);
-    console.log(`    Written patched WASM to ${wasmDest} (${fmt(wasmData.length)})`);
-  } else {
-    // Fallback: copy unpatched (will still work but may hit memory limits)
-    copyFileSync(wasmSrc, wasmDest);
-    console.warn('    Warning: Could not find memory import to patch, using original');
-  }
+  copyFileSync(wasmSrc, wasmDest);
+  const wasmSize = statSync(wasmDest).size;
+  console.log(`  Copied ${customWasmFile} → php-cgi.wasm (${fmt(wasmSize)})`);
 } else {
-  console.warn('  Warning: No PHP WASM binary found in node_modules/php-cgi-wasm/');
+  console.error('  ERROR: No .wasm file found in php-wasm-build/');
+  console.error('  Run: bash php-wasm-build/build.sh');
+  process.exit(1);
 }
 
-// Copy shared library .so files as .wasm so Cloudflare pre-compiles them.
-// The set of files depends on which extensions are enabled.
-//
-// NOTE: The php8.3-*.so filenames are the actual artifact names from the npm packages
-// `php-wasm-mbstring` and `php-wasm-openssl`, compiled against the npm PHP 8.3 binary.
-// These are ABI-incompatible with the custom PHP 8.5 WASM build. When the custom build
-// is used (with mbstring/openssl statically linked), these dynamic extensions are not
-// loaded — PHP stubs provide fallback functions instead.
-const soFiles = [
-  // libxml2 is always required (PHP core dependency)
-  { src: join(ROOT, 'node_modules', 'php-cgi-wasm', 'libxml2.so'), dest: 'libxml2.wasm', always: true },
-];
-
-if (EXTENSIONS.mbstring) {
-  soFiles.push(
-    { src: join(ROOT, 'node_modules', 'php-wasm-mbstring', 'libonig.so'), dest: 'libonig.wasm' },
-    { src: join(ROOT, 'node_modules', 'php-wasm-mbstring', 'php8.3-mbstring.so'), dest: 'php8.3-mbstring.wasm' },
-  );
-}
-
-if (EXTENSIONS.openssl) {
-  soFiles.push(
-    { src: join(ROOT, 'node_modules', 'php-wasm-openssl', 'libcrypto.so'), dest: 'libcrypto.wasm' },
-    { src: join(ROOT, 'node_modules', 'php-wasm-openssl', 'libssl.so'), dest: 'libssl.wasm' },
-    { src: join(ROOT, 'node_modules', 'php-wasm-openssl', 'php8.3-openssl.so'), dest: 'php8.3-openssl.wasm' },
-  );
-}
-
-for (const { src, dest } of soFiles) {
-  const destPath = join(import.meta.dirname, dest);
+// Copy PhpCgiBase and helper modules from php-wasm-build/
+const helperModules = ['PhpCgiBase.mjs', 'breakoutRequest.mjs', 'parseResponse.mjs'];
+for (const mod of helperModules) {
+  const src = join(phpWasmBuildDir, mod);
+  const dest = join(import.meta.dirname, mod);
   if (existsSync(src)) {
-    copyFileSync(src, destPath);
-    console.log(`  Copied ${src.split('/').pop()} → ${dest}`);
+    copyFileSync(src, dest);
+    console.log(`  Copied ${mod}`);
   } else {
-    console.warn(`  Warning: ${src} not found`);
+    console.error(`  ERROR: ${mod} not found in php-wasm-build/`);
+    process.exit(1);
   }
-}
-
-// Optimize WASM files with wasm-opt (binaryen) for size reduction.
-// Skip the main PHP binary (php-cgi.wasm) — it's already optimized by the npm build,
-// takes minutes to process (~13 MB), and binaryen may introduce incompatible heap types.
-const wasmOptBin = join(ROOT, 'node_modules', '.bin', 'wasm-opt');
-if (existsSync(wasmOptBin)) {
-  console.log('Optimizing WASM files with wasm-opt...');
-  const wasmFiles = readdirSync(import.meta.dirname).filter(f => f.endsWith('.wasm') && f !== 'php-cgi.wasm');
-  console.log(`  Found ${wasmFiles.length} WASM files to optimize (skipping php-cgi.wasm)`);
-
-  for (const wasmFile of wasmFiles) {
-    const wasmPath = join(import.meta.dirname, wasmFile);
-    const sizeBefore = statSync(wasmPath).size;
-    console.log(`  Optimizing ${wasmFile} (${(sizeBefore / 1024).toFixed(0)} KiB)...`);
-    try {
-      execSync(`${wasmOptBin} -Oz --strip-debug --all-features -o ${wasmPath} ${wasmPath}`, {
-        stdio: 'pipe',
-        timeout: 120_000,
-      });
-      const sizeAfter = statSync(wasmPath).size;
-      const savedPct = ((1 - sizeAfter / sizeBefore) * 100).toFixed(1);
-      console.log(`    ${wasmFile}: ${(sizeBefore / 1024).toFixed(0)} KiB → ${(sizeAfter / 1024).toFixed(0)} KiB (−${savedPct}%)`);
-    } catch (err) {
-      console.warn(`    Warning: wasm-opt failed for ${wasmFile}: ${err.message}`);
-    }
-  }
-} else {
-  console.log('  Skipping WASM optimization (binaryen not installed). Run: bun add -d binaryen');
 }
 
 console.log('Build complete.');

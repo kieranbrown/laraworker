@@ -57,10 +57,8 @@ async function ensureInitialized(env: Env): Promise<PhpCgiCloudflare> {
       docroot: '/app/public',
       prefix: '/',
       entrypoint: 'index.php',
-      // 64 MB WASM linear memory (1024 pages). The npm binary defaults to 128 MB
-      // which fills the entire Cloudflare Workers memory budget. The build script
-      // patches the WASM binary to match this value.
-      INITIAL_MEMORY: 67_108_864,
+      // INITIAL_MEMORY is baked into the custom PHP 8.5 WASM binary (32 MB).
+      // No need to set it here — the binary's memory import specifies min pages.
       ini: [
         'auto_prepend_file=/app/php-stubs.php',
         'opcache.enable=1',
@@ -102,6 +100,22 @@ async function initializeFilesystem(
 
   // Unpack into MEMFS at /app
   untar(FS, tarBuffer, '/app');
+
+  // Verify critical Laravel files exist after untar
+  const criticalFiles = [
+    '/app/vendor/autoload.php',
+    '/app/bootstrap/app.php',
+    '/app/public/index.php',
+    '/app/.env',
+    '/app/bootstrap/cache/config.php',
+    '/app/bootstrap/cache/routes-v7.php',
+    '/app/php-stubs.php',
+  ];
+
+  for (const f of criticalFiles) {
+    const exists = FS.analyzePath(f).exists;
+    console.log(`  ${exists ? '✓' : '✗'} ${f}`);
+  }
 
   // Ensure required Laravel directories exist
   const dirs = [
