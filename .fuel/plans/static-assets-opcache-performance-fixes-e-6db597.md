@@ -92,3 +92,22 @@ OPcache IS compiled into the WASM binary and enabled, but:
 - OPcache config matches what's in config/laraworker.php
 - Ability to verify OPcache is working in production
 - Updated performance documentation
+
+## Review Findings (f-0859b3)
+
+### All Tasks Verified Complete
+
+| Task | Status | Verification |
+|------|--------|-------------|
+| f-a69f1f: Copy public/ static files | Done | `build-app.mjs:1180-1198` copies public/ (excluding index.php, build/) to dist/assets/. Build output confirms robots.txt, favicon.ico, .htaccess copied. `config/laraworker.php` has `public_assets => true` default. |
+| f-7e9db7: Template OPcache INI | Done | `BuildDirectory::generateWorkerTs()` reads `config('laraworker.opcache')` and replaces `{{OPCACHE_INI}}` placeholder in `stubs/worker.ts.stub`. Generated worker.ts confirmed to have config-driven values (not hardcoded). Tests in `BuildDirectoryTest.php` verify templating. |
+| f-3530a8: OPcache diagnostic endpoint | Done | Worker intercepts `/__opcache-status` when `OPCACHE_DEBUG=true` env var is set. PHP handler generated at build time via `build-app.mjs:1083-1099`. Returns `opcache_get_status(false)` as JSON. |
+
+### Pre-existing Test Fix
+- `DeployCommandTest::deploy calls build first` had a wrong assumption (expected build-app.mjs to be missing, but BuildCommand copies stubs first). Fixed to use `--dry-run` and verify build output instead.
+
+### Quality Gates
+- All 66 Pest tests pass
+- Build completes successfully (`php artisan laraworker:build`)
+- Pint formatting clean
+- No debug calls (dd, dump, var_dump) in source

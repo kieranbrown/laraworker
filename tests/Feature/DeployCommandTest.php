@@ -39,10 +39,10 @@ test('deploy calls build first', function () {
         'account_id' => 'test-account',
     ]));
 
-    // Build will fail because build-app.mjs doesn't exist, which means
-    // deploy should also fail (since build is a prerequisite)
-    $this->artisan('laraworker:deploy')
-        ->assertFailed();
+    // Deploy invokes laraworker:build as a prerequisite before deploying.
+    // Using --dry-run to prevent actual deployment to Cloudflare.
+    $this->artisan('laraworker:deploy', ['--dry-run' => true])
+        ->expectsOutputToContain('Building for Cloudflare Workers');
 });
 
 test('deploy has dry-run option', function () {
