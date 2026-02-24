@@ -62,8 +62,9 @@ async function ensureInitialized(env: Env): Promise<PhpCgiCloudflare> {
         'opcache.enable=1',
         'opcache.enable_cli=1',
         'opcache.validate_timestamps=0',
-        'opcache.memory_consumption=64',
-        'opcache.max_accelerated_files=4000',
+        'opcache.memory_consumption=8',
+        'opcache.interned_strings_buffer=4',
+        'opcache.max_accelerated_files=2000',
       ].join('\n'),
     });
 
