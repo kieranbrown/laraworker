@@ -204,7 +204,7 @@ return [
 
     'env_overrides' => [
         'APP_ENV' => 'production',
-        'APP_DEBUG' => 'true',
+        'APP_DEBUG' => 'false',
         'LOG_CHANNEL' => 'stderr',
         'SESSION_DRIVER' => 'array',
         'CACHE_STORE' => 'array',

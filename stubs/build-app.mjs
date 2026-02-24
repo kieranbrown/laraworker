@@ -671,7 +671,7 @@ async function stripPhpFileAsync(filePath, originalContent) {
  */
 async function stripPhpFilesParallel(files) {
   const phpFiles = files.filter(
-    f => !f.isDir && f.path.endsWith('.php') && !f.path.startsWith('php-stubs'),
+    f => !f.isDir && f.path.endsWith('.php') && !f.path.endsWith('.blade.php') && !f.path.startsWith('php-stubs'),
   );
 
   const startTime = Date.now();
@@ -795,7 +795,7 @@ function createTar(files, { stripWhitespace = false, strippedContents = new Map(
       let content = readFileSync(file.fullPath);
 
       // Use pre-stripped content if available
-      if (stripWhitespace && file.path.endsWith('.php') && !file.path.startsWith('php-stubs')) {
+      if (stripWhitespace && file.path.endsWith('.php') && !file.path.endsWith('.blade.php') && !file.path.startsWith('php-stubs')) {
         const stripped = strippedContents.get(file.fullPath);
         if (stripped && stripped.length > 0) {
           const saved = content.length - stripped.length;
