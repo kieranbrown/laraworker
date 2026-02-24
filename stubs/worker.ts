@@ -280,24 +280,57 @@ $compiler = app('blade.compiler');
 $ref = new ReflectionProperty($compiler, 'basePath');
 echo "blade basePath: '" . $ref->getValue($compiler) . "'\\n";
 
-// Compile a small test
-echo "\\nSmall compile: " . $compiler->compileString('@if(true)ok @endif {{ "hi" }}') . "\\n";
+// Check compilers property
+$compilersRef = new ReflectionProperty($compiler, 'compilers');
+echo "compilers: " . json_encode($compilersRef->getValue($compiler)) . "\\n";
 
-// Compile the welcome view
-$path = '/app/resources/views/welcome.blade.php';
-$content = file_get_contents($path);
-echo "\\nWelcome size: " . strlen($content) . "\\n";
-$compiled = $compiler->compileString($content);
-echo "Compiled size: " . strlen($compiled) . "\\n";
-echo "First 1000 chars of compiled:\\n" . substr($compiled, 0, 1000) . "\\n";
+// Check key methods exist
+echo "\\n=== METHOD EXISTS ===\\n";
+echo "compileStatements: " . (method_exists($compiler, 'compileStatements') ? 'YES' : 'NO') . "\\n";
+echo "compileEchos: " . (method_exists($compiler, 'compileEchos') ? 'YES' : 'NO') . "\\n";
+echo "compileIf: " . (method_exists($compiler, 'compileIf') ? 'YES' : 'NO') . "\\n";
+echo "compileEndif: " . (method_exists($compiler, 'compileEndif') ? 'YES' : 'NO') . "\\n";
+echo "compileElse: " . (method_exists($compiler, 'compileElse') ? 'YES' : 'NO') . "\\n";
 
-// Check for uncompiled @if/@endif
-$uncompiled_if = substr_count($compiled, '@if');
-$uncompiled_endif = substr_count($compiled, '@endif');
-$compiled_if = substr_count($compiled, '<?php if');
-$compiled_endif = substr_count($compiled, '<?php endif');
-echo "\\nUncompiled @if: $uncompiled_if, @endif: $uncompiled_endif\\n";
-echo "Compiled <?php if: $compiled_if, <?php endif: $compiled_endif\\n";
+// Call compileStatements directly via Reflection
+echo "\\n=== DIRECT compileStatements TEST ===\\n";
+$stmtMethod = new ReflectionMethod($compiler, 'compileStatements');
+$stmtMethod->setAccessible(true);
+$input = '@if(true) hello @endif end';
+$output = $stmtMethod->invoke($compiler, $input);
+echo "Input:  " . $input . "\\n";
+echo "Output: " . $output . "\\n";
+
+// Test compileIf directly
+echo "\\n=== DIRECT compileIf TEST ===\\n";
+$ifMethod = new ReflectionMethod($compiler, 'compileIf');
+$ifMethod->setAccessible(true);
+$ifResult = $ifMethod->invoke($compiler, '(true)');
+echo "compileIf('(true)'): " . $ifResult . "\\n";
+
+// Test preg_match_all with the exact regex from compileStatements source
+echo "\\n=== REGEX IN WASM ===\\n";
+$testStr = '@if(true) hello @endif end';
+$regex = '/\\\\B@(@?\\\\w+(?:::\\\\w+)?)([ \\\\t]*)(\\\\( ( [\\\\S\\\\s]*? ) \\\\))?/x';
+$result = preg_match_all($regex, $testStr, $matches);
+echo "regex result: " . var_export($result, true) . "\\n";
+echo "preg_last_error: " . preg_last_error() . "\\n";
+echo "matches[0]: " . json_encode($matches[0] ?? []) . "\\n";
+echo "matches[1]: " . json_encode($matches[1] ?? []) . "\\n";
+
+// Check the actual source of compileStatements
+echo "\\n=== compileStatements SOURCE CHECK ===\\n";
+$refMethod = new ReflectionMethod($compiler, 'compileStatements');
+echo "File: " . $refMethod->getFileName() . "\\n";
+echo "Lines: " . $refMethod->getStartLine() . "-" . $refMethod->getEndLine() . "\\n";
+$source = file_get_contents($refMethod->getFileName());
+$lines = explode("\\n", $source);
+$start = $refMethod->getStartLine() - 1;
+$end = min($refMethod->getEndLine(), $start + 20);
+echo "Source:\\n";
+for ($i = $start; $i < $end; $i++) {
+    echo ($i+1) . ": " . $lines[$i] . "\\n";
+}
 `;
 
         const enc = new TextEncoder();
