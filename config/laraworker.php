@@ -18,6 +18,20 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Public Static Assets
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, files in public/ (except index.php and the build/ directory)
+    | are copied to Cloudflare Static Assets at build time. This allows files
+    | like robots.txt, favicon.ico, and other static resources to be served
+    | directly from Cloudflare's edge without invoking the PHP WASM worker.
+    |
+    */
+
+    'public_assets' => true,
+
     'extensions' => [
         'mbstring' => false,
         'openssl' => false,
@@ -41,7 +55,8 @@ return [
     'opcache' => [
         'enabled' => true,
         'enable_cli' => true,
-        'memory_consumption' => 32,
+        'memory_consumption' => 16,
+        'interned_strings_buffer' => 4,
         'max_accelerated_files' => 1000,
         'validate_timestamps' => false,
         'jit' => false,

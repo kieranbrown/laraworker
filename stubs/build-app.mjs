@@ -1080,6 +1080,24 @@ console.log(`    iconv: ${EXTENSIONS.iconv ? 'enabled (no stubs)' : 'disabled (s
 console.log(`    mbstring: ${EXTENSIONS.mbstring ? 'enabled (no stubs)' : 'disabled (stubs added)'}`);
 console.log(`    openssl: ${EXTENSIONS.openssl ? 'enabled (no stubs)' : 'disabled (stubs added)'}`);
 
+// Generate OPcache diagnostic PHP file
+console.log('  Generating OPcache diagnostic endpoint...');
+const opcacheStatusContent = `<?php
+// Auto-generated OPcache diagnostic endpoint
+// Access via /__opcache-status when OPCACHE_DEBUG=true
+header('Content-Type: application/json');
+$status = opcache_get_status(false);
+if ($status === false) {
+    echo json_encode(['error' => 'OPcache not available']);
+    exit;
+}
+echo json_encode($status, JSON_PRETTY_PRINT);
+`;
+const opcacheStatusFile = join(DIST_DIR, '__opcache_status.php');
+writeFileSync(opcacheStatusFile, opcacheStatusContent);
+allFiles.push({ path: 'public/__opcache-status.php', isDir: false, fullPath: opcacheStatusFile });
+console.log('  ✓ OPcache diagnostic endpoint: /__opcache-status (requires OPCACHE_DEBUG=true)');
+
 // Compute per-category stats before creating tar
 let vendorFileCount = 0;
 let vendorUncompressedSize = 0;
@@ -1159,6 +1177,26 @@ if (existsSync(viteBuildDir)) {
   console.log('  Done.');
 }
 
+// Copy public/ static files to Cloudflare Static Assets.
+// These are served directly by CF edge without invoking the PHP WASM worker.
+const PUBLIC_ASSETS = config.public_assets ?? true;
+if (PUBLIC_ASSETS) {
+  const publicDir = join(ROOT, 'public');
+  if (existsSync(publicDir)) {
+    console.log('  Copying public static assets...');
+    const copiedFiles = [];
+    copyPublicFiles(publicDir, DIST_DIR, '', copiedFiles);
+    if (copiedFiles.length > 0) {
+      for (const f of copiedFiles) {
+        console.log(`    + ${f}`);
+      }
+      console.log(`  ✓ ${copiedFiles.length} public static file(s) copied to Static Assets`);
+    } else {
+      console.log('  No public static files to copy.');
+    }
+  }
+}
+
 // Verify custom PHP 8.5 WASM binary and helper modules are present.
 // These are copied into the build directory by the PHP BuildCommand
 // (BuildDirectory::copyWasmBinary) before build-app.mjs runs.
@@ -1191,6 +1229,32 @@ function copyDirRecursive(src, dest) {
       copyDirRecursive(srcPath, destPath);
     } else {
       copyFileSync(srcPath, destPath);
+    }
+  }
+}
+
+/**
+ * Recursively copy public/ files to Static Assets, skipping index.php and build/.
+ */
+function copyPublicFiles(srcDir, destDir, relPrefix, copiedFiles) {
+  const entries = readdirSync(srcDir, { withFileTypes: true });
+  for (const entry of entries) {
+    const relPath = relPrefix ? `${relPrefix}/${entry.name}` : entry.name;
+
+    // Skip index.php (handled by PHP routing) and build/ (handled by Vite copy)
+    if (relPrefix === '' && (entry.name === 'index.php' || entry.name === 'build')) {
+      continue;
+    }
+
+    const srcPath = join(srcDir, entry.name);
+    const destPath = join(destDir, relPath);
+
+    if (entry.isDirectory()) {
+      copyPublicFiles(srcPath, destDir, relPath, copiedFiles);
+    } else if (entry.isFile()) {
+      mkdirSync(join(destDir, relPrefix), { recursive: true });
+      copyFileSync(srcPath, destPath);
+      copiedFiles.push(relPath);
     }
   }
 }

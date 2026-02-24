@@ -89,14 +89,17 @@ A default Laravel 12 app loads approximately:
 
 With config/route/view caching (which `laraworker:build` enables), the per-request file count drops to the lower end (~50–80 files).
 
-### PHP Preloading (opcache.preload) in WASM
+### OPcache in WASM
 
-**Status: Not available in current stack.**
+**Status: Available and enabled.** OPcache is statically compiled into the custom PHP 8.5 WASM binary and configured via `config/laraworker.php`. The build process templates OPcache INI directives into `worker.ts` from the config values (via `BuildDirectory::generateWorkerTs()`).
 
-- The Emscripten-compiled `php-cgi-wasm` does **not** include OPcache (requires `dlopen`/`dlsym` and shared memory, unavailable in standard Emscripten WASM).
-- WordPress Playground achieved OPcache support by patching PHP's autoconf and compiling OPcache as a dynamic library — complex but proven.
-- Wasmer's WASIX-based PHP achieved 3x speedup with OPcache via static linking, but that's a different runtime (not compatible with Cloudflare Workers).
-- Even with OPcache, the `php-cgi-wasm` process model means opcodes aren't cached between requests (each PHP invocation starts fresh).
+**Current defaults:** 16 MB memory, 4 MB interned strings buffer, 1000 max accelerated files, timestamp validation disabled (files never change in MEMFS).
+
+**Memory budget note:** The WASM linear memory is 64 MB (128 MB total isolate, minus JS heap). MEMFS uses ~23 MB for the app tarball. OPcache's 16 MB + 4 MB interned strings fits within the remaining ~40 MB alongside PHP runtime memory. Going above 16 MB risks OOM in the WASM heap.
+
+- Opcodes are cached within the isolate's lifetime — warm requests benefit from cached compilation
+- `opcache.validate_timestamps=0` means files are never re-checked (correct for immutable MEMFS)
+- JIT is disabled (not functional in WASM — no mmap/mprotect support)
 
 ### Single-File PHP Bundlers
 
@@ -144,7 +147,7 @@ With config/route/view caching (which `laraworker:build` enables), the per-reque
 | ClassPreloader (single-file bundle) | **High** (~100–300ms saved) | Medium | **1** |
 | php_strip_whitespace at build time | Medium (~20–60ms saved) | Easy | **2** |
 | Remove unused service providers | Low-Medium (~5–15ms) | Easy | **3** |
-| OPcache in WASM (WordPress approach) | High but complex | Very Hard | **5** |
+| OPcache in WASM | High (~200–500ms warm saved) | ✅ Done (statically compiled) | — |
 | PHAR bundling | Negative (slower) | — | — |
 
 ---
@@ -354,14 +357,19 @@ Ordered by **estimated impact ÷ effort** (bang for buck):
 | 5 | **Additional vendor file pruning** | -50–100ms cold start | Medium (build script changes) | Cold start |
 | 6 | **Configurable service provider set** | -10–30ms warm | Medium (new config option) | Warm |
 
+### Already Implemented
+
+| # | Optimization | Est. Impact | Status |
+|---|-------------|-------------|--------|
+| — | **OPcache in WASM** | -200–500ms warm | ✅ Statically compiled into PHP 8.5 WASM binary, config-driven via `config/laraworker.php` |
+
 ### Tier 3: High Effort, High Impact (Future)
 
 | # | Optimization | Est. Impact | Effort | Target |
 |---|-------------|-------------|--------|--------|
-| 7 | **OPcache in WASM** (WordPress approach) | -200–500ms warm | Very High | Warm |
-| 8 | **Tree-shake Illuminate components** | -100–200ms cold, -4 MB bundle | Very High | Both |
-| 9 | **WASM memory snapshots** | **-1–2s cold start** | Blocked (CF platform) | Cold start |
-| 10 | **V8 WASM code caching** | **-500–800ms cold start** | Blocked (CF platform) | Cold start |
+| 7 | **Tree-shake Illuminate components** | -100–200ms cold, -4 MB bundle | Very High | Both |
+| 8 | **WASM memory snapshots** | **-1–2s cold start** | Blocked (CF platform) | Cold start |
+| 9 | **V8 WASM code caching** | **-500–800ms cold start** | Blocked (CF platform) | Cold start |
 
 ### Recommended Implementation Order
 
@@ -379,7 +387,7 @@ Ordered by **estimated impact ÷ effort** (bang for buck):
 
 **Phase 3 — Advanced optimizations (when platform supports it):**
 9. Monitor Cloudflare's progress on WASM code caching and memory snapshots
-10. Investigate OPcache patching for Emscripten-based PHP (following WordPress Playground's approach)
+10. ~~Investigate OPcache patching for Emscripten-based PHP~~ — ✅ Done: OPcache statically compiled into PHP 8.5 WASM binary
 11. Build an Illuminate component tree-shaker if ClassPreloader doesn't provide sufficient gains
 
 ---

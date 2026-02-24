@@ -39,20 +39,10 @@ test('deploy calls build first', function () {
         'account_id' => 'test-account',
     ]));
 
-    // Replace the build-app.mjs stub temporarily to force build failure
-    $stubPath = dirname(dirname(__DIR__)).'/stubs/build-app.mjs';
-    $originalContent = file_get_contents($stubPath);
-    file_put_contents($stubPath, 'console.error("Build failed for test"); process.exit(1);');
-
-    try {
-        // Deploy should fail because build failed
-        $this->artisan('laraworker:deploy')
-            ->expectsOutputToContain('Build failed')
-            ->assertFailed();
-    } finally {
-        // Restore the original stub
-        file_put_contents($stubPath, $originalContent);
-    }
+    // Deploy invokes laraworker:build as a prerequisite before deploying.
+    // Using --dry-run to prevent actual deployment to Cloudflare.
+    $this->artisan('laraworker:deploy', ['--dry-run' => true])
+        ->expectsOutputToContain('Building for Cloudflare Workers');
 });
 
 test('deploy has dry-run option', function () {

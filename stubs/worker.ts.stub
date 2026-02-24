@@ -46,6 +46,12 @@ interface Env {
    * Requires an SSR bundle to be imported above.
    */
   INERTIA_SSR?: string;
+  /**
+   * Set to "true" to enable the /__opcache-status diagnostic endpoint.
+   * This endpoint exposes OPcache metrics (hits, misses, memory usage, etc.)
+   * and should NOT be enabled in production unless debugging performance issues.
+   */
+  OPCACHE_DEBUG?: string;
 }
 
 let php: PhpCgiCloudflare | null = null;
@@ -60,12 +66,7 @@ async function ensureInitialized(env: Env): Promise<PhpCgiCloudflare> {
       // No need to set it here — the binary's memory import specifies min pages.
       ini: [
         'auto_prepend_file=/app/php-stubs.php',
-        'opcache.enable=1',
-        'opcache.enable_cli=1',
-        'opcache.validate_timestamps=0',
-        'opcache.memory_consumption=8',
-        'opcache.interned_strings_buffer=4',
-        'opcache.max_accelerated_files=2000',
+{{OPCACHE_INI}}
       ].join('\n'),
     });
   }
@@ -229,6 +230,24 @@ export default {
     // Health check — responds without initializing PHP
     if (url.pathname === '/__health') {
       return new Response('OK', { status: 200, headers: { 'Content-Type': 'text/plain' } });
+    }
+
+    // OPcache diagnostic endpoint — protected by env var
+    if (url.pathname === '/__opcache-status' && env.OPCACHE_DEBUG === 'true') {
+      try {
+        const instance = await ensureInitialized(env);
+        const response = await instance.request(new Request(
+          new URL('/__opcache-status.php', request.url),
+          { headers: request.headers }
+        ));
+        return response;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        return new Response(JSON.stringify({ error: message }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     try {
