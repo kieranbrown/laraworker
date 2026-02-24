@@ -915,6 +915,21 @@ for (const dir of storageDirs) {
   }
 }
 
+// Include Vite manifest in the tar so PHP can read it for @vite() Blade directive.
+// The actual JS/CSS assets are served by Cloudflare Static Assets (copied later),
+// but PHP needs the manifest to generate <link> and <script> tags.
+const viteManifestDir = join(ROOT, 'public', 'build', '.vite');
+if (existsSync(viteManifestDir)) {
+  const manifestPath = join(viteManifestDir, 'manifest.json');
+  if (existsSync(manifestPath)) {
+    allFiles.push({ path: 'public/', isDir: true });
+    allFiles.push({ path: 'public/build/', isDir: true });
+    allFiles.push({ path: 'public/build/.vite/', isDir: true });
+    allFiles.push({ path: 'public/build/.vite/manifest.json', isDir: false, fullPath: manifestPath });
+    console.log('  ✓ Vite manifest included in tar');
+  }
+}
+
 // Strip Carbon locale files (keep only en.php — no regional variants like en_AU, en_GB)
 const carbonLangPrefix = 'vendor/nesbot/carbon/src/Carbon/Lang/';
 const carbonRemoved = [];
