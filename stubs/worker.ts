@@ -277,18 +277,35 @@ export default {
         } catch (e: unknown) {
           checks.push(`\n/app/public/index.php read error: ${e}`);
         }
-        // Test: create simple PHP file and make a request through PhpCgiBase
+        // Test 1: simple PHP file through PhpCgiBase
         try {
           FS.writeFile('/app/public/test.php', '<?php echo "HELLO_FROM_PHP";');
           const testReq = new Request('https://laraworker.kswb.dev/test.php');
           const testResp = await instance.request(testReq);
           const testBody = await testResp.text();
-          checks.push(`\nTest request to /test.php: status=${testResp.status}`);
-          checks.push(`Test response body: "${testBody.substring(0, 200)}"`);
-          checks.push(`Test response headers:`);
-          testResp.headers.forEach((v: string, k: string) => checks.push(`  ${k}: ${v}`));
+          checks.push(`\nTest /test.php: status=${testResp.status} body="${testBody.substring(0, 100)}"`);
         } catch (e: unknown) {
-          checks.push(`\nTest request error: ${e instanceof Error ? e.stack : e}`);
+          checks.push(`\nTest /test.php error: ${e instanceof Error ? e.stack : e}`);
+        }
+        // Test 2: root route through PhpCgiBase (the one that fails)
+        try {
+          const rootReq = new Request('https://laraworker.kswb.dev/');
+          const rootResp = await instance.request(rootReq);
+          const rootBody = await rootResp.text();
+          checks.push(`\nTest /: status=${rootResp.status} body="${rootBody.substring(0, 200)}"`);
+          checks.push(`Test / headers:`);
+          rootResp.headers.forEach((v: string, k: string) => checks.push(`  ${k}: ${v}`));
+        } catch (e: unknown) {
+          checks.push(`\nTest / error: ${e instanceof Error ? e.stack : e}`);
+        }
+        // Test 3: direct index.php through PhpCgiBase
+        try {
+          const idxReq = new Request('https://laraworker.kswb.dev/index.php');
+          const idxResp = await instance.request(idxReq);
+          const idxBody = await idxResp.text();
+          checks.push(`\nTest /index.php: status=${idxResp.status} body="${idxBody.substring(0, 200)}"`);
+        } catch (e: unknown) {
+          checks.push(`\nTest /index.php error: ${e instanceof Error ? e.stack : e}`);
         }
         return new Response(checks.join('\n'), {
           status: 200,
