@@ -24,42 +24,32 @@ This is the same fundamental approach WordPress Playground uses (though they use
 
 ## Technical Approach
 
-### [DONE] Patch cgi_main.c (Approach A: static guard with goto)
+### Patch cgi_main.c (minimal diff)
 
-Implemented via `php-wasm-build/patches/cgi-persistent-module.sh`. Uses a single-pass awk script that applies 6 modifications:
+Add a `static bool _wasm_module_started = false;` guard:
+- First call to `main()`: run full startup, set flag, then handle request
+- Subsequent calls: skip startup, jump to request handling
+- Remove `php_module_shutdown()` call (or guard it behind `!_wasm_module_started`)
 
-1. **Static guard after variable declarations** (after `int skip_getopt = 0;`):
-   - `static int _wasm_module_started = 0;`
-   - Re-initializes 10 critical locals (exit_status, fastcgi, cgi, behavior, etc.) since goto skips initializers
-   - `goto wasm_handle_request;`
+Alternatively, export separate functions:
+- `wasm_sapi_cgi_startup()` — module startup (called once from `refresh()`)
+- `wasm_sapi_cgi_handle_request()` — request-only cycle (called per HTTP request)
+- `wasm_sapi_cgi_shutdown()` — module shutdown (called on error/refresh only)
 
-2. **Jump label before `zend_first_try`**:
-   - Sets `_wasm_module_started = 1;`
-   - Label MUST be outside `zend_first_try` (which expands to `setjmp`) — jumping into it would skip exception handler setup
+The separate-functions approach is cleaner but requires updating PhpCgiBase.mjs.
 
-3. **Guard all 5 `php_module_shutdown()` calls** with `#ifndef __EMSCRIPTEN__`:
-   - 2 in getopt handlers (-i phpinfo, -v version)
-   - 1 in php_request_startup() failure
-   - 1 in php_fopen_primary_script() failure
-   - 1 at end of main()
+### Update PhpCgiBase.mjs — ✅ NO CHANGES NEEDED
 
-4. **Guard all 2 `sapi_shutdown()` calls** — same pattern
+**Verified by f-461724**: Approach A (static guard) was used, so `main()` still works as the only entry point. PhpCgiBase.mjs calls `php.ccall('main', ...)` at line 665 and this is transparent to the caller — `main()` internally skips startup on repeat calls via `goto wasm_handle_request`.
 
-5. **Guard `php_ini_builder_deinit(&ini_builder)`** — ini_builder is an uninitialized local on repeat calls (goto skips its init). Calling deinit on garbage is UB.
+Key verifications:
+- `request()` (line 665): `main()` call unchanged — static guard handles lifecycle internally
+- `refresh()` (line 360): Creates new WASM instance → `_wasm_module_started` resets to 0 → first `main()` does full startup. Correct.
+- Error recovery (lines 735, 750): `refresh()` destroys old instance. OPcache cache lost but safe recovery.
+- `PhpCgiCloudflare` (stubs/php.ts.stub): Only overrides constructor. Inherits `request()` from PhpCgiBase. No changes needed.
+- `worker.ts.stub`: Calls `instance.request(request)` — no changes needed.
 
-6. **Guard `php_ini_path_override` free** — set once during -c getopt, freeing on every request would double-free.
-
-### Key design decisions:
-- **Used `int` not `bool`** for `_wasm_module_started` to avoid `#include <stdbool.h>` dependency
-- **`tsrm_shutdown()` NOT separately guarded** — it's already inside `#ifdef ZTS` which is never defined for WASM (single-threaded)
-- **`fcgi_shutdown()` NOT guarded** — in non-FastCGI mode it's a no-op (sets already-0 flag)
-- **PhpCgiBase.mjs NOT modified** — the JS side still calls `main()` per request. The C-side static guard handles the lifecycle. This means no JS API changes needed.
-
-### Gotchas for future work:
-- The goto MUST be after all variable declarations (C allows goto past initializers, variables have storage but indeterminate values)
-- ALL locals used in the request path must be re-initialized in the guard block
-- Error paths (request_startup failure, fopen failure) that call `return FAILURE;` still work — JS sees exitCode != 0 and can handle it
-- The `zend_first_try` setjmp runs on every call — EG(bailout) is properly set up for exception handling
+**If Approach B (separate exports) were used later**, PhpCgiCloudflare subclass (stubs/php.ts.stub) would be the cleanest place to override `request()` — avoids modifying the upstream PhpCgiBase.mjs file.
 
 ### Verify OPcache Persistence
 
@@ -75,18 +65,18 @@ Deploy and use `/__opcache-status` endpoint:
 
 ## Files Modified
 
-| File | Change | Status |
-|------|--------|--------|
-| `php-wasm-build/patches/cgi-persistent-module.sh` | NEW — awk-based patch for persistent module | DONE |
-| `php-wasm-build/build.sh` | Add new patch to build pipeline (after opcache-wasm-support) | DONE |
-| `php-wasm-build/PhpCgiBase.mjs` | NOT NEEDED — JS still calls main(), C handles lifecycle | N/A |
-| `php-wasm-build/php8.5-cgi-worker.mjs.wasm` | Rebuilt binary (output of build.sh) | PENDING REBUILD |
-| `stubs/worker.ts.stub` | NOT NEEDED — no JS API changes | N/A |
+| File | Change |
+|------|--------|
+| `php-wasm-build/patches/cgi-persistent-module.sh` | NEW — patches cgi_main.c for persistent module |
+| `php-wasm-build/build.sh` | Add new patch to build pipeline |
+| `php-wasm-build/PhpCgiBase.mjs` | ✅ No changes needed — Approach A is transparent to caller |
+| `php-wasm-build/php8.5-cgi-worker.mjs.wasm` | Rebuilt binary (output of build.sh) |
+| `stubs/worker.ts.stub` | ✅ No changes needed — API unchanged |
 
 ## Agent Workflow
 
-1. ~~Create the patch script and update build.sh~~ DONE (f-94ba81)
-2. Rebuild WASM: `cd php-wasm-build && ./build.sh` (~20-60 min) — PENDING
+1. Create the patch script and update build.sh
+2. Rebuild WASM: `cd php-wasm-build && ./build.sh` (~20-60 min)
 3. Test locally: `scripts/playground-build.sh && cd playground/.laraworker && npx wrangler dev`
 4. Verify: `curl http://localhost:8787/__opcache-status` (twice — check hits increase)
 5. Deploy: `cd playground/.laraworker && npx wrangler deploy`
