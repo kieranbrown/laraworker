@@ -111,22 +111,6 @@ async function initializeFilesystem(
   // Unpack into MEMFS at /app
   untar(FS, tarBuffer, '/app');
 
-  // Verify critical Laravel files exist after untar
-  const criticalFiles = [
-    '/app/vendor/autoload.php',
-    '/app/bootstrap/app.php',
-    '/app/public/index.php',
-    '/app/.env',
-    '/app/bootstrap/cache/config.php',
-    '/app/bootstrap/cache/routes-v7.php',
-    '/app/php-stubs.php',
-  ];
-
-  for (const f of criticalFiles) {
-    const exists = FS.analyzePath(f).exists;
-    console.log(`  ${exists ? '✓' : '✗'} ${f}`);
-  }
-
   // Ensure required Laravel directories exist
   const dirs = [
     '/app/storage/framework/sessions',
@@ -140,7 +124,6 @@ async function initializeFilesystem(
   for (const dir of dirs) {
     mkdirp(FS, dir);
   }
-
 }
 
 function mkdirp(
@@ -234,36 +217,6 @@ export default {
 
     try {
       const instance = await ensureInitialized(env);
-
-      // Debug endpoint — returns filesystem state for diagnostics
-      if (url.pathname === '/__debug') {
-        const FS = await instance.getFS();
-        const checks: string[] = [];
-        const paths = [
-          '/app', '/app/public', '/app/public/index.php',
-          '/app/vendor', '/app/vendor/autoload.php',
-          '/app/bootstrap', '/app/bootstrap/app.php',
-          '/app/.env', '/app/php-stubs.php',
-          '/app/bootstrap/cache/config.php',
-          '/app/bootstrap/cache/routes-v7.php',
-          '/php.ini',
-        ];
-        for (const p of paths) {
-          const info = FS.analyzePath(p);
-          checks.push(`${info.exists ? '✓' : '✗'} ${p}`);
-        }
-        // Show first 500 bytes of php-stubs.php to verify stub generation
-        try {
-          const stubs = FS.readFile('/app/php-stubs.php', { encoding: 'utf8' });
-          checks.push(`\nphp-stubs.php (first 500 chars):\n${stubs.substring(0, 500)}`);
-        } catch (e: unknown) {
-          checks.push(`\nphp-stubs.php read error: ${e}`);
-        }
-        return new Response(checks.join('\n'), {
-          status: 200,
-          headers: { 'Content-Type': 'text/plain' },
-        });
-      }
 
       // All requests go through PHP - static assets are served
       // by Cloudflare Static Assets before the worker is invoked
