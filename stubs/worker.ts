@@ -270,37 +270,25 @@ export default {
         } catch (e: unknown) {
           checks.push(`\n/php.ini read error: ${e}`);
         }
-        // Test putEnv / getEnv
+        // Check index.php content
         try {
-          const phpBin = await instance.binary;
-          const putResult = phpBin.ccall(
-            'wasm_sapi_cgi_putenv', 'number',
-            ['string', 'string'], ['SCRIPT_FILENAME', '/app/public/index.php']
-          );
-          checks.push(`\nputEnv SCRIPT_FILENAME result: ${putResult}`);
-          const getResult = phpBin.ccall(
-            'wasm_sapi_cgi_getenv', 'string',
-            ['string'], ['SCRIPT_FILENAME']
-          );
-          checks.push(`getEnv SCRIPT_FILENAME result: "${getResult}"`);
-          // Also test a simple PHP execution
-          phpBin.ccall('wasm_sapi_cgi_putenv', 'number', ['string', 'string'], ['DOCUMENT_ROOT', '/app/public']);
-          phpBin.ccall('wasm_sapi_cgi_putenv', 'number', ['string', 'string'], ['REQUEST_URI', '/']);
-          phpBin.ccall('wasm_sapi_cgi_putenv', 'number', ['string', 'string'], ['SCRIPT_NAME', '/index.php']);
-          phpBin.ccall('wasm_sapi_cgi_putenv', 'number', ['string', 'string'], ['PATH_TRANSLATED', '/app/public/index.php']);
-          phpBin.ccall('wasm_sapi_cgi_putenv', 'number', ['string', 'string'], ['REQUEST_METHOD', 'GET']);
-          phpBin.ccall('wasm_sapi_cgi_putenv', 'number', ['string', 'string'], ['QUERY_STRING', '']);
-          phpBin.ccall('wasm_sapi_cgi_putenv', 'number', ['string', 'string'], ['HTTP_HOST', 'laraworker.kswb.dev']);
-          phpBin.ccall('wasm_sapi_cgi_putenv', 'number', ['string', 'string'], ['REDIRECT_STATUS', '200']);
-          phpBin.ccall('wasm_sapi_cgi_putenv', 'number', ['string', 'string'], ['PHPRC', '/php.ini']);
-          phpBin.ccall('wasm_sapi_cgi_putenv', 'number', ['string', 'string'], ['SERVER_SOFTWARE', 'Cloudflare-Workers']);
-          // Read back all set vars
-          for (const key of ['SCRIPT_FILENAME', 'DOCUMENT_ROOT', 'REQUEST_URI', 'PHPRC']) {
-            const val = phpBin.ccall('wasm_sapi_cgi_getenv', 'string', ['string'], [key]);
-            checks.push(`getEnv ${key} = "${val}"`);
-          }
+          const indexPhp = FS.readFile('/app/public/index.php', { encoding: 'utf8' });
+          checks.push(`\n/app/public/index.php (${indexPhp.length} bytes):\n${indexPhp.substring(0, 500)}`);
         } catch (e: unknown) {
-          checks.push(`\nputEnv/getEnv test error: ${e}`);
+          checks.push(`\n/app/public/index.php read error: ${e}`);
+        }
+        // Test: create simple PHP file and make a request through PhpCgiBase
+        try {
+          FS.writeFile('/app/public/test.php', '<?php echo "HELLO_FROM_PHP";');
+          const testReq = new Request('https://laraworker.kswb.dev/test.php');
+          const testResp = await instance.request(testReq);
+          const testBody = await testResp.text();
+          checks.push(`\nTest request to /test.php: status=${testResp.status}`);
+          checks.push(`Test response body: "${testBody.substring(0, 200)}"`);
+          checks.push(`Test response headers:`);
+          testResp.headers.forEach((v: string, k: string) => checks.push(`  ${k}: ${v}`));
+        } catch (e: unknown) {
+          checks.push(`\nTest request error: ${e instanceof Error ? e.stack : e}`);
         }
         return new Response(checks.join('\n'), {
           status: 200,
