@@ -79,6 +79,8 @@ class BuildCommand extends Command
         $this->components->task('Preparing production vendor (no-dev)', function () use ($basePath) {
             return $this->prepareProductionVendor($basePath);
         });
+
+        $this->stripMissingProviders($this->buildDirectory->path('vendor-staging'));
     }
 
     /**
@@ -406,7 +408,10 @@ class BuildCommand extends Command
     }
 
     /**
-     * Remove unnecessary service providers from the cached config.
+     * Remove manually specified service providers from the cached config.
+     *
+     * These are providers that exist in the vendor but aren't functional in
+     * a Cloudflare Workers environment (e.g., Broadcasting, Queue).
      */
     private function stripServiceProviders(string $cachedConfigFile): void
     {
@@ -418,20 +423,18 @@ class BuildCommand extends Command
         }
 
         $this->components->task('Stripping unnecessary service providers', function () use ($cachedConfigFile, $providers) {
-            $contents = file_get_contents($cachedConfigFile);
+            $config = require $cachedConfigFile;
 
-            foreach ($providers as $provider) {
-                // Cached config files use double backslashes in class names
-                $doubleEscaped = str_replace('\\', '\\\\', $provider);
-                $escaped = preg_quote($doubleEscaped, '/');
-                $contents = preg_replace(
-                    "/\s*\d+\s*=>\s*'{$escaped}',?\n?/",
-                    '',
-                    $contents
+            if (isset($config['app']['providers'])) {
+                $config['app']['providers'] = array_values(
+                    array_diff($config['app']['providers'], $providers)
                 );
             }
 
-            file_put_contents($cachedConfigFile, $contents);
+            file_put_contents(
+                $cachedConfigFile,
+                '<?php return '.var_export($config, true).';'.PHP_EOL
+            );
 
             return true;
         });
@@ -439,6 +442,68 @@ class BuildCommand extends Command
         $this->components->bulletList(
             collect($providers)->map(fn (string $p) => class_basename($p))->all()
         );
+    }
+
+    /**
+     * Strip providers from cached config and packages.php that don't exist
+     * in the production vendor classmap.
+     *
+     * This catches all dev-only providers (Pail, Sail, Collision, etc.)
+     * automatically without maintaining a manual list.
+     */
+    private function stripMissingProviders(string $stagingDir): void
+    {
+        $classmapPath = $stagingDir.'/vendor/composer/autoload_classmap.php';
+        if (! file_exists($classmapPath)) {
+            return;
+        }
+
+        $this->components->task('Stripping unavailable service providers', function () use ($classmapPath) {
+            $classmap = require $classmapPath;
+            $stripped = [];
+
+            // Strip from cached config (app.providers)
+            $configPath = base_path('bootstrap/cache/config.php');
+            if (file_exists($configPath)) {
+                $config = require $configPath;
+
+                if (isset($config['app']['providers'])) {
+                    $original = $config['app']['providers'];
+                    $config['app']['providers'] = array_values(
+                        array_filter($original, fn (string $provider) => isset($classmap[$provider]))
+                    );
+                    $stripped = array_diff($original, $config['app']['providers']);
+
+                    file_put_contents(
+                        $configPath,
+                        '<?php return '.var_export($config, true).';'.PHP_EOL
+                    );
+                }
+            }
+
+            // Strip from packages.php (auto-discovered providers)
+            $packagesPath = base_path('bootstrap/cache/packages.php');
+            if (file_exists($packagesPath)) {
+                $packages = require $packagesPath;
+
+                foreach ($packages as $name => $package) {
+                    foreach ($package['providers'] ?? [] as $provider) {
+                        if (! isset($classmap[$provider])) {
+                            $stripped[] = $provider;
+                            unset($packages[$name]);
+                            break;
+                        }
+                    }
+                }
+
+                file_put_contents(
+                    $packagesPath,
+                    '<?php return '.var_export($packages, true).';'.PHP_EOL
+                );
+            }
+
+            return ! empty($stripped);
+        });
     }
 
     /**

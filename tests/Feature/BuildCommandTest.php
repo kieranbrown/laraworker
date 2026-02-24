@@ -169,20 +169,17 @@ test('strip service providers removes providers from cached config', function ()
     }
 
     $cachedFile = $cacheDir.'/config.php';
-    $content = <<<'PHP'
-    <?php return array (
-      'app' => array (
-        'providers' => array (
-          0 => 'Illuminate\\Auth\\AuthServiceProvider',
-          1 => 'Illuminate\\Broadcasting\\BroadcastServiceProvider',
-          2 => 'Illuminate\\Bus\\BusServiceProvider',
-          3 => 'Illuminate\\Routing\\RoutingServiceProvider',
-        ),
-      ),
-    );
-    PHP;
-
-    file_put_contents($cachedFile, $content);
+    $config = [
+        'app' => [
+            'providers' => [
+                'Illuminate\Auth\AuthServiceProvider',
+                'Illuminate\Broadcasting\BroadcastServiceProvider',
+                'Illuminate\Bus\BusServiceProvider',
+                'Illuminate\Routing\RoutingServiceProvider',
+            ],
+        ],
+    ];
+    file_put_contents($cachedFile, '<?php return '.var_export($config, true).';'.PHP_EOL);
 
     config(['laraworker.strip_providers' => [
         Illuminate\Broadcasting\BroadcastServiceProvider::class,
@@ -203,14 +200,99 @@ test('strip service providers removes providers from cached config', function ()
 
     $method->invoke($command, $cachedFile);
 
-    $result = file_get_contents($cachedFile);
-    expect($result)
-        ->not->toContain('BroadcastServiceProvider')
-        ->not->toContain('BusServiceProvider')
-        ->toContain('AuthServiceProvider')
-        ->toContain('RoutingServiceProvider');
+    $result = require $cachedFile;
+    expect($result['app']['providers'])
+        ->toContain('Illuminate\Auth\AuthServiceProvider')
+        ->toContain('Illuminate\Routing\RoutingServiceProvider')
+        ->not->toContain('Illuminate\Broadcasting\BroadcastServiceProvider')
+        ->not->toContain('Illuminate\Bus\BusServiceProvider');
+
+    // Verify array keys are re-indexed
+    expect(array_keys($result['app']['providers']))->toBe([0, 1]);
 
     unlink($cachedFile);
+});
+
+test('strip missing providers removes unavailable providers from config and packages', function () {
+    $cacheDir = base_path('bootstrap/cache');
+    if (! is_dir($cacheDir)) {
+        mkdir($cacheDir, 0755, true);
+    }
+
+    // Create a staging directory with a classmap that only contains some providers
+    $stagingDir = sys_get_temp_dir().'/laraworker-test-staging-'.uniqid();
+    $classmapDir = $stagingDir.'/vendor/composer';
+    mkdir($classmapDir, 0755, true);
+
+    // The classmap only contains Auth and Routing providers (not Pail or Sail)
+    file_put_contents($classmapDir.'/autoload_classmap.php', '<?php return '.var_export([
+        'Illuminate\Auth\AuthServiceProvider' => '/vendor/laravel/framework/src/Illuminate/Auth/AuthServiceProvider.php',
+        'Illuminate\Routing\RoutingServiceProvider' => '/vendor/laravel/framework/src/Illuminate/Routing/RoutingServiceProvider.php',
+        'App\Providers\AppServiceProvider' => '/app/Providers/AppServiceProvider.php',
+    ], true).';'.PHP_EOL);
+
+    // Create cached config with providers including one that won't exist in production
+    $configFile = $cacheDir.'/config.php';
+    $config = [
+        'app' => [
+            'providers' => [
+                'Illuminate\Auth\AuthServiceProvider',
+                'Illuminate\Routing\RoutingServiceProvider',
+                'App\Providers\AppServiceProvider',
+                'Laravel\Pail\PailServiceProvider',
+            ],
+        ],
+    ];
+    file_put_contents($configFile, '<?php return '.var_export($config, true).';'.PHP_EOL);
+
+    // Create packages.php with dev-only packages
+    $packagesFile = $cacheDir.'/packages.php';
+    $packages = [
+        'laravel/pail' => [
+            'providers' => ['Laravel\Pail\PailServiceProvider'],
+        ],
+        'laravel/sail' => [
+            'providers' => ['Laravel\Sail\SailServiceProvider'],
+        ],
+        'nesbot/carbon' => [
+            'providers' => ['Carbon\Laravel\ServiceProvider'],
+        ],
+    ];
+    file_put_contents($packagesFile, '<?php return '.var_export($packages, true).';'.PHP_EOL);
+
+    $command = new \Laraworker\Console\BuildCommand;
+    $method = new ReflectionMethod($command, 'stripMissingProviders');
+
+    $command->setLaravel(app());
+    $componentsProperty = new ReflectionProperty(\Illuminate\Console\Command::class, 'components');
+    $input = new \Symfony\Component\Console\Input\ArrayInput([]);
+    $output = new \Symfony\Component\Console\Output\BufferedOutput;
+    $style = new \Illuminate\Console\OutputStyle($input, $output);
+    $componentsProperty->setValue($command, new \Illuminate\Console\View\Components\Factory($style));
+
+    $method->invoke($command, $stagingDir);
+
+    // Verify config.php: Pail stripped, Auth/Routing/App kept
+    $resultConfig = require $configFile;
+    expect($resultConfig['app']['providers'])
+        ->toContain('Illuminate\Auth\AuthServiceProvider')
+        ->toContain('Illuminate\Routing\RoutingServiceProvider')
+        ->toContain('App\Providers\AppServiceProvider')
+        ->not->toContain('Laravel\Pail\PailServiceProvider');
+
+    // Verify packages.php: Pail and Sail stripped, Carbon kept only if in classmap
+    $resultPackages = require $packagesFile;
+    expect($resultPackages)->not->toHaveKey('laravel/pail');
+    expect($resultPackages)->not->toHaveKey('laravel/sail');
+    expect($resultPackages)->not->toHaveKey('nesbot/carbon');
+
+    // Clean up
+    unlink($configFile);
+    unlink($packagesFile);
+    unlink($classmapDir.'/autoload_classmap.php');
+    rmdir($classmapDir);
+    rmdir($stagingDir.'/vendor');
+    rmdir($stagingDir);
 });
 
 test('parse env file returns key value pairs', function () {
