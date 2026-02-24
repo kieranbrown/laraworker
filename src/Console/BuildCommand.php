@@ -23,6 +23,7 @@ class BuildCommand extends Command
         $this->components->task('Preparing build directory', function () {
             $this->buildDirectory->ensureDirectory();
             $this->buildDirectory->copyStubs();
+            $this->buildDirectory->generateWorkerTs();
             $this->buildDirectory->generatePhpTs();
             $this->buildDirectory->copyWasmBinary();
             $this->buildDirectory->generateWranglerConfig();

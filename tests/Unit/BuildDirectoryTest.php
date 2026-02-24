@@ -52,7 +52,6 @@ test('copyStubs copies all expected stub files', function () {
     $this->buildDir->copyStubs();
 
     $expectedFiles = [
-        'worker.ts',
         'shims.ts',
         'tar.ts',
         'inertia-ssr.ts',
@@ -79,8 +78,14 @@ test('copyStubs files match package stubs', function () {
 
     $stubDir = dirname(__DIR__, 2).'/stubs';
 
-    expect(file_get_contents($this->buildDir->path('worker.ts')))
-        ->toBe(file_get_contents($stubDir.'/worker.ts'));
+    expect(file_get_contents($this->buildDir->path('shims.ts')))
+        ->toBe(file_get_contents($stubDir.'/shims.ts'));
+});
+
+test('copyStubs does not copy worker.ts (generated separately)', function () {
+    $this->buildDir->copyStubs();
+
+    expect(file_exists($this->buildDir->path('worker.ts')))->toBeFalse();
 });
 
 test('generatePhpTs copies stub as php.ts', function () {
@@ -104,6 +109,65 @@ test('generatePhpTs creates php.ts with custom PhpCgiBase import', function () {
         ->toContain("from './php-cgi.mjs'")
         ->toContain("from './php-cgi.wasm'")
         ->toContain('PhpCgiCloudflare');
+});
+
+test('generateWorkerTs creates worker.ts with opcache INI from config', function () {
+    config(['laraworker.opcache' => [
+        'enabled' => true,
+        'enable_cli' => true,
+        'memory_consumption' => 16,
+        'interned_strings_buffer' => 4,
+        'max_accelerated_files' => 1000,
+        'validate_timestamps' => false,
+        'jit' => false,
+    ]]);
+
+    $this->buildDir->ensureDirectory();
+    $this->buildDir->generateWorkerTs();
+
+    $content = file_get_contents($this->buildDir->path('worker.ts'));
+
+    expect($content)
+        ->toContain('opcache.enable=1')
+        ->toContain('opcache.enable_cli=1')
+        ->toContain('opcache.memory_consumption=16')
+        ->toContain('opcache.interned_strings_buffer=4')
+        ->toContain('opcache.max_accelerated_files=1000')
+        ->toContain('opcache.validate_timestamps=0')
+        ->toContain('opcache.jit=0')
+        ->not->toContain('{{OPCACHE_INI}}');
+});
+
+test('generateWorkerTs omits opcache INI when disabled', function () {
+    config(['laraworker.opcache' => [
+        'enabled' => false,
+    ]]);
+
+    $this->buildDir->ensureDirectory();
+    $this->buildDir->generateWorkerTs();
+
+    $content = file_get_contents($this->buildDir->path('worker.ts'));
+
+    expect($content)
+        ->not->toContain('opcache.enable')
+        ->not->toContain('{{OPCACHE_INI}}');
+});
+
+test('generateWorkerTs uses config values for memory consumption', function () {
+    config(['laraworker.opcache' => [
+        'enabled' => true,
+        'memory_consumption' => 24,
+        'max_accelerated_files' => 2000,
+    ]]);
+
+    $this->buildDir->ensureDirectory();
+    $this->buildDir->generateWorkerTs();
+
+    $content = file_get_contents($this->buildDir->path('worker.ts'));
+
+    expect($content)
+        ->toContain('opcache.memory_consumption=24')
+        ->toContain('opcache.max_accelerated_files=2000');
 });
 
 test('generateWranglerConfig creates wrangler.jsonc from config', function () {
