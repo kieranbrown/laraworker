@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { usePage } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
 const mobileMenuOpen = ref(false);
@@ -27,16 +27,16 @@ function isActive(route: string): boolean {
             <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between h-16">
                     <!-- Logo -->
-                    <a href="/" class="flex items-center gap-2.5 font-bold text-lg text-white group">
+                    <Link href="/" class="flex items-center gap-2.5 font-bold text-lg text-white group">
                         <span class="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white text-sm transition-shadow group-hover:shadow-lg group-hover:shadow-indigo-500/25">
                             &#9651;
                         </span>
                         <span>Laraworker</span>
-                    </a>
+                    </Link>
 
                     <!-- Desktop nav -->
                     <div class="hidden md:flex items-center gap-1">
-                        <a
+                        <Link
                             v-for="link in navLinks"
                             :key="link.route"
                             :href="link.route"
@@ -46,7 +46,7 @@ function isActive(route: string): boolean {
                                 : 'text-gray-400 hover:text-white hover:bg-white/5'"
                         >
                             {{ link.name }}
-                        </a>
+                        </Link>
                         <a
                             href="https://github.com/nicekiwi/laraworker"
                             target="_blank"
@@ -74,7 +74,7 @@ function isActive(route: string): boolean {
 
                 <!-- Mobile menu -->
                 <div v-if="mobileMenuOpen" class="md:hidden pb-4 border-t border-white/5 mt-2 pt-3 space-y-1">
-                    <a
+                    <Link
                         v-for="link in navLinks"
                         :key="link.route"
                         :href="link.route"
@@ -85,7 +85,7 @@ function isActive(route: string): boolean {
                         @click="mobileMenuOpen = false"
                     >
                         {{ link.name }}
-                    </a>
+                    </Link>
                     <a
                         href="https://github.com/nicekiwi/laraworker"
                         target="_blank"
