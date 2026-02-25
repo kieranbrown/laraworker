@@ -1057,7 +1057,7 @@
             "version": "dev-main",
             "dist": {
                 "type": "path",
-                "url": "/Users/kieran/Code/github.com/kieranbrown/laraworker",
+                "url": "../",
                 "reference": "7c97c4623936555c3e151ab3fa60d414f0788ffc"
             },
             "require": {
