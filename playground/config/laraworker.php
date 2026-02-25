@@ -7,13 +7,30 @@ return [
     | PHP Extensions
     |--------------------------------------------------------------------------
     |
-    | Enable or disable PHP WASM extensions. Each extension adds to the bundle
-    | size. Only enable what your application actually needs.
+    | When set to true, the extension is expected to be compiled into the WASM
+    | binary. When false, PHP stub functions are generated at build time.
     |
-    | mbstring (~742 KiB gzipped) — Multi-byte string functions
-    | openssl  (~936 KiB gzipped) — OpenSSL encryption/decryption
+    | The default WASM binary does NOT include these extensions. Set to true
+    | only if you build a custom WASM binary with the extension compiled in.
+    |
+    | mbstring — Multi-byte string functions (mb_split, mb_strlen, etc.)
+    | openssl  — OpenSSL encryption/decryption (openssl_encrypt, etc.)
     |
     */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Public Static Assets
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, files in public/ (except index.php and the build/ directory)
+    | are copied to Cloudflare Static Assets at build time. This allows files
+    | like robots.txt, favicon.ico, and other static resources to be served
+    | directly from Cloudflare's edge without invoking the PHP WASM worker.
+    |
+    */
+
+    'public_assets' => true,
 
     'extensions' => [
         'mbstring' => false,
@@ -38,7 +55,8 @@ return [
     'opcache' => [
         'enabled' => true,
         'enable_cli' => true,
-        'memory_consumption' => 32,
+        'memory_consumption' => 16,
+        'interned_strings_buffer' => 4,
         'max_accelerated_files' => 1000,
         'validate_timestamps' => false,
         'jit' => false,
