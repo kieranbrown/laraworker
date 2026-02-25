@@ -127,6 +127,11 @@ Follow patterns from existing command tests.
 
 ## Implementation Notes
 <!-- Tasks: append discoveries, decisions, gotchas here -->
+- **Task 3 COMPLETED** (f-2fc91c): Teardown scripts now call `laraworker:delete` before cleanup. Both scripts use `|| true` to ensure teardown never fails if the command doesn't exist or wrangler isn't authenticated. This is important because the delete command may not be implemented yet (Task 1 is still open).
 
 ## Interfaces Created
 <!-- Tasks: document interfaces/contracts created -->
+- **Teardown contract**: Both teardown scripts expect `laraworker:delete --force --no-interaction` to exist and be callable. The command should:
+  - Accept `--force` to skip confirmation
+  - Accept `--no-interaction` for non-interactive mode
+  - Return 0 on success or non-zero on failure (teardown will ignore failures)

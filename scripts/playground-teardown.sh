@@ -10,6 +10,12 @@ if [ ! -d "$PLAYGROUND_DIR" ]; then
     exit 0
 fi
 
+# Attempt to delete deployed Cloudflare Worker (best-effort)
+if [ -f "$PLAYGROUND_DIR/artisan" ]; then
+    echo "Attempting to delete deployed worker..."
+    php "$PLAYGROUND_DIR/artisan" laraworker:delete --force --no-interaction 2>/dev/null || true
+fi
+
 echo "Removing playground/..."
 rm -rf "$PLAYGROUND_DIR"
 echo "Playground removed."
