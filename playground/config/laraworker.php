@@ -114,7 +114,6 @@ return [
         'app',
         'bootstrap',
         'config',
-        'database',
         'routes',
         'resources/views',
         'storage/framework/views',
@@ -217,13 +216,7 @@ return [
 
     'routes' => [],
 
-    'd1_databases' => [
-        [
-            'binding' => 'DB',
-            'database_name' => 'laraworker-playground',
-            'database_id' => env('D1_DATABASE_ID', ''),
-        ],
-    ],
+    'd1_databases' => [],
 
     'env_overrides' => [
         'APP_ENV' => 'production',
@@ -231,7 +224,6 @@ return [
         'LOG_CHANNEL' => 'stderr',
         'SESSION_DRIVER' => 'cookie',
         'CACHE_STORE' => 'array',
-        'DB_CONNECTION' => 'cfd1',
     ],
 
 ];
