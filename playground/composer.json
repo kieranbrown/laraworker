@@ -88,6 +88,6 @@
     "repositories": [{
         "name": "laraworker",
         "type": "path",
-        "url": "/Users/kieran/Code/github.com/kieranbrown/laraworker"
+        "url": "/Users/kieran/.fuel/mirrors/laraworker/e-a29302"
     }]
 }

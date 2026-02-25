@@ -14,20 +14,27 @@
  * SSR server — the worker IS the SSR server.
  */
 
-// Must be imported before any Emscripten module to shim document/window
-import './shims';
-
-import { PhpCgiCloudflare } from './php';
-import { untar } from './tar';
 import { renderInertiaSSR, type InertiaRenderFn } from './inertia-ssr';
 
 /**
  * Inertia SSR render function — automatically configured by laraworker:build
  * when `config('laraworker.inertia.ssr')` is enabled. The build command runs
  * `vite build --ssr` and copies the bundle to .laraworker/ssr/ssr.js.
+ *
+ * IMPORTANT: The SSR import MUST appear before './shims' so that Inertia's
+ * module-level `isServer` check (`typeof window === "undefined"`) evaluates
+ * to `true`. The shims module defines `window` for Emscripten, so anything
+ * imported after it would see a browser-like environment.
  */
 let ssrRender: InertiaRenderFn | null = null;
 {{SSR_IMPORT}}
+
+// Must be imported before any Emscripten module to shim document/window.
+// Intentionally placed AFTER the SSR import — see note above.
+import './shims';
+
+import { PhpCgiCloudflare } from './php';
+import { untar } from './tar';
 
 interface Env {
   ASSETS: Fetcher;
@@ -231,14 +238,30 @@ export default {
       const instance = await ensureInitialized(env);
       const tInit = performance.now();
 
+      // Update globalThis.location to match the actual request URL so that
+      // PhpCgiBase sets HTTP_HOST and REQUEST_SCHEME correctly (it reads
+      // from globalThis.location). The shim defaults to https://localhost.
+      // @ts-expect-error — overriding Location with URL for PhpCgiBase
+      globalThis.location = new URL(request.url);
+
       // All requests go through PHP - static assets are served
       // by Cloudflare Static Assets before the worker is invoked
       const response = await instance.request(request);
       const tPhp = performance.now();
 
+      if (!response || typeof response.headers?.get !== 'function') {
+        console.error('PHP returned invalid response:', typeof response, response);
+        return new Response('PHP returned invalid response', { status: 502 });
+      }
+
       // Optionally apply Inertia SSR to HTML responses
       const ssrResponse = await maybeApplySSR(response, env);
       const tSsr = performance.now();
+
+      if (!ssrResponse || typeof ssrResponse.headers?.get !== 'function') {
+        console.error('SSR returned invalid response:', typeof ssrResponse, ssrResponse);
+        return new Response('SSR returned invalid response', { status: 502 });
+      }
 
       // Add Server-Timing headers to PHP-routed responses
       const headers = new Headers(ssrResponse.headers);

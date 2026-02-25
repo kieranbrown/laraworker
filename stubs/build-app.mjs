@@ -992,16 +992,34 @@ for (const dir of storageDirs) {
 // Include Vite manifest in the tar so PHP can read it for @vite() Blade directive.
 // The actual JS/CSS assets are served by Cloudflare Static Assets (copied later),
 // but PHP needs the manifest to generate <link> and <script> tags.
-const viteManifestDir = join(ROOT, 'public', 'build', '.vite');
-if (existsSync(viteManifestDir)) {
-  const manifestPath = join(viteManifestDir, 'manifest.json');
+// Vite 7+ puts manifest at public/build/manifest.json; older versions use .vite/ subdir.
+const viteManifestBuildDir = join(ROOT, 'public', 'build');
+const viteManifestPaths = [
+  { dir: join(viteManifestBuildDir, '.vite'), file: 'manifest.json', tarDir: 'public/build/.vite/' },
+  { dir: viteManifestBuildDir, file: 'manifest.json', tarDir: 'public/build/' },
+];
+
+let viteManifestIncluded = false;
+for (const { dir, file, tarDir } of viteManifestPaths) {
+  const manifestPath = join(dir, file);
   if (existsSync(manifestPath)) {
-    allFiles.push({ path: 'public/', isDir: true });
-    allFiles.push({ path: 'public/build/', isDir: true });
-    allFiles.push({ path: 'public/build/.vite/', isDir: true });
-    allFiles.push({ path: 'public/build/.vite/manifest.json', isDir: false, fullPath: manifestPath });
-    console.log('  ✓ Vite manifest included in tar');
+    if (!allFiles.some(f => f.path === 'public/')) {
+      allFiles.push({ path: 'public/', isDir: true });
+    }
+    if (!allFiles.some(f => f.path === 'public/build/')) {
+      allFiles.push({ path: 'public/build/', isDir: true });
+    }
+    if (tarDir === 'public/build/.vite/' && !allFiles.some(f => f.path === tarDir)) {
+      allFiles.push({ path: tarDir, isDir: true });
+    }
+    allFiles.push({ path: tarDir + file, isDir: false, fullPath: manifestPath });
+    console.log(`  ✓ Vite manifest included in tar (${tarDir}${file})`);
+    viteManifestIncluded = true;
+    break;
   }
+}
+if (!viteManifestIncluded) {
+  console.warn('  Warning: No Vite manifest found in public/build/');
 }
 
 // Strip Carbon locale files (keep only en.php — no regional variants like en_AU, en_GB)

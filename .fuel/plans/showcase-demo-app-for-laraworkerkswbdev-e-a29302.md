@@ -40,18 +40,11 @@ Transform the minimal playground into a visually impressive showcase demonstrati
 - Add `Server-Timing` header to responses for browser DevTools visibility
 - This is a package-level change to stubs/worker.ts.stub
 
-### 3. Wire up Inertia SSR in build process ✅
+### 3. Wire up Inertia SSR in build process
 - Update BuildCommand to run `vite build --ssr` when inertia.ssr is enabled
 - Copy SSR bundle output to .laraworker/ssr/
 - Update worker.ts.stub to conditionally import SSR bundle
 - Enable INERTIA_SSR=true in playground config
-
-**Implementation notes (task 3):**
-- `BuildCommand::buildSsrBundle()` runs `npx vite build --ssr`, then copies `bootstrap/ssr/ssr.js` (or `.mjs`) to `.laraworker/ssr/ssr.js`
-- `BuildDirectory::generateWorkerTs()` replaces `{{SSR_IMPORT}}` placeholder — when SSR enabled: `import _ssrRender from './ssr/ssr'; ssrRender = _ssrRender;`, when disabled: empty string
-- The SSR entry (`playground/resources/js/ssr.ts`) uses `export default function render`, so worker uses default import
-- `playground/package.json` has `build:ssr` script, `playground/.env` has `LARAWORKER_INERTIA_SSR=true`
-- Non-SSR apps are unaffected — `buildSsrBundle()` returns early when `config('laraworker.inertia.ssr')` is false, and `{{SSR_IMPORT}}` is replaced with empty string
 
 ### 4. Build showcase Vue pages + controllers
 - Create PageController with home/performance/architecture/features actions

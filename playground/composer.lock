@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9a2dc4627b12e9f76458f9923659007f",
+    "content-hash": "1e999540bf6313db292ccebc0e39b438",
     "packages": [
         {
             "name": "brick/math",
@@ -1124,11 +1124,11 @@
         },
         {
             "name": "kieranbrown/laraworker",
-            "version": "dev-main",
+            "version": "dev-epic/showcase-demo-app-for-laraworkerkswbdev-e-a29302",
             "dist": {
                 "type": "path",
-                "url": "/Users/kieran/Code/github.com/kieranbrown/laraworker",
-                "reference": "fa4256da71536790a2043e03191e9925015b24be"
+                "url": "/Users/kieran/.fuel/mirrors/laraworker/e-a29302",
+                "reference": "8e995e93f85a0aec260116a39cb87ea4752bea67"
             },
             "require": {
                 "illuminate/console": "^12.0",
