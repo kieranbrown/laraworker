@@ -31,7 +31,7 @@ test('build command generates env production', function () {
         ->toContain('APP_ENV=production')
         ->toContain('APP_DEBUG=false')
         ->toContain('LOG_CHANNEL=stderr')
-        ->toContain('SESSION_DRIVER=array')
+        ->toContain('SESSION_DRIVER=cookie')
         ->toContain('CACHE_STORE=array');
 
     if (! $hadEnv) {
