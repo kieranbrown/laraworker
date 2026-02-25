@@ -4,6 +4,7 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
+        "build:ssr": "vite build --ssr",
         "dev": "vite",
         "build:worker": "php artisan laraworker:build",
         "dev:worker": "php artisan laraworker:dev",
