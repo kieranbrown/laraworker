@@ -65,19 +65,18 @@ Plan must include:
 - Acceptance criteria (machine-verifiable)
 - Smoketesting approach
 
-**ASCII diagrams:** Use them when they clarify architecture, data flow, or component relationships. A quick diagram is often clearer than three paragraphs. Good candidates:
+**Diagrams:** Use mermaid diagrams when they clarify architecture, data flow, or component relationships. A quick diagram is often clearer than three paragraphs. Good candidates:
 - Multi-service or multi-process architecture
 - Request/response flows with transformations
 - Component dependency graphs
 - State machines or lifecycle flows
 
 Example:
-```
-CLI → TaskService → SQLite (.fuel/agent.db)
-         ↓
-    RunService → process group (PGID)
-         ↓
-    IPC socket (fuel.sock)
+```mermaid
+graph LR
+    CLI --> TaskService --> SQLite
+    TaskService --> RunService --> ProcessGroup
+    RunService --> IPCSocket
 ```
 
 If dev services needed (vite/server/workers), consider defining `.fuel/run.yml` entries.
