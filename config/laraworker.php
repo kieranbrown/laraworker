@@ -217,6 +217,25 @@ return [
 
     'routes' => [],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Cloudflare D1 Database Bindings
+    |--------------------------------------------------------------------------
+    |
+    | Configure Cloudflare D1 database bindings for your worker. Each entry
+    | maps a binding name to a D1 database. The binding name is used in both
+    | wrangler.jsonc (for Cloudflare to inject the D1 handle) and in PHP as
+    | the PDO DSN (e.g., new PDO('cfd1:DB')).
+    |
+    | Create D1 databases via: npx wrangler d1 create <name>
+    |
+    | Example:
+    |   [['binding' => 'DB', 'database_name' => 'my-db', 'database_id' => 'xxx-xxx']]
+    |
+    */
+
+    'd1_databases' => [],
+
     'env_overrides' => [
         'APP_ENV' => 'production',
         'APP_DEBUG' => 'false',
