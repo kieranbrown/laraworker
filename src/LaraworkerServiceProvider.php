@@ -4,6 +4,7 @@ namespace Laraworker;
 
 use Illuminate\Support\ServiceProvider;
 use Laraworker\Console\BuildCommand;
+use Laraworker\Console\DeleteCommand;
 use Laraworker\Console\DeployCommand;
 use Laraworker\Console\DevCommand;
 use Laraworker\Console\InstallCommand;
@@ -35,6 +36,7 @@ class LaraworkerServiceProvider extends ServiceProvider
                 DevCommand::class,
                 DeployCommand::class,
                 StatusCommand::class,
+                DeleteCommand::class,
             ]);
         }
     }
