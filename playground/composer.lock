@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ecee02c5d30c76b222514440e840ae32",
+    "content-hash": "51a651b7985bee04c7e319333a3376f1",
     "packages": [
         {
             "name": "brick/math",
@@ -1124,11 +1124,11 @@
         },
         {
             "name": "kieranbrown/laraworker",
-            "version": "dev-epic/fix-inertia-link-support-e-792604",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
-                "url": "/Users/kieran/.fuel/mirrors/laraworker/e-792604",
-                "reference": "9778e6b1597209382a3285a23ab438a71cbe8315"
+                "url": "..",
+                "reference": "916472484607a673b59fce82352040b6d889acbc"
             },
             "require": {
                 "illuminate/console": "^12.0",
@@ -1170,7 +1170,7 @@
                 "workers"
             ],
             "transport-options": {
-                "relative": false
+                "relative": true
             }
         },
         {
