@@ -30,6 +30,7 @@ Standalone Composer package (`kieranbrown/laraworker`) for running Laravel on Cl
 - **Build-time optimizations** (all configurable in `config/laraworker.php`): PHP whitespace stripping via `php -w` (parallel, disabled by default), vendor pruning (CLI bins, translations, test utils, unnecessary file types), service provider stripping from cached config, class preloader for core Illuminate files
 - **Deployment isolation**: Playground uses a unique `LARAWORKER_NAME` env var (not `laraworker`) to avoid overwriting the production demo (`laraworker.kswb.dev`). Teardown scripts call `laraworker:delete` to clean up ephemeral workers after testing.
 - **OPcache configuration**: `config/laraworker.php` exposes OPcache settings — OPcache caches compiled PHP opcodes in WASM linear memory for warm request speedup. OPcache SHM now persists across requests within an isolate (SAPI lifecycle patched). Works alongside ClassPreloader (complementary optimizations). See `.fuel/docs/performance-investigation.md` for measured results (~17ms warm locally, 781+ hits in production)
+- **D1 database binding**: `config/laraworker.php` accepts `d1_databases` array; `BuildDirectory` injects D1 bindings into wrangler config and the worker stub exposes them to PHP via `$_ENV`. Uses `seanmorris/pdo-cfd1` PDO driver (statically linked in WASM). Laravel's `database.php` configured with `pdo_cfd1` driver pointing to D1 binding name.
 
 ## Quality Gates
 | Tool | Command | Purpose |
@@ -39,9 +40,9 @@ Standalone Composer package (`kieranbrown/laraworker`) for running Laravel on Cl
 | Fuel quality-gate | `.fuel/quality-gate` | Pre-commit hook: Pint auto-fix on staged PHP files → restage → full Pest suite |
 
 ## Recent Changes
+- 2026-02-25: Added Cloudflare D1 database support via `seanmorris/pdo-cfd1` — WASM rebuilt with PDO+pdo_cfd1, `BuildDirectory` injects D1 bindings into wrangler config, worker stub exposes bindings to PHP, playground demo added.
 - 2026-02-25: Added `laraworker:delete` command — deletes a deployed Cloudflare Worker by name; teardown scripts now call this to prevent orphaned workers. Playground uses unique `LARAWORKER_NAME` (via env) to avoid overwriting production (`laraworker.kswb.dev`).
 - OPcache truly persists: Patched `cgi_main.c` to skip `php_module_startup()` after first request (if-guard with `_wasm_module_started` flag). OPcache SHM survives between requests within an isolate. Warm requests now ~17ms locally, 781+ hits observed in production.
 - 2026-02-23: Statically linked OPcache into custom PHP WASM binary — caches compiled opcodes in WASM linear memory, directly addresses cold-start bottleneck (parsing all framework files without OPcache)
 - 2026-02-23: Added OPcache configuration to `config/laraworker.php` — exposes OPcache settings for WASM environment with sensible defaults for ~3x warm request speedup
-- 2026-02-23: Upgraded custom PHP WASM build from 8.2.11 to 8.5; added aggressive bundle size minimization (parallel whitespace stripping, additional vendor file pruning) targeting <3MB Cloudflare Workers free tier
 _Last updated: 2026-02-25_
