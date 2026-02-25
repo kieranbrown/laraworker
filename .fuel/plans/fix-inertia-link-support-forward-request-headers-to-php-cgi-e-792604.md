@@ -21,26 +21,15 @@ PHP CGI expects these as `HTTP_X_INERTIA`, `HTTP_X_INERTIA_VERSION`, `HTTP_X_REQ
 
 ## Solution
 
-### Task 1: Forward request headers to PHP in worker stub ✅ COMPLETED
+### Task 1: Forward request headers to PHP in worker stub
 
-**Implementation:** Overrode `request()` and `_beforeRequest()` in `PhpCgiCloudflare` (`stubs/php.ts.stub`).
+Modify `stubs/worker.ts.stub` to iterate over the incoming `Request.headers` and call `putEnv()` for each one as `HTTP_<NAME>` (uppercased, hyphens to underscores). This must happen in the worker stub level since PhpCgiBase.mjs is an upstream dependency we don't control.
 
-**Files modified:**
-- `stubs/php.ts.stub` — source template (copied verbatim by `BuildDirectory::generatePhpTs()`)
-- `playground/.laraworker/php.ts` — live playground copy
+**Approach:** Override `_beforeRequest()` or wrap `instance.request()` in worker.ts.stub to inject headers. Alternatively, use the `env` option in PhpCgiCloudflare constructor — but this only works for static values. The per-request approach is needed.
 
-**Pattern established:**
-1. `request()` override stores `request.headers` on `this._pendingHeaders`
-2. `_beforeRequest()` override resolves `this.binary`, calls `php.ccall('wasm_sapi_cgi_putenv', ...)` for each header
-3. Header name conversion: lowercase → `HTTP_` + uppercase + hyphens→underscores (e.g. `x-inertia` → `HTTP_X_INERTIA`)
-4. Skips `host`, `cookie`, `content-type`, `content-length` (already handled by PhpCgiBase)
-5. Clears stale headers from previous requests via `_previousHeaderEnvKeys` tracking (WASM instance is reused across requests)
+**Key detail:** PhpCgiBase has a `putEnv` function accessible via `php.ccall('wasm_sapi_cgi_putenv', ...)`. The worker stub needs to call this for each request header before `instance.request()` processes the request.
 
-**Gotchas:**
-- `Headers.entries()` returns lowercase header names — skip-set comparison uses lowercase
-- `_beforeRequest()` runs BEFORE PhpCgiBase sets its env vars in the `navigator.locks` callback, so our vars persist correctly
-- Must clear previous request's headers to avoid stale `HTTP_X_INERTIA` persisting on non-Inertia follow-up requests
-- `this.binary` is accessible from `_beforeRequest()` — it's a Promise that resolves to the same Emscripten module instance
+**Best approach:** Subclass `request()` in `PhpCgiCloudflare` (stubs/php.ts.stub) to extract and forward headers. OR patch PhpCgiBase.mjs at build time to iterate `request.headers` in the request method.
 
 ### Task 2: Switch SESSION_DRIVER to cookie
 
@@ -50,6 +39,38 @@ Change `config/laraworker.php` env_overrides from `SESSION_DRIVER=array` to `SES
 
 Revert commit 4497c3a changes in `playground/resources/js/Layouts/AppLayout.vue` — re-import `Link` from `@inertiajs/vue3` and replace `<a>` tags back to `<Link>` components.
 
-### Task 4: End-to-end verification
+### Task 4: End-to-end verification ✅
 
 Build and test: clicking Inertia Links should produce XHR requests (visible in Network tab), PHP should return JSON with `X-Inertia` header, and page transitions should be smooth without full reloads.
+
+## Verification Results
+
+### Issues Found & Fixed During Review
+
+1. **Playground config out of sync**: `playground/config/laraworker.php` was missing `storage/framework/views` from `include_dirs` and still had `SESSION_DRIVER=array`. The package default config (`config/laraworker.php`) had been updated but the playground's published copy was stale.
+   - **Root cause**: Compiled Blade views from `view:cache` were stored in `storage/framework/views/` but not included in the tar, so WASM had to recompile views at runtime where custom Blade directives (`@inertia`, `@vite`) failed to register.
+   - **Fix**: Added `storage/framework/views` to playground's `include_dirs` and updated `SESSION_DRIVER` to `cookie`.
+
+2. **Stale composer.json path repository**: `playground/composer.json` referenced a non-existent mirror path (`e-a29302`), causing `composer update --no-dev` to fail in the staging vendor step.
+   - **Fix**: Updated path to current mirror (`e-792604`).
+
+3. **Test assertion mismatch**: `tests/Feature/BuildCommandTest.php` expected `SESSION_DRIVER=array` but config was changed to `cookie`.
+   - **Fix**: Updated test to expect `SESSION_DRIVER=cookie`.
+
+### Gotchas for Future Agents
+
+- **Published configs drift**: When changing `config/laraworker.php` defaults, also update `playground/config/laraworker.php` — it's a published copy that overrides the package default.
+- **Compiled views MUST be in the tar**: Without `storage/framework/views` in `include_dirs`, Blade directive registration fails silently in WASM. The `view.relative_hash=true` setting makes cache hashes portable between build-time and runtime paths.
+- **Composer path repos in mirrors**: The playground's `composer.json` `repositories[].url` must match the current mirror path.
+
+### Verified Acceptance Criteria
+
+- ✅ Build playground succeeds
+- ✅ All 66 package tests pass (183 assertions)
+- ✅ Inertia XHR requests return JSON with `X-Inertia: true` header
+- ✅ No 419 CSRF errors (cookie session driver works)
+- ✅ Browser navigation is smooth (no full page reloads)
+- ✅ All 4 routes work: /, /features, /architecture, /performance
+- ✅ Deployed to production (laravel.kieranbrown.workers.dev)
+- ✅ Production site navigation works with Inertia
+- ✅ laraworker.kswb.dev returns 200 (same worker)
