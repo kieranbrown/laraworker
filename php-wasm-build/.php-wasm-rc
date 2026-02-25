@@ -47,6 +47,14 @@ GZIP=1
 # Expected size increase: ~150-250 KB gzipped vs no-opcache build.
 WITH_OPCACHE=1
 
+# ── PDO + Cloudflare D1 (pdo-cfd1) ──
+# pdo-cfd1 bridges PHP's PDO to Cloudflare D1's JavaScript API via EM_ASM interop.
+# Enables `new PDO('cfd1:BINDING_NAME')` in PHP — Laravel Eloquent works with D1.
+# The build system (packages/pdo-cfd1/pre.mak) clones the extension source and adds
+# --enable-pdo-cfd1 to PHP configure flags. PDO core is auto-enabled as a dependency.
+# Expected binary size impact: ~50-100 KB gzipped (lightweight C code, ~4 source files).
+WITH_PDO_CFD1=1
+
 # ── Extensions: ALL disabled ──
 # These are optional PHP extensions — all disabled to minimise binary size.
 # OPcache is NOT listed here as it is a bundled (always-compiled) extension.
