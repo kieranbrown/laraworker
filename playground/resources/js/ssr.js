@@ -1,10 +1,10 @@
 import { createSSRApp, h } from 'vue';
 import { renderToString } from '@vue/server-renderer';
 
-const app = createSSRApp({
-    render: () => h('div', 'Hello SSR'),
-});
+export default function render(url, context) {
+    const app = createSSRApp({
+        render: () => h('div', 'Hello SSR'),
+    });
 
-renderToString(app).then(html => {
-    console.log(html);
-});
+    return renderToString(app);
+}
