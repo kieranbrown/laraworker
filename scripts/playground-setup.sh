@@ -43,6 +43,12 @@ composer require kieranbrown/laraworker "@dev" --no-interaction --working-dir="$
 echo "Running laraworker:install..."
 php "$PLAYGROUND_DIR/artisan" laraworker:install --no-interaction
 
+# Generate unique playground worker name
+PLAYGROUND_ID=$(head -c 4 /dev/urandom | xxd -p)
+echo "" >> "$PLAYGROUND_DIR/.env"
+echo "LARAWORKER_NAME=laraworker-playground-${PLAYGROUND_ID}" >> "$PLAYGROUND_DIR/.env"
+echo "Set worker name: laraworker-playground-${PLAYGROUND_ID}"
+
 echo "Installing npm dependencies..."
 (cd "$PLAYGROUND_DIR" && bun install)
 
