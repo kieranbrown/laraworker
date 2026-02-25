@@ -28,6 +28,8 @@ interface PhpCgiCloudflareOptions {
   rewrite?: (path: string) => string | { scriptName: string; path: string };
   env?: Record<string, string>;
   ini?: string;
+  /** Cloudflare D1 database bindings — passed through to Module.cfd1 for pdo-cfd1 */
+  cfd1?: Record<string, unknown>;
 }
 
 export class PhpCgiCloudflare extends PhpCgiBase {
@@ -42,6 +44,7 @@ export class PhpCgiCloudflare extends PhpCgiBase {
       rewrite,
       env = {},
       ini = '',
+      cfd1,
     } = options;
 
     // PhpCgiBase expects a "binLoader" — a Promise resolving to {default: PHP}.
@@ -61,6 +64,9 @@ export class PhpCgiCloudflare extends PhpCgiBase {
         ...env,
       },
       ini,
+      // D1 bindings — spread into Emscripten module as Module.cfd1
+      // The pdo-cfd1 extension reads Module.cfd1[bindingName] via EM_ASM
+      ...(cfd1 ? { cfd1 } : {}),
       // Provide the WASM binary directly via instantiateWasm.
       instantiateWasm(
         info: WebAssembly.Imports,
