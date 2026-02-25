@@ -19,10 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout laraworker package
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          path: laraworker-package
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -32,66 +30,46 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
-      - name: Create Laravel app
-        run: composer create-project laravel/laravel demo --no-interaction
-
-      - name: Add laraworker package
-        working-directory: demo
+      - name: Point playground at local laraworker package
+        working-directory: playground
         run: |
-          composer config repositories.laraworker path ../laraworker-package
-          composer require kieranbrown/laraworker:@dev --no-interaction
+          composer config repositories.laraworker path ../
+          composer install --no-interaction
 
-      - name: Replace welcome view
-        working-directory: demo
+      - name: Install frontend dependencies
+        working-directory: playground
+        run: bun install
+
+      - name: Configure environment
+        working-directory: playground
         run: |
-          cat > resources/views/welcome.blade.php << 'BLADE'
-          <!DOCTYPE html>
-          <html lang="en">
-          <head>
-              <meta charset="utf-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1">
-              <title>{{ config('app.name', 'Laravel') }}</title>
-              <style>
-                  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; background: #f8fafc; color: #1a202c; }
-                  .container { text-align: center; padding: 2rem; }
-                  h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
-                  p { color: #718096; font-size: 1.1rem; }
-                  .badge { display: inline-block; background: #edf2f7; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; color: #4a5568; margin-top: 1rem; }
-              </style>
-          </head>
-          <body>
-              <div class="container">
-                  <h1>Laravel on Cloudflare Workers</h1>
-                  <p>Powered by PHP {{ PHP_VERSION }} via WebAssembly</p>
-                  <span class="badge">{{ date('Y-m-d H:i:s T') }}</span>
-              </div>
-          </body>
-          </html>
-          BLADE
-
-      - name: Build frontend assets
-        working-directory: demo
-        run: bun install && bun run build
-
-      - name: Install laraworker
-        working-directory: demo
-        run: php artisan laraworker:install --no-interaction
-
-      - name: Configure deployment
-        working-directory: demo
-        run: |
+          cp .env.example .env
+          php artisan key:generate --no-interaction
           echo "CLOUDFLARE_ACCOUNT_ID=$CLOUDFLARE_ACCOUNT_ID" >> .env
           echo "LARAWORKER_NAME=laraworker" >> .env
+          echo "LARAWORKER_INERTIA_SSR=true" >> .env
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Configure custom domain
+        working-directory: playground
+        run: |
           php -r "
             \$config = file_get_contents('config/laraworker.php');
             \$config = str_replace(\"'routes' => [],\", \"'routes' => [['pattern' => 'laraworker.kswb.dev', 'custom_domain' => true]],\", \$config);
             file_put_contents('config/laraworker.php', \$config);
           "
-        env:
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Build frontend assets
+        working-directory: playground
+        run: bun run build && bun run build:ssr
+
+      - name: Install laraworker
+        working-directory: playground
+        run: php artisan laraworker:install --no-interaction
 
       - name: Deploy
-        working-directory: demo
+        working-directory: playground
         run: php artisan laraworker:deploy --no-interaction
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
