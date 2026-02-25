@@ -17,9 +17,18 @@ if (typeof globalThis.document === 'undefined') {
     getElementById: () => null,
     querySelector: () => null,
     querySelectorAll: () => [],
-    createElement: () => ({}),
+    createElement: () => ({
+      style: {},
+      appendChild: () => {},
+      setAttribute: () => {},
+      getAttribute: () => null,
+      textContent: '',
+      innerHTML: '',
+    }),
+    createTextNode: () => ({ textContent: '' }),
     body: { style: {}, appendChild: () => {}, scroll: 0 },
     documentElement: { style: {} },
+    head: { appendChild: () => {}, removeChild: () => {} },
     fullscreenElement: null,
     fullscreenEnabled: false,
     addEventListener: () => {},
@@ -30,6 +39,20 @@ if (typeof globalThis.document === 'undefined') {
 if (typeof globalThis.window === 'undefined') {
   // @ts-expect-error — minimal shim for Emscripten compatibility
   globalThis.window = globalThis;
+}
+
+// Inertia.js SSR reads `history.scrollRestoration` at import time.
+// Workers don't have a History API — provide a minimal stub.
+if (typeof globalThis.history === 'undefined') {
+  // @ts-expect-error — minimal shim for Inertia SSR compatibility
+  globalThis.history = {
+    scrollRestoration: 'auto',
+    pushState: () => {},
+    replaceState: () => {},
+    go: () => {},
+    back: () => {},
+    forward: () => {},
+  };
 }
 
 // PhpCgiBase._request uses `new URL(globalThis.location)` for HTTP_HOST and

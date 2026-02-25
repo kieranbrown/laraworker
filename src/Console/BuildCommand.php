@@ -36,6 +36,8 @@ class BuildCommand extends Command
         try {
             $this->optimizeForProduction();
 
+            $this->buildSsrBundle();
+
             $result = $this->runBuildScript();
         } finally {
             $this->restoreLocalEnvironment();
@@ -87,6 +89,68 @@ class BuildCommand extends Command
         });
 
         $this->stripMissingProviders($this->buildDirectory->path('vendor-staging'));
+    }
+
+    /**
+     * Build the Inertia SSR bundle when SSR is enabled.
+     *
+     * Runs `npx vite build --ssr` to produce the SSR bundle, then copies
+     * it into the .laraworker/ssr/ directory where worker.ts can import it.
+     */
+    private function buildSsrBundle(): void
+    {
+        if (! config('laraworker.inertia.ssr')) {
+            return;
+        }
+
+        $this->newLine();
+        $this->components->info('Building Inertia SSR bundle...');
+
+        $this->components->task('Vite SSR build', function () {
+            $process = new Process(
+                ['npx', 'vite', 'build', '--ssr'],
+                base_path(),
+                null,
+                null,
+                300
+            );
+
+            $process->run(function (string $type, string $buffer): void {
+                $this->output->write($buffer);
+            });
+
+            if (! $process->isSuccessful()) {
+                $this->components->warn('SSR build failed: '.$process->getErrorOutput());
+
+                return false;
+            }
+
+            return true;
+        });
+
+        // Copy SSR bundle to .laraworker/ssr/ for worker import
+        $this->components->task('Copying SSR bundle to build directory', function () {
+            $ssrSource = base_path('bootstrap/ssr/ssr.js');
+            if (! file_exists($ssrSource)) {
+                // Try .mjs extension as some Vite configs produce this
+                $ssrSource = base_path('bootstrap/ssr/ssr.mjs');
+            }
+
+            if (! file_exists($ssrSource)) {
+                $this->components->warn('SSR bundle not found at bootstrap/ssr/');
+
+                return false;
+            }
+
+            $ssrDir = $this->buildDirectory->path('ssr');
+            if (! is_dir($ssrDir)) {
+                mkdir($ssrDir, 0755, true);
+            }
+
+            copy($ssrSource, $ssrDir.'/ssr.js');
+
+            return true;
+        });
     }
 
     /**

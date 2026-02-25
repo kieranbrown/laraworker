@@ -121,6 +121,13 @@ class BuildDirectory
 
         $content = str_replace('{{OPCACHE_INI}}', $formatted, $content);
 
+        // Inject SSR import when Inertia SSR is enabled
+        $ssrImport = '';
+        if (config('laraworker.inertia.ssr')) {
+            $ssrImport = "import _ssrRender from './ssr/ssr';\nssrRender = _ssrRender;";
+        }
+        $content = str_replace('{{SSR_IMPORT}}', $ssrImport, $content);
+
         file_put_contents($this->path('worker.ts'), $content);
     }
 
@@ -141,14 +148,28 @@ class BuildDirectory
         $content = str_replace('{{APP_NAME}}', $workerName, $content);
         $content = str_replace('{{COMPATIBILITY_DATE}}', $compatibilityDate, $content);
 
+        $config = json_decode($content, true);
+
+        // Inject account_id when configured
+        $accountId = config('laraworker.account_id');
+        if ($accountId) {
+            $config['account_id'] = $accountId;
+        }
+
         /** @var array<int, array{pattern: string, custom_domain?: bool}> $routes */
         $routes = config('laraworker.routes', []);
 
         if (! empty($routes)) {
-            $config = json_decode($content, true);
             $config['routes'] = $routes;
-            $content = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n";
         }
+
+        // Inject worker environment variables for Inertia SSR
+        if (config('laraworker.inertia.ssr')) {
+            $config['vars'] ??= [];
+            $config['vars']['INERTIA_SSR'] = 'true';
+        }
+
+        $content = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n";
 
         file_put_contents($this->path('wrangler.jsonc'), $content);
     }

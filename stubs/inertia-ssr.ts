@@ -81,7 +81,22 @@ export async function renderInertiaSSR(
 
   let result: InertiaSSRResult;
   try {
-    result = await render(page);
+    // Temporarily remove browser globals so Inertia's createInertiaApp detects
+    // a server environment (it checks `typeof window === "undefined"`). The
+    // shims.ts module defines window/document for Emscripten (PHP WASM), but
+    // SSR rendering is pure JS and needs Inertia to take the server code path.
+    const savedWindow = globalThis.window;
+    const savedDocument = globalThis.document;
+    // @ts-expect-error — intentional temporary removal for SSR detection
+    delete globalThis.window;
+    // @ts-expect-error — intentional temporary removal for SSR detection
+    delete globalThis.document;
+    try {
+      result = await render(page);
+    } finally {
+      globalThis.window = savedWindow;
+      globalThis.document = savedDocument;
+    }
   } catch (error) {
     console.warn('[Inertia SSR] Render failed, falling back to CSR:', error);
     return null;
