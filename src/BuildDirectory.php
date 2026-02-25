@@ -121,6 +121,13 @@ class BuildDirectory
 
         $content = str_replace('{{OPCACHE_INI}}', $formatted, $content);
 
+        // Inject SSR import when Inertia SSR is enabled
+        $ssrImport = '';
+        if (config('laraworker.inertia.ssr')) {
+            $ssrImport = "import _ssrRender from './ssr/ssr';\nssrRender = _ssrRender;";
+        }
+        $content = str_replace('{{SSR_IMPORT}}', $ssrImport, $content);
+
         file_put_contents($this->path('worker.ts'), $content);
     }
 

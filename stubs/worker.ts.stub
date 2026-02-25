@@ -22,22 +22,12 @@ import { untar } from './tar';
 import { renderInertiaSSR, type InertiaRenderFn } from './inertia-ssr';
 
 /**
- * The SSR entry point — replace this import with your Vite-built SSR bundle.
- *
- * Your SSR entry should export a `render` function matching InertiaRenderFn:
- *   export async function render(page) { return createInertiaApp({ page, ... }) }
- *
- * Example Vite config for building the SSR bundle:
- *   build: { ssr: 'resources/js/ssr.ts', outDir: 'worker/ssr' }
- *
- * Then change this import to:
- *   import { render as ssrRender } from './ssr/ssr';
+ * Inertia SSR render function — automatically configured by laraworker:build
+ * when `config('laraworker.inertia.ssr')` is enabled. The build command runs
+ * `vite build --ssr` and copies the bundle to .laraworker/ssr/ssr.js.
  */
 let ssrRender: InertiaRenderFn | null = null;
-
-// Uncomment and adjust the path when your SSR bundle is built:
-// import { render as _ssrRender } from './ssr-bundle';
-// ssrRender = _ssrRender;
+{{SSR_IMPORT}}
 
 interface Env {
   ASSETS: Fetcher;
