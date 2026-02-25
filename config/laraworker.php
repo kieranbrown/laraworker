@@ -221,7 +221,7 @@ return [
         'APP_ENV' => 'production',
         'APP_DEBUG' => 'false',
         'LOG_CHANNEL' => 'stderr',
-        'SESSION_DRIVER' => 'array',
+        'SESSION_DRIVER' => 'cookie',
         'CACHE_STORE' => 'array',
     ],
 
