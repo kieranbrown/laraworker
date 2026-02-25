@@ -60,6 +60,12 @@ class BuildCommand extends Command
         $basePath = base_path();
         $envFile = $this->buildDirectory->path('.env.production');
 
+        // Ensure storage directories exist before config:cache runs.
+        // Laravel's default view.compiled config uses realpath(), which
+        // returns false when the directory doesn't exist. This bakes
+        // false into the cached config, breaking Blade compilation.
+        $this->ensureStorageDirectories($basePath);
+
         $this->components->task('Caching config', function () use ($basePath, $envFile) {
             return $this->runArtisan(['config:cache', '--env=production'], $basePath, $envFile);
         });
@@ -617,6 +623,31 @@ class BuildCommand extends Command
 
             return ! empty($stripped);
         });
+    }
+
+    /**
+     * Ensure required Laravel storage directories exist.
+     *
+     * In CI/fresh-checkout environments, storage/framework/views/ may not exist.
+     * Laravel's view.compiled config uses realpath(), which returns false for
+     * non-existent paths. This false value gets baked into the cached config,
+     * making Blade unable to compile or locate views at runtime.
+     */
+    private function ensureStorageDirectories(string $basePath): void
+    {
+        $dirs = [
+            $basePath.'/storage/framework/views',
+            $basePath.'/storage/framework/cache',
+            $basePath.'/storage/framework/sessions',
+            $basePath.'/storage/logs',
+            $basePath.'/bootstrap/cache',
+        ];
+
+        foreach ($dirs as $dir) {
+            if (! is_dir($dir)) {
+                mkdir($dir, 0755, true);
+            }
+        }
     }
 
     /**
