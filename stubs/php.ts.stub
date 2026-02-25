@@ -31,6 +31,9 @@ interface PhpCgiCloudflareOptions {
 }
 
 export class PhpCgiCloudflare extends PhpCgiBase {
+  private _pendingHeaders: Headers | null = null;
+  private _previousHeaderEnvKeys: string[] = [];
+
   constructor(options: PhpCgiCloudflareOptions = {}) {
     const {
       docroot = '/app/public',
@@ -67,6 +70,47 @@ export class PhpCgiCloudflare extends PhpCgiBase {
         return receiveInstance(instance, phpWasm);
       },
     });
+  }
+
+  /**
+   * Forward incoming request headers to PHP CGI env vars.
+   * Stores headers from the Request so _beforeRequest() can set them via putEnv.
+   */
+  async request(request: Request): Promise<Response> {
+    this._pendingHeaders = request.headers;
+    return super.request(request);
+  }
+
+  /**
+   * Called by PhpCgiBase after `this.binary` resolves but before env vars are set.
+   * Sets HTTP_<NAME> env vars for each request header not already handled by PhpCgiBase.
+   */
+  async _beforeRequest(): Promise<void> {
+    const headers = this._pendingHeaders;
+    if (!headers) return;
+
+    // @ts-expect-error — untyped base class property
+    const php = await this.binary;
+    const putEnv = (key: string, value: string) =>
+      php.ccall('wasm_sapi_cgi_putenv', 'number', ['string', 'string'], [key, value]);
+
+    // Clear stale headers from previous request (WASM instance is reused)
+    for (const key of this._previousHeaderEnvKeys) {
+      putEnv(key, '');
+    }
+    this._previousHeaderEnvKeys = [];
+
+    // Headers already set by PhpCgiBase — skip to avoid double-setting
+    const skip = new Set(['host', 'cookie', 'content-type', 'content-length']);
+
+    for (const [name, value] of headers.entries()) {
+      if (skip.has(name)) continue;
+      const envName = 'HTTP_' + name.toUpperCase().replace(/-/g, '_');
+      putEnv(envName, value);
+      this._previousHeaderEnvKeys.push(envName);
+    }
+
+    this._pendingHeaders = null;
   }
 
   /**
