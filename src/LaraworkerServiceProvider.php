@@ -2,6 +2,7 @@
 
 namespace Laraworker;
 
+use Illuminate\Database\Connection;
 use Illuminate\Support\ServiceProvider;
 use Laraworker\Console\BuildCommand;
 use Laraworker\Console\DeleteCommand;
@@ -21,6 +22,24 @@ class LaraworkerServiceProvider extends ServiceProvider
         if (! $this->app['config']->has('view.relative_hash')) {
             $this->app['config']->set('view.relative_hash', true);
         }
+
+        $this->registerCfD1Driver();
+    }
+
+    /**
+     * Register the Cloudflare D1 database driver.
+     *
+     * Binds the cfd1 connector so ConnectionFactory can resolve it,
+     * and registers the cfd1 connection resolver so Laravel creates
+     * CfD1Connection instances (which extend SQLiteConnection).
+     */
+    protected function registerCfD1Driver(): void
+    {
+        $this->app->bind('db.connector.cfd1', Database\CfD1Connector::class);
+
+        Connection::resolverFor('cfd1', function ($connection, $database, $prefix, $config) {
+            return new Database\CfD1Connection($connection, $database, $prefix, $config);
+        });
     }
 
     public function boot(): void

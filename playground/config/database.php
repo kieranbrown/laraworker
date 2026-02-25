@@ -31,6 +31,13 @@ return [
 
     'connections' => [
 
+        'cfd1' => [
+            'driver' => 'cfd1',
+            'd1_binding' => 'DB',
+            'prefix' => '',
+            'foreign_key_constraints' => true,
+        ],
+
         'sqlite' => [
             'driver' => 'sqlite',
             'url' => env('DB_URL'),

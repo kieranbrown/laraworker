@@ -217,12 +217,21 @@ return [
 
     'routes' => [],
 
+    'd1_databases' => [
+        [
+            'binding' => 'DB',
+            'database_name' => 'laraworker-playground',
+            'database_id' => env('D1_DATABASE_ID', ''),
+        ],
+    ],
+
     'env_overrides' => [
         'APP_ENV' => 'production',
         'APP_DEBUG' => 'false',
         'LOG_CHANNEL' => 'stderr',
         'SESSION_DRIVER' => 'cookie',
         'CACHE_STORE' => 'array',
+        'DB_CONNECTION' => 'cfd1',
     ],
 
 ];

@@ -135,3 +135,38 @@ test('config opcache can be customized', function () {
     expect(config('laraworker.opcache.enabled'))->toBeFalse();
     expect(config('laraworker.opcache.memory_consumption'))->toBe(64);
 });
+
+test('config has d1_databases as empty array by default', function () {
+    expect(config('laraworker.d1_databases'))
+        ->toBeArray()
+        ->toBeEmpty();
+});
+
+test('config d1_databases can be configured with bindings', function () {
+    config(['laraworker.d1_databases' => [
+        [
+            'binding' => 'DB',
+            'database_name' => 'my-database',
+            'database_id' => 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+        ],
+    ]]);
+
+    $databases = config('laraworker.d1_databases');
+
+    expect($databases)
+        ->toBeArray()
+        ->toHaveCount(1)
+        ->and($databases[0]['binding'])->toBe('DB')
+        ->and($databases[0]['database_name'])->toBe('my-database')
+        ->and($databases[0]['database_id'])->toBe('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx');
+});
+
+test('config d1_databases supports multiple bindings', function () {
+    config(['laraworker.d1_databases' => [
+        ['binding' => 'DB', 'database_name' => 'primary', 'database_id' => 'id-1'],
+        ['binding' => 'ANALYTICS', 'database_name' => 'analytics', 'database_id' => 'id-2'],
+    ]]);
+
+    expect(config('laraworker.d1_databases'))
+        ->toHaveCount(2);
+});
