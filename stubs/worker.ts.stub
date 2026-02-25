@@ -56,12 +56,18 @@ let requestCount = 0;
 
 async function ensureInitialized(env: Env): Promise<PhpCgiCloudflare> {
   if (!php) {
+    // Build cfd1 bindings object from env — each key is a D1 binding name
+    // injected by Cloudflare at runtime (declared in wrangler.jsonc d1_databases)
+    const cfd1: Record<string, unknown> = {};
+{{D1_BINDINGS}}
+
     php = new PhpCgiCloudflare({
       docroot: '/app/public',
       prefix: '/',
       entrypoint: 'index.php',
       // INITIAL_MEMORY is baked into the custom PHP 8.5 WASM binary (64 MB).
       // No need to set it here — the binary's memory import specifies min pages.
+      ...(Object.keys(cfd1).length > 0 ? { cfd1 } : {}),
       ini: [
         'auto_prepend_file=/app/php-stubs.php',
 {{OPCACHE_INI}}

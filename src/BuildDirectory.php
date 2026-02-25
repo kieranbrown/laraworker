@@ -121,6 +121,18 @@ class BuildDirectory
 
         $content = str_replace('{{OPCACHE_INI}}', $formatted, $content);
 
+        // Inject D1 binding lines for {{D1_BINDINGS}} placeholder
+        /** @var array<int, array{binding: string, database_name: string, database_id: string}> $d1Databases */
+        $d1Databases = config('laraworker.d1_databases', []);
+        $d1Lines = '';
+
+        foreach ($d1Databases as $db) {
+            $binding = $db['binding'];
+            $d1Lines .= "    if (env.{$binding}) cfd1['{$binding}'] = env.{$binding};\n";
+        }
+
+        $content = str_replace('{{D1_BINDINGS}}', rtrim($d1Lines), $content);
+
         // Inject SSR import when Inertia SSR is enabled
         $ssrImport = '';
         if (config('laraworker.inertia.ssr')) {
@@ -167,6 +179,18 @@ class BuildDirectory
         if (config('laraworker.inertia.ssr')) {
             $config['vars'] ??= [];
             $config['vars']['INERTIA_SSR'] = 'true';
+        }
+
+        // Inject D1 database bindings into wrangler config
+        /** @var array<int, array{binding: string, database_name: string, database_id: string}> $d1Databases */
+        $d1Databases = config('laraworker.d1_databases', []);
+
+        if (! empty($d1Databases)) {
+            $config['d1_databases'] = array_map(fn (array $db) => [
+                'binding' => $db['binding'],
+                'database_name' => $db['database_name'],
+                'database_id' => $db['database_id'],
+            ], $d1Databases);
         }
 
         $content = json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)."\n";

@@ -350,3 +350,104 @@ test('resolvePhpWasmImport returns custom binary path', function () {
     expect($this->buildDir->resolvePhpWasmImport())
         ->toBe('./php-cgi.wasm');
 });
+
+test('generateWranglerConfig includes d1_databases when configured', function () {
+    config(['laraworker.worker_name' => 'test-worker']);
+    config(['laraworker.compatibility_date' => '2025-01-01']);
+    config(['laraworker.d1_databases' => [
+        [
+            'binding' => 'DB',
+            'database_name' => 'my-database',
+            'database_id' => 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+        ],
+    ]]);
+
+    $this->buildDir->ensureDirectory();
+    $this->buildDir->generateWranglerConfig();
+
+    $content = file_get_contents($this->buildDir->path('wrangler.jsonc'));
+    $config = json_decode($content, true);
+
+    expect($config)->toHaveKey('d1_databases')
+        ->and($config['d1_databases'])->toHaveCount(1)
+        ->and($config['d1_databases'][0]['binding'])->toBe('DB')
+        ->and($config['d1_databases'][0]['database_name'])->toBe('my-database')
+        ->and($config['d1_databases'][0]['database_id'])->toBe('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee');
+});
+
+test('generateWranglerConfig supports multiple d1_databases', function () {
+    config(['laraworker.worker_name' => 'test-worker']);
+    config(['laraworker.compatibility_date' => '2025-01-01']);
+    config(['laraworker.d1_databases' => [
+        ['binding' => 'DB', 'database_name' => 'main-db', 'database_id' => 'id-1'],
+        ['binding' => 'ANALYTICS', 'database_name' => 'analytics-db', 'database_id' => 'id-2'],
+    ]]);
+
+    $this->buildDir->ensureDirectory();
+    $this->buildDir->generateWranglerConfig();
+
+    $content = file_get_contents($this->buildDir->path('wrangler.jsonc'));
+    $config = json_decode($content, true);
+
+    expect($config['d1_databases'])->toHaveCount(2)
+        ->and($config['d1_databases'][0]['binding'])->toBe('DB')
+        ->and($config['d1_databases'][1]['binding'])->toBe('ANALYTICS');
+});
+
+test('generateWranglerConfig omits d1_databases when empty', function () {
+    config(['laraworker.worker_name' => 'test-worker']);
+    config(['laraworker.compatibility_date' => '2025-01-01']);
+    config(['laraworker.d1_databases' => []]);
+
+    $this->buildDir->ensureDirectory();
+    $this->buildDir->generateWranglerConfig();
+
+    $content = file_get_contents($this->buildDir->path('wrangler.jsonc'));
+
+    expect($content)->not->toContain('d1_databases');
+});
+
+test('generateWorkerTs injects D1 binding lines when databases configured', function () {
+    config(['laraworker.d1_databases' => [
+        ['binding' => 'DB', 'database_name' => 'my-db', 'database_id' => 'xxx'],
+    ]]);
+
+    $this->buildDir->ensureDirectory();
+    $this->buildDir->generateWorkerTs();
+
+    $content = file_get_contents($this->buildDir->path('worker.ts'));
+
+    expect($content)
+        ->toContain("if (env.DB) cfd1['DB'] = env.DB;")
+        ->not->toContain('{{D1_BINDINGS}}');
+});
+
+test('generateWorkerTs injects multiple D1 binding lines', function () {
+    config(['laraworker.d1_databases' => [
+        ['binding' => 'DB', 'database_name' => 'main', 'database_id' => 'id-1'],
+        ['binding' => 'ANALYTICS', 'database_name' => 'analytics', 'database_id' => 'id-2'],
+    ]]);
+
+    $this->buildDir->ensureDirectory();
+    $this->buildDir->generateWorkerTs();
+
+    $content = file_get_contents($this->buildDir->path('worker.ts'));
+
+    expect($content)
+        ->toContain("if (env.DB) cfd1['DB'] = env.DB;")
+        ->toContain("if (env.ANALYTICS) cfd1['ANALYTICS'] = env.ANALYTICS;")
+        ->not->toContain('{{D1_BINDINGS}}');
+});
+
+test('generateWorkerTs clears D1 placeholder when no databases configured', function () {
+    config(['laraworker.d1_databases' => []]);
+
+    $this->buildDir->ensureDirectory();
+    $this->buildDir->generateWorkerTs();
+
+    $content = file_get_contents($this->buildDir->path('worker.ts'));
+
+    expect($content)
+        ->not->toContain('{{D1_BINDINGS}}')
+        ->toContain('const cfd1: Record<string, unknown> = {};');
+});
