@@ -1,21 +1,20 @@
-# Exclude fuel files from composer archives
+# Exclude dev tooling and CI
 .fuel/ export-ignore
 .claude/ export-ignore
 .codex/ export-ignore
 .github/ export-ignore
+.gitattributes export-ignore
+.gitignore export-ignore
 
 # Exclude build artifacts and dev files
+bun.lock export-ignore
+package.json export-ignore
 php-wasm-build/ export-ignore
-scripts/ export-ignore
-playground/ export-ignore
-tests/ export-ignore
-stubs/ export-ignore
-
-# Exclude vendor directory from the package itself (when used as path repo)
-vendor/ export-ignore
-
-# Exclude config files
-.gitignore export-ignore
-.gitattributes export-ignore
-composer.lock export-ignore
 phpunit.xml export-ignore
+release-please-config.json export-ignore
+scripts/ export-ignore
+tests/ export-ignore
+
+# Exclude documentation not needed by consumers
+AGENTS.md export-ignore
+CLAUDE.md export-ignore
