@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/kieranbrown/laraworker/compare/v1.0.2...v1.0.3) (2026-02-26)
+
+
+### Bug Fixes
+
+* install failing due to missing php-wasm-build ([a28bef4](https://github.com/kieranbrown/laraworker/commit/a28bef4044f0b0f42cf63db2a0d557c006b16240))
+
 ## [1.0.2](https://github.com/kieranbrown/laraworker/compare/v1.0.1...v1.0.2) (2026-02-26)
 
 
