@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/kieranbrown/laraworker/compare/v1.1.0...v1.1.1) (2026-02-26)
+
+
+### Bug Fixes
+
+* use fixed WASM memory instead of growable to prevent Worker exceeded resource limits ([1820772](https://github.com/kieranbrown/laraworker/commit/1820772fb92e4d8a6f4d7e28f5baf9d30d32476a))
+
 ## [1.1.0](https://github.com/kieranbrown/laraworker/compare/v1.0.3...v1.1.0) (2026-02-26)
 
 
