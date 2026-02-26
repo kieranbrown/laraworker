@@ -190,6 +190,7 @@ class BuildDirectory
                 'binding' => $db['binding'],
                 'database_name' => $db['database_name'],
                 'database_id' => $db['database_id'],
+                'migrations_dir' => 'migrations',
             ], $d1Databases);
         }
 

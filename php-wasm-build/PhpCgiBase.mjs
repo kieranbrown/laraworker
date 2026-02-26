@@ -693,6 +693,10 @@ export class PhpCgiBase {
       return response;
     } finally {
       if (exitCode === 0) {
+        const stderrOutput = new TextDecoder().decode(new Uint8Array(this.error).buffer);
+        if (stderrOutput) {
+          console.error("[PHP STDERR]", stderrOutput);
+        }
         void this._afterRequest();
       } else {
         console.warn(new TextDecoder().decode(new Uint8Array(this.output).buffer));

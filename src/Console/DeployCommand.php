@@ -57,6 +57,11 @@ class DeployCommand extends Command
             return self::SUCCESS;
         }
 
+        // Apply D1 migrations before deploying so schema changes land first
+        if (! $this->applyD1Migrations()) {
+            return self::FAILURE;
+        }
+
         $this->components->info('Deploying to Cloudflare Workers...');
         $this->newLine();
 
@@ -119,6 +124,67 @@ class DeployCommand extends Command
         $this->newLine();
 
         return $passed;
+    }
+
+    private function applyD1Migrations(): bool
+    {
+        /** @var array<int, array{binding: string, database_name: string, database_id: string}> $d1Databases */
+        $d1Databases = config('laraworker.d1_databases', []);
+
+        if (empty($d1Databases)) {
+            return true;
+        }
+
+        $migrationsDir = $this->buildDirectory->path('migrations');
+
+        // Generate SQL migration files directly into the build directory
+        $this->components->info('Generating D1 migrations...');
+        $exitCode = $this->call('laraworker:migrate:generate', [
+            '--output-dir' => $migrationsDir,
+            '--fresh' => true,
+        ]);
+
+        if ($exitCode !== self::SUCCESS) {
+            return false;
+        }
+
+        if (empty(glob($migrationsDir.'/*.sql') ?: [])) {
+            return true;
+        }
+
+        $this->components->info('Applying D1 migrations...');
+        $this->newLine();
+
+        foreach ($d1Databases as $db) {
+            $databaseName = $db['database_name'];
+
+            $process = new Process(
+                ['npx', 'wrangler', 'd1', 'migrations', 'apply', $databaseName, '--remote'],
+                $this->buildDirectory->path(),
+                null,
+                null,
+                120
+            );
+
+            $succeeded = false;
+            $this->components->task("Migrating {$databaseName}", function () use ($process, &$succeeded): bool {
+                $process->run(function (string $type, string $buffer): void {
+                    $this->output->write($buffer);
+                });
+
+                return $succeeded = $process->isSuccessful();
+            });
+
+            if (! $succeeded) {
+                $this->components->error("Failed to apply migrations for {$databaseName}.");
+
+                return false;
+            }
+        }
+
+        $this->newLine();
+
+        return true;
     }
 
     private function parseWranglerConfig(string $path): array

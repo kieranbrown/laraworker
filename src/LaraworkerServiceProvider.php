@@ -9,6 +9,7 @@ use Laraworker\Console\DeleteCommand;
 use Laraworker\Console\DeployCommand;
 use Laraworker\Console\DevCommand;
 use Laraworker\Console\InstallCommand;
+use Laraworker\Console\MigrateGenerateCommand;
 use Laraworker\Console\StatusCommand;
 
 class LaraworkerServiceProvider extends ServiceProvider
@@ -56,6 +57,7 @@ class LaraworkerServiceProvider extends ServiceProvider
                 DeployCommand::class,
                 StatusCommand::class,
                 DeleteCommand::class,
+                MigrateGenerateCommand::class,
             ]);
         }
     }

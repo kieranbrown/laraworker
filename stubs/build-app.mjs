@@ -1065,6 +1065,45 @@ if (!viteManifestIncluded) {
   console.warn("  Warning: No Vite manifest found in public/build/");
 }
 
+// Include any additional Vite manifests found under public/ (e.g. vendor package assets).
+// Package-provided Vite assets have manifests at paths like:
+//   public/vendor/<pkg>/build/manifest.json
+// PHP needs these manifests to resolve @vite() directives referencing package builds.
+function findViteManifests(dir, relativeBase) {
+  const found = [];
+  if (!existsSync(dir)) return found;
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = join(dir, entry.name);
+    const relPath = relativeBase ? `${relativeBase}/${entry.name}` : entry.name;
+    if (entry.isDirectory()) {
+      found.push(...findViteManifests(fullPath, relPath));
+    } else if (
+      entry.name === "manifest.json" &&
+      relativeBase !== "build" &&
+      !relativeBase?.startsWith("build/")
+    ) {
+      found.push({ fullPath, tarPath: `public/${relPath}` });
+    }
+  }
+  return found;
+}
+
+const extraManifests = findViteManifests(join(ROOT, "public"), "");
+for (const { fullPath, tarPath } of extraManifests) {
+  // Skip if already included
+  if (allFiles.some((f) => f.path === tarPath)) continue;
+  // Ensure parent directories exist in the tar
+  const parts = tarPath.split("/");
+  for (let i = 1; i < parts.length; i++) {
+    const dirPath = parts.slice(0, i).join("/") + "/";
+    if (!allFiles.some((f) => f.path === dirPath)) {
+      allFiles.push({ path: dirPath, isDir: true });
+    }
+  }
+  allFiles.push({ path: tarPath, isDir: false, fullPath });
+  console.log(`  ✓ Vite manifest included in tar (${tarPath})`);
+}
+
 // Strip Carbon locale files (keep only en.php — no regional variants like en_AU, en_GB)
 const carbonLangPrefix = "vendor/nesbot/carbon/src/Carbon/Lang/";
 const carbonRemoved = [];
