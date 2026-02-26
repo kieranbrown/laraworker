@@ -40,28 +40,46 @@ git clone \
 # The Makefile reads PHP_VERSION, OPTIMIZE, ASYNCIFY, etc. from .env
 cp "$SCRIPT_DIR/.php-wasm-rc" "$BUILD_DIR/.env"
 
-# ── OPcache patches ──
-# Copy our OPcache support patches into the build directory and inject them
-# into the Makefile's patch flow. The script runs inside Docker (via DOCKER_RUN)
-# after the base php-wasm patches are applied but before configure runs.
+# ── Patch scripts ──
+# Copy our patch scripts into the build directory and inject them into the
+# Makefile's patch flow. Scripts run inside Docker (via DOCKER_RUN) after the
+# base php-wasm patches are applied but before configure runs.
 #
-# These patches fix two Emscripten cross-compilation issues:
+# opcache-wasm-support.sh — Fixes Emscripten cross-compilation for OPcache:
 #   1. Force mmap(MAP_ANON) shared memory detection to succeed
 #   2. Add missing <unistd.h> include for getpid() in OPcache debug logging
 #
-# Without these, OPcache compiles but has no shared memory backend, rendering
-# it non-functional at runtime.
+# cgi-persistent-module.sh — Patches cgi_main.c for persistent module across requests.
+#
+# pdo-cfd1-setup.sh — Clones pdo-cfd1 and vrzno extensions into the PHP source tree:
+#   - pdo-cfd1: PDO driver for Cloudflare D1 (bridges PDO to D1's JS API)
+#   - vrzno: JS<->PHP value bridge (required by pdo-cfd1 for type conversion)
+#   Both are statically linked into the WASM binary.
 cp "$SCRIPT_DIR/patches/opcache-wasm-support.sh" "$BUILD_DIR/"
 cp "$SCRIPT_DIR/patches/cgi-persistent-module.sh" "$BUILD_DIR/"
+cp "$SCRIPT_DIR/patches/pdo-cfd1-setup.sh" "$BUILD_DIR/"
 
 # Insert our patch scripts into the Makefile's "patched" target, right after
 # git apply runs the base patches. Uses a literal tab for the Makefile recipe.
 # Order matters: opcache-wasm-support runs first (fixes build), then
-# cgi-persistent-module (patches runtime behavior).
+# cgi-persistent-module (patches runtime behavior), then pdo-cfd1-setup
+# (clones extensions into ext/ before configure discovers them).
 TAB=$'\t'
 sed -i.bak "/git apply --no-index patch\/php\${PHP_VERSION}.patch/a\\
 ${TAB}\${DOCKER_RUN} bash opcache-wasm-support.sh \${PHP_VERSION}\\
-${TAB}\${DOCKER_RUN} bash cgi-persistent-module.sh \${PHP_VERSION}" \
+${TAB}\${DOCKER_RUN} bash cgi-persistent-module.sh \${PHP_VERSION}\\
+${TAB}\${DOCKER_RUN} bash pdo-cfd1-setup.sh \${PHP_VERSION}" \
+  "$BUILD_DIR/Makefile"
+rm -f "$BUILD_DIR/Makefile.bak"
+
+# ── pdo-cfd1 + vrzno configure flags ──
+# The upstream Makefile discovers extension packages via `npm ls -p` (workspace
+# symlinks), but we skip `npm install` to keep the build fast. Instead, inject
+# the configure flags directly. The patch script above already places the source
+# in ext/, so configure will find the config.m4 files.
+sed -i.bak '1 a\
+CONFIGURE_FLAGS+= --enable-pdo-cfd1 --enable-vrzno\
+EXTRA_FLAGS+= -D WITH_PDO_CFD1=1 -D WITH_VRZNO=1' \
   "$BUILD_DIR/Makefile"
 rm -f "$BUILD_DIR/Makefile.bak"
 
