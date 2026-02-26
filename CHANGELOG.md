@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/kieranbrown/laraworker/compare/v1.1.2...v1.2.0) (2026-02-26)
+
+
+### Features
+
+* compile pdo-cfd1 extension into PHP WASM binary ([9464a4d](https://github.com/kieranbrown/laraworker/commit/9464a4d3258446f28fbeb55b1c17a84ff9905e54))
+
 ## [1.1.2](https://github.com/kieranbrown/laraworker/compare/v1.1.1...v1.1.2) (2026-02-26)
 
 
