@@ -93,7 +93,7 @@ With config/route/view caching (which `laraworker:build` enables), the per-reque
 
 ### OPcache in WASM (Fixed)
 
-**Status: Working correctly.** OPcache is statically compiled into the custom PHP 8.5 WASM binary and configured via `config/laraworker.php`. 
+**Status: Working correctly.** OPcache is statically compiled into the custom PHP 8.5 WASM binary and configured via `config/laraworker.php`.
 
 **The SAPI Lifecycle Fix:**
 Originally, OPcache was compiled into the binary but didn't actually persist between requests. The PHP CGI `main()` function does `php_module_startup()` → execute → `php_module_shutdown()`, which destroys OPcache's shared memory every request. This made OPcache ~2.5x slower than without it.
@@ -423,7 +423,7 @@ Ordered by **estimated impact ÷ effort** (bang for buck):
 | Warm request | ~0.5s | **~17-100ms** | <100ms | **✅ Achieved** (OPcache SAPI lifecycle fix) |
 | Bundle size | ~4.5 MB | ~4.5 MB | <3 MB free tier | Addressable via extension config + pruning |
 
-**Honest assessment:** 
+**Honest assessment:**
 - **Warm requests:** The <100ms target is now **achieved** thanks to the SAPI lifecycle fix that makes OPcache actually persist between requests. Measured: ~17ms locally, <100ms in production.
 - **Cold starts:** Still ~2.5s. Achieving <1s cold starts is **not possible without Cloudflare platform changes** (WASM code caching or memory snapshots). WASM compilation alone takes ~500–800ms.
 - **Bundle size:** Still ~4.5 MB. The <3 MB free tier target is achievable by making extensions optional.

@@ -16,7 +16,7 @@ permissions:
 jobs:
   deploy:
     name: Deploy Demo
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - name: Checkout
@@ -45,9 +45,11 @@ jobs:
         run: |
           cp .env.example .env
           php artisan key:generate --no-interaction
-          echo "CLOUDFLARE_ACCOUNT_ID=$CLOUDFLARE_ACCOUNT_ID" >> .env
-          echo "LARAWORKER_NAME=laraworker" >> .env
-          echo "LARAWORKER_INERTIA_SSR=true" >> .env
+          {
+            echo "CLOUDFLARE_ACCOUNT_ID=$CLOUDFLARE_ACCOUNT_ID"
+            echo "LARAWORKER_NAME=laraworker"
+            echo "LARAWORKER_INERTIA_SSR=true"
+          } >> .env
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 

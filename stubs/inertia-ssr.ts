@@ -26,9 +26,7 @@ export interface InertiaSSRResult {
  *
  * This is typically wired up via createInertiaApp + renderToString.
  */
-export type InertiaRenderFn = (
-  page: Record<string, unknown>,
-) => Promise<InertiaSSRResult>;
+export type InertiaRenderFn = (page: Record<string, unknown>) => Promise<InertiaSSRResult>;
 
 /**
  * Match the Inertia root div element in PHP-generated HTML.
@@ -70,12 +68,12 @@ export async function renderInertiaSSR(
   try {
     page = JSON.parse(pageJson);
   } catch {
-    console.warn('[Inertia SSR] Failed to parse page data JSON');
+    console.warn("[Inertia SSR] Failed to parse page data JSON");
     return null;
   }
 
   // Validate this looks like Inertia page data
-  if (typeof page.component !== 'string' || !page.props) {
+  if (typeof page.component !== "string" || !page.props) {
     return null;
   }
 
@@ -85,8 +83,9 @@ export async function renderInertiaSSR(
     // a server environment (it checks `typeof window === "undefined"`). The
     // shims.ts module defines window/document for Emscripten (PHP WASM), but
     // SSR rendering is pure JS and needs Inertia to take the server code path.
-    const savedWindow = globalThis.window;
-    const savedDocument = globalThis.document;
+    const g = globalThis as Record<string, unknown>;
+    const savedWindow = g.window;
+    const savedDocument = g.document;
     // @ts-expect-error — intentional temporary removal for SSR detection
     delete globalThis.window;
     // @ts-expect-error — intentional temporary removal for SSR detection
@@ -94,11 +93,11 @@ export async function renderInertiaSSR(
     try {
       result = await render(page);
     } finally {
-      globalThis.window = savedWindow;
-      globalThis.document = savedDocument;
+      g.window = savedWindow;
+      g.document = savedDocument;
     }
   } catch (error) {
-    console.warn('[Inertia SSR] Render failed, falling back to CSR:', error);
+    console.warn("[Inertia SSR] Render failed, falling back to CSR:", error);
     return null;
   }
 
@@ -109,8 +108,8 @@ export async function renderInertiaSSR(
 
   // Inject head elements (title, meta tags, etc.) before </head>
   if (result.head.length > 0) {
-    const headContent = result.head.join('\n');
-    ssrHtml = ssrHtml.replace('</head>', `${headContent}\n</head>`);
+    const headContent = result.head.join("\n");
+    ssrHtml = ssrHtml.replace("</head>", `${headContent}\n</head>`);
   }
 
   return ssrHtml;
@@ -120,7 +119,7 @@ function decodeHtmlEntities(str: string): string {
   return str
     .replace(/&quot;/g, '"')
     .replace(/&#039;/g, "'")
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&amp;/g, '&');
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
 }

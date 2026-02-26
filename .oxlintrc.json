@@ -1,0 +1,6 @@
+{
+  "ignorePatterns": [
+    "php-wasm-build/php8.5-cgi-worker.mjs",
+    "playground/"
+  ]
+}

@@ -55,7 +55,7 @@ return [
     'opcache' => [
         'enabled' => true,
         'enable_cli' => true,
-        'memory_consumption' => 16,
+        'memory_consumption' => 24,
         'interned_strings_buffer' => 4,
         'max_accelerated_files' => 1000,
         'validate_timestamps' => false,

@@ -92,9 +92,12 @@ WITH_ONIGURUMA=0
 WITH_OPENSSL=0
 WITH_INTL=0
 
-# ── Memory: 64 MB initial (1024 WASM pages) ──
-# Cloudflare Workers has a 128 MB memory budget. 64 MB for WASM linear memory
-# leaves room for JS heap, MEMFS (~23 MB), and overhead.
+# ── Memory: 64 MB initial, growable to 96 MB ──
+# Cloudflare Workers has a 128 MB memory budget. WASM linear memory starts at
+# 64 MB and grows on demand up to 96 MB, leaving ~32 MB for JS heap overhead.
+# ALLOW_MEMORY_GROWTH=1 is hardcoded in the upstream Makefile; documented here
+# for clarity. MAXIMUM_MEMORY caps growth to stay within the CF Workers budget.
 # The linker requires ~35 MB minimum (TOTAL_STACK=32MB + static data + heap).
-# 48 MB was too tight; 64 MB provides headroom for OPcache SHM and runtime allocations.
 INITIAL_MEMORY=67108864
+MAXIMUM_MEMORY=100663296
+ALLOW_MEMORY_GROWTH=1

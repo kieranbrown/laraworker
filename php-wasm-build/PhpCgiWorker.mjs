@@ -1,14 +1,29 @@
-import { PhpCgiWebBase } from './PhpCgiWebBase.mjs';
+import { PhpCgiWebBase } from "./PhpCgiWebBase.mjs";
 
-const defaultVersion = '8.4';
+const defaultVersion = "8.4";
 
-export class PhpCgiWorker extends PhpCgiWebBase
-{
-	constructor({version, docroot, prefix, rewrite, cookies, types, onRequest, notFound, ...args} = {})
-	{
-		super(
-			import(`./php${version ?? defaultVersion}-cgi-worker.mjs`)
-			, {version, docroot, prefix, rewrite, cookies, types, onRequest, notFound, ...args}
-		);
-	}
+export class PhpCgiWorker extends PhpCgiWebBase {
+  constructor({
+    version,
+    docroot,
+    prefix,
+    rewrite,
+    cookies,
+    types,
+    onRequest,
+    notFound,
+    ...args
+  } = {}) {
+    super(import(`./php${version ?? defaultVersion}-cgi-worker.mjs`), {
+      version,
+      docroot,
+      prefix,
+      rewrite,
+      cookies,
+      types,
+      onRequest,
+      notFound,
+      ...args,
+    });
+  }
 }
