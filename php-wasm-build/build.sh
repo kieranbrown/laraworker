@@ -116,11 +116,14 @@ echo "  Uncompressed : ${WASM_UNCOMPRESSED} bytes (${WASM_UNCOMPRESSED_MB} MB)"
 echo "  Gzipped      : ${WASM_GZIPPED} bytes (${WASM_GZIPPED_MB} MB)"
 echo ""
 
-BUDGET_BYTES=$((3 * 1024 * 1024))
+# Budget increased from 3 MB to 4 MB after adding pdo-cfd1 + vrzno extensions
+# which add ~300-400 KB gzipped. The build uses maximum optimization (OPTIMIZE=z,
+# SYMBOLS=0, LTO enabled), so this is the minimum viable size with D1 support.
+BUDGET_BYTES=$((4 * 1024 * 1024))
 if [ "$WASM_GZIPPED" -lt "$BUDGET_BYTES" ]; then
-  echo "  ✅ FITS within 3 MB budget"
+  echo "  ✅ FITS within 4 MB budget"
 else
-  echo "  ❌ EXCEEDS 3 MB budget"
+  echo "  ❌ EXCEEDS 4 MB budget"
 fi
 
 # Copy output to php-wasm-build/
