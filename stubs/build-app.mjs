@@ -121,7 +121,7 @@ const DEFAULT_EXCLUDE_PATTERNS = [
   "/vendor\\/[^/]+\\/[^/]+\\/crowdin\\.ya?ml$/",
 
   // Nested vendor directories (e.g. path-repository packages with their own vendor/)
-  "/vendor\\/[^/]+\\/[^/]+\\/vendor\\//",
+  "/vendor\/.*\/vendor\//",
 
   // Vendor CLI scripts (not useful in Workers)
   "/vendor\\/bin\\//",
