@@ -9,7 +9,6 @@
 # Exclude build artifacts and dev files
 bun.lock export-ignore
 package.json export-ignore
-php-wasm-build/ export-ignore
 phpunit.xml export-ignore
 release-please-config.json export-ignore
 scripts/ export-ignore
