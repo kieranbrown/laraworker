@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.1.0](https://github.com/kieranbrown/laraworker/compare/v1.0.3...v1.1.0) (2026-02-26)
+
+
+### Features
+
+* add migrations functionality for d1 ([05fd749](https://github.com/kieranbrown/laraworker/commit/05fd7490238efa3b46e8aecfeae2471aa0bdf39e))
+
+
+### Bug Fixes
+
+* ignore nested vendor dirs ([cc7a669](https://github.com/kieranbrown/laraworker/commit/cc7a669971c26a4e902a1f3f1e6da0beae614c34))
+* rewrite namespace-scoped token_get_all to handle T_INLINE_HTML for runtime Blade compilation ([1739959](https://github.com/kieranbrown/laraworker/commit/173995959bfd4342b77b59bfcdd26d21122fd01c))
+* update nested vendor exclude pattern to match any depth ([b497603](https://github.com/kieranbrown/laraworker/commit/b4976035f3d3f3406c30278f7ddbbdd299f077e5))
+
 ## [1.0.3](https://github.com/kieranbrown/laraworker/compare/v1.0.2...v1.0.3) (2026-02-26)
 
 
