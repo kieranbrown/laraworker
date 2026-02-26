@@ -65,8 +65,9 @@ async function ensureInitialized(env: Env): Promise<PhpCgiCloudflare> {
       docroot: '/app/public',
       prefix: '/',
       entrypoint: 'index.php',
-      // INITIAL_MEMORY is baked into the custom PHP 8.5 WASM binary (64 MB).
-      // No need to set it here — the binary's memory import specifies min pages.
+      // Fixed 64 MB WASM linear memory — no growth. Combined with JS heap,
+      // this stays comfortably under Cloudflare Workers' 128 MB budget.
+      // Memory is baked into the PHP 8.5 WASM binary; no runtime config needed.
       ...(Object.keys(cfd1).length > 0 ? { cfd1 } : {}),
       ini: [
         'auto_prepend_file=/app/php-stubs.php',

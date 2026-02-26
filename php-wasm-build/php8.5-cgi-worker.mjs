@@ -287,7 +287,7 @@ var PHP = (() => {
         Module["asm"] = exports;
         wasmMemory = Module["asm"]["Wa"];
         updateMemoryViews();
-        wasmTable = Module["asm"]["fda"];
+        wasmTable = Module["asm"]["lda"];
         addOnInit(Module["asm"]["Xa"]);
         removeRunDependency("wasm-instantiate");
         return exports;
@@ -312,7 +312,7 @@ var PHP = (() => {
     var tempDouble;
     var tempI64;
     var ASM_CONSTS = {
-      3077280: ($0) => {
+      3077312: ($0) => {
         if (Module.persist) {
           const persist = Array.isArray(Module.persist) ? Module.persist : [Module.persist];
           const useNodeRawFS = $0;
@@ -19597,8 +19597,40 @@ var PHP = (() => {
     var _wcslen = (Module["_wcslen"] = function () {
       return (_wcslen = Module["_wcslen"] = Module["asm"]["uW"]).apply(null, arguments);
     });
+    var _uriSetHostRegNameMmA = (Module["_uriSetHostRegNameMmA"] = function () {
+      return (_uriSetHostRegNameMmA = Module["_uriSetHostRegNameMmA"] = Module["asm"]["vW"]).apply(
+        null,
+        arguments,
+      );
+    });
+    var _uriSetHostRegNameMmW = (Module["_uriSetHostRegNameMmW"] = function () {
+      return (_uriSetHostRegNameMmW = Module["_uriSetHostRegNameMmW"] = Module["asm"]["wW"]).apply(
+        null,
+        arguments,
+      );
+    });
+    var _uriIsWellFormedHostRegNameA = (Module["_uriIsWellFormedHostRegNameA"] = function () {
+      return (_uriIsWellFormedHostRegNameA = Module["_uriIsWellFormedHostRegNameA"] =
+        Module["asm"]["xW"]).apply(null, arguments);
+    });
+    var _uriIsWellFormedHostRegNameW = (Module["_uriIsWellFormedHostRegNameW"] = function () {
+      return (_uriIsWellFormedHostRegNameW = Module["_uriIsWellFormedHostRegNameW"] =
+        Module["asm"]["yW"]).apply(null, arguments);
+    });
+    var _uriSetHostRegNameA = (Module["_uriSetHostRegNameA"] = function () {
+      return (_uriSetHostRegNameA = Module["_uriSetHostRegNameA"] = Module["asm"]["zW"]).apply(
+        null,
+        arguments,
+      );
+    });
+    var _uriSetHostRegNameW = (Module["_uriSetHostRegNameW"] = function () {
+      return (_uriSetHostRegNameW = Module["_uriSetHostRegNameW"] = Module["asm"]["AW"]).apply(
+        null,
+        arguments,
+      );
+    });
     var _OnUpdateBaseDir = (Module["_OnUpdateBaseDir"] = function () {
-      return (_OnUpdateBaseDir = Module["_OnUpdateBaseDir"] = Module["asm"]["vW"]).apply(
+      return (_OnUpdateBaseDir = Module["_OnUpdateBaseDir"] = Module["asm"]["BW"]).apply(
         null,
         arguments,
       );
@@ -19606,44 +19638,44 @@ var PHP = (() => {
     var _php_check_specific_open_basedir = (Module["_php_check_specific_open_basedir"] =
       function () {
         return (_php_check_specific_open_basedir = Module["_php_check_specific_open_basedir"] =
-          Module["asm"]["wW"]).apply(null, arguments);
+          Module["asm"]["CW"]).apply(null, arguments);
       });
     var _php_fopen_primary_script = (Module["_php_fopen_primary_script"] = function () {
       return (_php_fopen_primary_script = Module["_php_fopen_primary_script"] =
-        Module["asm"]["xW"]).apply(null, arguments);
+        Module["asm"]["DW"]).apply(null, arguments);
     });
     var _zend_stream_open = (Module["_zend_stream_open"] = function () {
-      return (_zend_stream_open = Module["_zend_stream_open"] = Module["asm"]["yW"]).apply(
+      return (_zend_stream_open = Module["_zend_stream_open"] = Module["asm"]["EW"]).apply(
         null,
         arguments,
       );
     });
     var _php_resolve_path = (Module["_php_resolve_path"] = function () {
-      return (_php_resolve_path = Module["_php_resolve_path"] = Module["asm"]["zW"]).apply(
+      return (_php_resolve_path = Module["_php_resolve_path"] = Module["asm"]["FW"]).apply(
         null,
         arguments,
       );
     });
     var _zend_is_executing = (Module["_zend_is_executing"] = function () {
-      return (_zend_is_executing = Module["_zend_is_executing"] = Module["asm"]["AW"]).apply(
+      return (_zend_is_executing = Module["_zend_is_executing"] = Module["asm"]["GW"]).apply(
         null,
         arguments,
       );
     });
     var _php_fopen_with_path = (Module["_php_fopen_with_path"] = function () {
-      return (_php_fopen_with_path = Module["_php_fopen_with_path"] = Module["asm"]["BW"]).apply(
+      return (_php_fopen_with_path = Module["_php_fopen_with_path"] = Module["asm"]["HW"]).apply(
         null,
         arguments,
       );
     });
     var _php_strip_url_passwd = (Module["_php_strip_url_passwd"] = function () {
-      return (_php_strip_url_passwd = Module["_php_strip_url_passwd"] = Module["asm"]["CW"]).apply(
+      return (_php_strip_url_passwd = Module["_php_strip_url_passwd"] = Module["asm"]["IW"]).apply(
         null,
         arguments,
       );
     });
     var _virtual_file_ex = (Module["_virtual_file_ex"] = function () {
-      return (_virtual_file_ex = Module["_virtual_file_ex"] = Module["asm"]["DW"]).apply(
+      return (_virtual_file_ex = Module["_virtual_file_ex"] = Module["asm"]["JW"]).apply(
         null,
         arguments,
       );
@@ -19651,383 +19683,383 @@ var PHP = (() => {
     var _php_register_internal_extensions = (Module["_php_register_internal_extensions"] =
       function () {
         return (_php_register_internal_extensions = Module["_php_register_internal_extensions"] =
-          Module["asm"]["EW"]).apply(null, arguments);
+          Module["asm"]["KW"]).apply(null, arguments);
       });
     var _php_version = (Module["_php_version"] = function () {
-      return (_php_version = Module["_php_version"] = Module["asm"]["FW"]).apply(null, arguments);
+      return (_php_version = Module["_php_version"] = Module["asm"]["LW"]).apply(null, arguments);
     });
     var _php_version_id = (Module["_php_version_id"] = function () {
-      return (_php_version_id = Module["_php_version_id"] = Module["asm"]["GW"]).apply(
+      return (_php_version_id = Module["_php_version_id"] = Module["asm"]["MW"]).apply(
         null,
         arguments,
       );
     });
     var _php_get_version = (Module["_php_get_version"] = function () {
-      return (_php_get_version = Module["_php_get_version"] = Module["asm"]["HW"]).apply(
+      return (_php_get_version = Module["_php_get_version"] = Module["asm"]["NW"]).apply(
         null,
         arguments,
       );
     });
     var _smart_string_append_printf = (Module["_smart_string_append_printf"] = function () {
       return (_smart_string_append_printf = Module["_smart_string_append_printf"] =
-        Module["asm"]["IW"]).apply(null, arguments);
+        Module["asm"]["OW"]).apply(null, arguments);
     });
     var _php_print_version = (Module["_php_print_version"] = function () {
-      return (_php_print_version = Module["_php_print_version"] = Module["asm"]["JW"]).apply(
+      return (_php_print_version = Module["_php_print_version"] = Module["asm"]["PW"]).apply(
         null,
         arguments,
       );
     });
     var _php_get_internal_encoding = (Module["_php_get_internal_encoding"] = function () {
       return (_php_get_internal_encoding = Module["_php_get_internal_encoding"] =
-        Module["asm"]["KW"]).apply(null, arguments);
+        Module["asm"]["QW"]).apply(null, arguments);
     });
     var _php_get_input_encoding = (Module["_php_get_input_encoding"] = function () {
       return (_php_get_input_encoding = Module["_php_get_input_encoding"] =
-        Module["asm"]["LW"]).apply(null, arguments);
+        Module["asm"]["RW"]).apply(null, arguments);
     });
     var _php_get_output_encoding = (Module["_php_get_output_encoding"] = function () {
       return (_php_get_output_encoding = Module["_php_get_output_encoding"] =
-        Module["asm"]["MW"]).apply(null, arguments);
+        Module["asm"]["SW"]).apply(null, arguments);
     });
     var _php_during_module_startup = (Module["_php_during_module_startup"] = function () {
       return (_php_during_module_startup = Module["_php_during_module_startup"] =
-        Module["asm"]["NW"]).apply(null, arguments);
+        Module["asm"]["TW"]).apply(null, arguments);
     });
     var _php_during_module_shutdown = (Module["_php_during_module_shutdown"] = function () {
       return (_php_during_module_shutdown = Module["_php_during_module_shutdown"] =
-        Module["asm"]["OW"]).apply(null, arguments);
+        Module["asm"]["UW"]).apply(null, arguments);
     });
     var _php_get_module_initialized = (Module["_php_get_module_initialized"] = function () {
       return (_php_get_module_initialized = Module["_php_get_module_initialized"] =
-        Module["asm"]["PW"]).apply(null, arguments);
+        Module["asm"]["VW"]).apply(null, arguments);
     });
     var _php_write = (Module["_php_write"] = function () {
-      return (_php_write = Module["_php_write"] = Module["asm"]["QW"]).apply(null, arguments);
+      return (_php_write = Module["_php_write"] = Module["asm"]["WW"]).apply(null, arguments);
     });
     var _php_verror = (Module["_php_verror"] = function () {
-      return (_php_verror = Module["_php_verror"] = Module["asm"]["RW"]).apply(null, arguments);
+      return (_php_verror = Module["_php_verror"] = Module["asm"]["XW"]).apply(null, arguments);
     });
     var _zend_vstrpprintf = (Module["_zend_vstrpprintf"] = function () {
-      return (_zend_vstrpprintf = Module["_zend_vstrpprintf"] = Module["asm"]["SW"]).apply(
+      return (_zend_vstrpprintf = Module["_zend_vstrpprintf"] = Module["asm"]["YW"]).apply(
         null,
         arguments,
       );
     });
     var _get_active_class_name = (Module["_get_active_class_name"] = function () {
       return (_get_active_class_name = Module["_get_active_class_name"] =
-        Module["asm"]["TW"]).apply(null, arguments);
+        Module["asm"]["ZW"]).apply(null, arguments);
     });
     var _zend_strpprintf_unchecked = (Module["_zend_strpprintf_unchecked"] = function () {
       return (_zend_strpprintf_unchecked = Module["_zend_strpprintf_unchecked"] =
-        Module["asm"]["UW"]).apply(null, arguments);
+        Module["asm"]["_W"]).apply(null, arguments);
     });
     var _zend_error_zstr = (Module["_zend_error_zstr"] = function () {
-      return (_zend_error_zstr = Module["_zend_error_zstr"] = Module["asm"]["VW"]).apply(
+      return (_zend_error_zstr = Module["_zend_error_zstr"] = Module["asm"]["$W"]).apply(
         null,
         arguments,
       );
     });
     var _php_error_docref1 = (Module["_php_error_docref1"] = function () {
-      return (_php_error_docref1 = Module["_php_error_docref1"] = Module["asm"]["WW"]).apply(
+      return (_php_error_docref1 = Module["_php_error_docref1"] = Module["asm"]["aX"]).apply(
         null,
         arguments,
       );
     });
     var _php_html_puts = (Module["_php_html_puts"] = function () {
-      return (_php_html_puts = Module["_php_html_puts"] = Module["asm"]["XW"]).apply(
+      return (_php_html_puts = Module["_php_html_puts"] = Module["asm"]["bX"]).apply(
         null,
         arguments,
       );
     });
     var _getpwuid = (Module["_getpwuid"] = function () {
-      return (_getpwuid = Module["_getpwuid"] = Module["asm"]["YW"]).apply(null, arguments);
+      return (_getpwuid = Module["_getpwuid"] = Module["asm"]["cX"]).apply(null, arguments);
     });
     var _refresh_memory_manager = (Module["_refresh_memory_manager"] = function () {
       return (_refresh_memory_manager = Module["_refresh_memory_manager"] =
-        Module["asm"]["ZW"]).apply(null, arguments);
+        Module["asm"]["dX"]).apply(null, arguments);
     });
     var _zend_interned_strings_activate = (Module["_zend_interned_strings_activate"] = function () {
       return (_zend_interned_strings_activate = Module["_zend_interned_strings_activate"] =
-        Module["asm"]["_W"]).apply(null, arguments);
+        Module["asm"]["eX"]).apply(null, arguments);
     });
     var _php_output_activate = (Module["_php_output_activate"] = function () {
-      return (_php_output_activate = Module["_php_output_activate"] = Module["asm"]["$W"]).apply(
+      return (_php_output_activate = Module["_php_output_activate"] = Module["asm"]["fX"]).apply(
         null,
         arguments,
       );
     });
     var _zend_activate = (Module["_zend_activate"] = function () {
-      return (_zend_activate = Module["_zend_activate"] = Module["asm"]["aX"]).apply(
+      return (_zend_activate = Module["_zend_activate"] = Module["asm"]["gX"]).apply(
         null,
         arguments,
       );
     });
     var _zend_set_timeout = (Module["_zend_set_timeout"] = function () {
-      return (_zend_set_timeout = Module["_zend_set_timeout"] = Module["asm"]["bX"]).apply(
+      return (_zend_set_timeout = Module["_zend_set_timeout"] = Module["asm"]["hX"]).apply(
         null,
         arguments,
       );
     });
     var _php_output_start_user = (Module["_php_output_start_user"] = function () {
       return (_php_output_start_user = Module["_php_output_start_user"] =
-        Module["asm"]["cX"]).apply(null, arguments);
+        Module["asm"]["iX"]).apply(null, arguments);
     });
     var _php_output_set_implicit_flush = (Module["_php_output_set_implicit_flush"] = function () {
       return (_php_output_set_implicit_flush = Module["_php_output_set_implicit_flush"] =
-        Module["asm"]["dX"]).apply(null, arguments);
+        Module["asm"]["jX"]).apply(null, arguments);
     });
     var _php_hash_environment = (Module["_php_hash_environment"] = function () {
-      return (_php_hash_environment = Module["_php_hash_environment"] = Module["asm"]["eX"]).apply(
+      return (_php_hash_environment = Module["_php_hash_environment"] = Module["asm"]["kX"]).apply(
         null,
         arguments,
       );
     });
     var _zend_activate_modules = (Module["_zend_activate_modules"] = function () {
       return (_zend_activate_modules = Module["_zend_activate_modules"] =
-        Module["asm"]["fX"]).apply(null, arguments);
+        Module["asm"]["lX"]).apply(null, arguments);
     });
     var _zend_observer_fcall_end_all = (Module["_zend_observer_fcall_end_all"] = function () {
       return (_zend_observer_fcall_end_all = Module["_zend_observer_fcall_end_all"] =
-        Module["asm"]["gX"]).apply(null, arguments);
+        Module["asm"]["mX"]).apply(null, arguments);
     });
     var _zend_unset_timeout = (Module["_zend_unset_timeout"] = function () {
-      return (_zend_unset_timeout = Module["_zend_unset_timeout"] = Module["asm"]["hX"]).apply(
+      return (_zend_unset_timeout = Module["_zend_unset_timeout"] = Module["asm"]["nX"]).apply(
         null,
         arguments,
       );
     });
     var _zend_deactivate_modules = (Module["_zend_deactivate_modules"] = function () {
       return (_zend_deactivate_modules = Module["_zend_deactivate_modules"] =
-        Module["asm"]["iX"]).apply(null, arguments);
+        Module["asm"]["oX"]).apply(null, arguments);
     });
     var _php_output_deactivate = (Module["_php_output_deactivate"] = function () {
       return (_php_output_deactivate = Module["_php_output_deactivate"] =
-        Module["asm"]["jX"]).apply(null, arguments);
+        Module["asm"]["pX"]).apply(null, arguments);
     });
     var _zend_deactivate = (Module["_zend_deactivate"] = function () {
-      return (_zend_deactivate = Module["_zend_deactivate"] = Module["asm"]["kX"]).apply(
+      return (_zend_deactivate = Module["_zend_deactivate"] = Module["asm"]["qX"]).apply(
         null,
         arguments,
       );
     });
     var _zend_post_deactivate_modules = (Module["_zend_post_deactivate_modules"] = function () {
       return (_zend_post_deactivate_modules = Module["_zend_post_deactivate_modules"] =
-        Module["asm"]["lX"]).apply(null, arguments);
+        Module["asm"]["rX"]).apply(null, arguments);
     });
     var _sapi_deactivate_module = (Module["_sapi_deactivate_module"] = function () {
       return (_sapi_deactivate_module = Module["_sapi_deactivate_module"] =
-        Module["asm"]["mX"]).apply(null, arguments);
+        Module["asm"]["sX"]).apply(null, arguments);
     });
     var _sapi_deactivate_destroy = (Module["_sapi_deactivate_destroy"] = function () {
       return (_sapi_deactivate_destroy = Module["_sapi_deactivate_destroy"] =
-        Module["asm"]["nX"]).apply(null, arguments);
+        Module["asm"]["tX"]).apply(null, arguments);
     });
     var _virtual_cwd_deactivate = (Module["_virtual_cwd_deactivate"] = function () {
       return (_virtual_cwd_deactivate = Module["_virtual_cwd_deactivate"] =
-        Module["asm"]["oX"]).apply(null, arguments);
+        Module["asm"]["uX"]).apply(null, arguments);
     });
     var _zend_interned_strings_deactivate = (Module["_zend_interned_strings_deactivate"] =
       function () {
         return (_zend_interned_strings_deactivate = Module["_zend_interned_strings_deactivate"] =
-          Module["asm"]["pX"]).apply(null, arguments);
+          Module["asm"]["vX"]).apply(null, arguments);
       });
     var _shutdown_memory_manager = (Module["_shutdown_memory_manager"] = function () {
       return (_shutdown_memory_manager = Module["_shutdown_memory_manager"] =
-        Module["asm"]["qX"]).apply(null, arguments);
+        Module["asm"]["wX"]).apply(null, arguments);
     });
     var _zend_set_memory_limit = (Module["_zend_set_memory_limit"] = function () {
       return (_zend_set_memory_limit = Module["_zend_set_memory_limit"] =
-        Module["asm"]["rX"]).apply(null, arguments);
+        Module["asm"]["xX"]).apply(null, arguments);
     });
     var _php_com_initialize = (Module["_php_com_initialize"] = function () {
-      return (_php_com_initialize = Module["_php_com_initialize"] = Module["asm"]["sX"]).apply(
+      return (_php_com_initialize = Module["_php_com_initialize"] = Module["asm"]["yX"]).apply(
         null,
         arguments,
       );
     });
     var _php_register_extensions = (Module["_php_register_extensions"] = function () {
       return (_php_register_extensions = Module["_php_register_extensions"] =
-        Module["asm"]["tX"]).apply(null, arguments);
+        Module["asm"]["zX"]).apply(null, arguments);
     });
     var _zend_register_internal_module = (Module["_zend_register_internal_module"] = function () {
       return (_zend_register_internal_module = Module["_zend_register_internal_module"] =
-        Module["asm"]["uX"]).apply(null, arguments);
+        Module["asm"]["AX"]).apply(null, arguments);
     });
     var _php_module_startup = (Module["_php_module_startup"] = function () {
-      return (_php_module_startup = Module["_php_module_startup"] = Module["asm"]["vX"]).apply(
+      return (_php_module_startup = Module["_php_module_startup"] = Module["asm"]["BX"]).apply(
         null,
         arguments,
       );
     });
     var _sapi_initialize_empty_request = (Module["_sapi_initialize_empty_request"] = function () {
       return (_sapi_initialize_empty_request = Module["_sapi_initialize_empty_request"] =
-        Module["asm"]["wX"]).apply(null, arguments);
+        Module["asm"]["CX"]).apply(null, arguments);
     });
     var _php_output_startup = (Module["_php_output_startup"] = function () {
-      return (_php_output_startup = Module["_php_output_startup"] = Module["asm"]["xX"]).apply(
+      return (_php_output_startup = Module["_php_output_startup"] = Module["asm"]["DX"]).apply(
         null,
         arguments,
       );
     });
     var _zend_observer_startup = (Module["_zend_observer_startup"] = function () {
       return (_zend_observer_startup = Module["_zend_observer_startup"] =
-        Module["asm"]["yX"]).apply(null, arguments);
+        Module["asm"]["EX"]).apply(null, arguments);
     });
     var _php_printf_to_smart_string = (Module["_php_printf_to_smart_string"] = function () {
       return (_php_printf_to_smart_string = Module["_php_printf_to_smart_string"] =
-        Module["asm"]["zX"]).apply(null, arguments);
+        Module["asm"]["FX"]).apply(null, arguments);
     });
     var _php_printf_to_smart_str = (Module["_php_printf_to_smart_str"] = function () {
       return (_php_printf_to_smart_str = Module["_php_printf_to_smart_str"] =
-        Module["asm"]["AX"]).apply(null, arguments);
+        Module["asm"]["GX"]).apply(null, arguments);
     });
     var _zend_startup_modules = (Module["_zend_startup_modules"] = function () {
-      return (_zend_startup_modules = Module["_zend_startup_modules"] = Module["asm"]["BX"]).apply(
+      return (_zend_startup_modules = Module["_zend_startup_modules"] = Module["asm"]["HX"]).apply(
         null,
         arguments,
       );
     });
     var _zend_collect_module_handlers = (Module["_zend_collect_module_handlers"] = function () {
       return (_zend_collect_module_handlers = Module["_zend_collect_module_handlers"] =
-        Module["asm"]["CX"]).apply(null, arguments);
+        Module["asm"]["IX"]).apply(null, arguments);
     });
     var _zend_register_functions = (Module["_zend_register_functions"] = function () {
       return (_zend_register_functions = Module["_zend_register_functions"] =
-        Module["asm"]["DX"]).apply(null, arguments);
+        Module["asm"]["JX"]).apply(null, arguments);
     });
     var _zend_disable_functions = (Module["_zend_disable_functions"] = function () {
       return (_zend_disable_functions = Module["_zend_disable_functions"] =
-        Module["asm"]["EX"]).apply(null, arguments);
+        Module["asm"]["KX"]).apply(null, arguments);
     });
     var _zend_observer_post_startup = (Module["_zend_observer_post_startup"] = function () {
       return (_zend_observer_post_startup = Module["_zend_observer_post_startup"] =
-        Module["asm"]["FX"]).apply(null, arguments);
+        Module["asm"]["LX"]).apply(null, arguments);
     });
     var _zend_init_internal_run_time_cache = (Module["_zend_init_internal_run_time_cache"] =
       function () {
         return (_zend_init_internal_run_time_cache = Module["_zend_init_internal_run_time_cache"] =
-          Module["asm"]["GX"]).apply(null, arguments);
+          Module["asm"]["MX"]).apply(null, arguments);
       });
     var _cfg_get_long = (Module["_cfg_get_long"] = function () {
-      return (_cfg_get_long = Module["_cfg_get_long"] = Module["asm"]["HX"]).apply(null, arguments);
+      return (_cfg_get_long = Module["_cfg_get_long"] = Module["asm"]["NX"]).apply(null, arguments);
     });
     var _sapi_deactivate = (Module["_sapi_deactivate"] = function () {
-      return (_sapi_deactivate = Module["_sapi_deactivate"] = Module["asm"]["IX"]).apply(
+      return (_sapi_deactivate = Module["_sapi_deactivate"] = Module["asm"]["OX"]).apply(
         null,
         arguments,
       );
     });
     var _virtual_cwd_activate = (Module["_virtual_cwd_activate"] = function () {
-      return (_virtual_cwd_activate = Module["_virtual_cwd_activate"] = Module["asm"]["JX"]).apply(
+      return (_virtual_cwd_activate = Module["_virtual_cwd_activate"] = Module["asm"]["PX"]).apply(
         null,
         arguments,
       );
     });
     var _php_module_shutdown_wrapper = (Module["_php_module_shutdown_wrapper"] = function () {
       return (_php_module_shutdown_wrapper = Module["_php_module_shutdown_wrapper"] =
-        Module["asm"]["KX"]).apply(null, arguments);
+        Module["asm"]["QX"]).apply(null, arguments);
     });
     var _php_module_shutdown = (Module["_php_module_shutdown"] = function () {
-      return (_php_module_shutdown = Module["_php_module_shutdown"] = Module["asm"]["LX"]).apply(
+      return (_php_module_shutdown = Module["_php_module_shutdown"] = Module["asm"]["RX"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ini_shutdown = (Module["_zend_ini_shutdown"] = function () {
-      return (_zend_ini_shutdown = Module["_zend_ini_shutdown"] = Module["asm"]["MX"]).apply(
+      return (_zend_ini_shutdown = Module["_zend_ini_shutdown"] = Module["asm"]["SX"]).apply(
         null,
         arguments,
       );
     });
     var _php_output_shutdown = (Module["_php_output_shutdown"] = function () {
-      return (_php_output_shutdown = Module["_php_output_shutdown"] = Module["asm"]["NX"]).apply(
+      return (_php_output_shutdown = Module["_php_output_shutdown"] = Module["asm"]["TX"]).apply(
         null,
         arguments,
       );
     });
     var _zend_interned_strings_dtor = (Module["_zend_interned_strings_dtor"] = function () {
       return (_zend_interned_strings_dtor = Module["_zend_interned_strings_dtor"] =
-        Module["asm"]["OX"]).apply(null, arguments);
+        Module["asm"]["UX"]).apply(null, arguments);
     });
     var _zend_observer_shutdown = (Module["_zend_observer_shutdown"] = function () {
       return (_zend_observer_shutdown = Module["_zend_observer_shutdown"] =
-        Module["asm"]["PX"]).apply(null, arguments);
+        Module["asm"]["VX"]).apply(null, arguments);
     });
     var _php_execute_script_ex = (Module["_php_execute_script_ex"] = function () {
       return (_php_execute_script_ex = Module["_php_execute_script_ex"] =
-        Module["asm"]["QX"]).apply(null, arguments);
+        Module["asm"]["WX"]).apply(null, arguments);
     });
     var _virtual_chdir_file = (Module["_virtual_chdir_file"] = function () {
-      return (_virtual_chdir_file = Module["_virtual_chdir_file"] = Module["asm"]["RX"]).apply(
+      return (_virtual_chdir_file = Module["_virtual_chdir_file"] = Module["asm"]["XX"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ini_long = (Module["_zend_ini_long"] = function () {
-      return (_zend_ini_long = Module["_zend_ini_long"] = Module["asm"]["SX"]).apply(
+      return (_zend_ini_long = Module["_zend_ini_long"] = Module["asm"]["YX"]).apply(
         null,
         arguments,
       );
     });
     var _zend_execute_script = (Module["_zend_execute_script"] = function () {
-      return (_zend_execute_script = Module["_zend_execute_script"] = Module["asm"]["TX"]).apply(
+      return (_zend_execute_script = Module["_zend_execute_script"] = Module["asm"]["ZX"]).apply(
         null,
         arguments,
       );
     });
     var _php_execute_script = (Module["_php_execute_script"] = function () {
-      return (_php_execute_script = Module["_php_execute_script"] = Module["asm"]["UX"]).apply(
+      return (_php_execute_script = Module["_php_execute_script"] = Module["asm"]["_X"]).apply(
         null,
         arguments,
       );
     });
     var _php_execute_simple_script = (Module["_php_execute_simple_script"] = function () {
       return (_php_execute_simple_script = Module["_php_execute_simple_script"] =
-        Module["asm"]["VX"]).apply(null, arguments);
+        Module["asm"]["$X"]).apply(null, arguments);
     });
     var _zend_execute_scripts = (Module["_zend_execute_scripts"] = function () {
-      return (_zend_execute_scripts = Module["_zend_execute_scripts"] = Module["asm"]["WX"]).apply(
+      return (_zend_execute_scripts = Module["_zend_execute_scripts"] = Module["asm"]["aY"]).apply(
         null,
         arguments,
       );
     });
     var _php_handle_aborted_connection = (Module["_php_handle_aborted_connection"] = function () {
       return (_php_handle_aborted_connection = Module["_php_handle_aborted_connection"] =
-        Module["asm"]["XX"]).apply(null, arguments);
+        Module["asm"]["bY"]).apply(null, arguments);
     });
     var _php_handle_auth_data = (Module["_php_handle_auth_data"] = function () {
-      return (_php_handle_auth_data = Module["_php_handle_auth_data"] = Module["asm"]["YX"]).apply(
+      return (_php_handle_auth_data = Module["_php_handle_auth_data"] = Module["asm"]["cY"]).apply(
         null,
         arguments,
       );
     });
     var _zend_binary_strncasecmp = (Module["_zend_binary_strncasecmp"] = function () {
       return (_zend_binary_strncasecmp = Module["_zend_binary_strncasecmp"] =
-        Module["asm"]["ZX"]).apply(null, arguments);
+        Module["asm"]["dY"]).apply(null, arguments);
     });
     var _php_lint_script = (Module["_php_lint_script"] = function () {
-      return (_php_lint_script = Module["_php_lint_script"] = Module["asm"]["_X"]).apply(
+      return (_php_lint_script = Module["_php_lint_script"] = Module["asm"]["eY"]).apply(
         null,
         arguments,
       );
     });
     var __smart_string_alloc_persistent = (Module["__smart_string_alloc_persistent"] = function () {
       return (__smart_string_alloc_persistent = Module["__smart_string_alloc_persistent"] =
-        Module["asm"]["$X"]).apply(null, arguments);
+        Module["asm"]["fY"]).apply(null, arguments);
     });
     var __smart_string_alloc = (Module["__smart_string_alloc"] = function () {
-      return (__smart_string_alloc = Module["__smart_string_alloc"] = Module["asm"]["aY"]).apply(
+      return (__smart_string_alloc = Module["__smart_string_alloc"] = Module["asm"]["gY"]).apply(
         null,
         arguments,
       );
     });
     var _zend_throw_error_exception = (Module["_zend_throw_error_exception"] = function () {
       return (_zend_throw_error_exception = Module["_zend_throw_error_exception"] =
-        Module["asm"]["bY"]).apply(null, arguments);
+        Module["asm"]["hY"]).apply(null, arguments);
     });
     var _zend_trace_to_string = (Module["_zend_trace_to_string"] = function () {
-      return (_zend_trace_to_string = Module["_zend_trace_to_string"] = Module["asm"]["cY"]).apply(
+      return (_zend_trace_to_string = Module["_zend_trace_to_string"] = Module["asm"]["iY"]).apply(
         null,
         arguments,
       );
@@ -20038,74 +20070,74 @@ var PHP = (() => {
       return (_zend_alloc_in_memory_limit_error_reporting = Module[
         "_zend_alloc_in_memory_limit_error_reporting"
       ] =
-        Module["asm"]["dY"]).apply(null, arguments);
+        Module["asm"]["jY"]).apply(null, arguments);
     });
     var _php_output_discard_all = (Module["_php_output_discard_all"] = function () {
       return (_php_output_discard_all = Module["_php_output_discard_all"] =
-        Module["asm"]["eY"]).apply(null, arguments);
+        Module["asm"]["kY"]).apply(null, arguments);
     });
     var _zend_objects_store_mark_destructed = (Module["_zend_objects_store_mark_destructed"] =
       function () {
         return (_zend_objects_store_mark_destructed = Module[
           "_zend_objects_store_mark_destructed"
         ] =
-          Module["asm"]["fY"]).apply(null, arguments);
+          Module["asm"]["lY"]).apply(null, arguments);
       });
     var __php_stream_open_wrapper_as_file = (Module["__php_stream_open_wrapper_as_file"] =
       function () {
         return (__php_stream_open_wrapper_as_file = Module["__php_stream_open_wrapper_as_file"] =
-          Module["asm"]["gY"]).apply(null, arguments);
+          Module["asm"]["mY"]).apply(null, arguments);
       });
     var _asctime_r = (Module["_asctime_r"] = function () {
-      return (_asctime_r = Module["_asctime_r"] = Module["asm"]["hY"]).apply(null, arguments);
+      return (_asctime_r = Module["_asctime_r"] = Module["asm"]["nY"]).apply(null, arguments);
     });
     var _zend_ini_color_displayer_cb = (Module["_zend_ini_color_displayer_cb"] = function () {
       return (_zend_ini_color_displayer_cb = Module["_zend_ini_color_displayer_cb"] =
-        Module["asm"]["iY"]).apply(null, arguments);
+        Module["asm"]["oY"]).apply(null, arguments);
     });
     var _zend_ini_parse_uquantity_warn = (Module["_zend_ini_parse_uquantity_warn"] = function () {
       return (_zend_ini_parse_uquantity_warn = Module["_zend_ini_parse_uquantity_warn"] =
-        Module["asm"]["jY"]).apply(null, arguments);
+        Module["asm"]["pY"]).apply(null, arguments);
     });
     var _php_network_freeaddresses = (Module["_php_network_freeaddresses"] = function () {
       return (_php_network_freeaddresses = Module["_php_network_freeaddresses"] =
-        Module["asm"]["kY"]).apply(null, arguments);
+        Module["asm"]["qY"]).apply(null, arguments);
     });
     var _php_network_getaddresses = (Module["_php_network_getaddresses"] = function () {
       return (_php_network_getaddresses = Module["_php_network_getaddresses"] =
-        Module["asm"]["lY"]).apply(null, arguments);
+        Module["asm"]["rY"]).apply(null, arguments);
     });
     var _socket = (Module["_socket"] = function () {
-      return (_socket = Module["_socket"] = Module["asm"]["mY"]).apply(null, arguments);
+      return (_socket = Module["_socket"] = Module["asm"]["sY"]).apply(null, arguments);
     });
     var _gai_strerror = (Module["_gai_strerror"] = function () {
-      return (_gai_strerror = Module["_gai_strerror"] = Module["asm"]["nY"]).apply(null, arguments);
+      return (_gai_strerror = Module["_gai_strerror"] = Module["asm"]["tY"]).apply(null, arguments);
     });
     var _freeaddrinfo = (Module["_freeaddrinfo"] = function () {
-      return (_freeaddrinfo = Module["_freeaddrinfo"] = Module["asm"]["oY"]).apply(null, arguments);
+      return (_freeaddrinfo = Module["_freeaddrinfo"] = Module["asm"]["uY"]).apply(null, arguments);
     });
     var _php_network_connect_socket = (Module["_php_network_connect_socket"] = function () {
       return (_php_network_connect_socket = Module["_php_network_connect_socket"] =
-        Module["asm"]["pY"]).apply(null, arguments);
+        Module["asm"]["vY"]).apply(null, arguments);
     });
     var _connect = (Module["_connect"] = function () {
-      return (_connect = Module["_connect"] = Module["asm"]["qY"]).apply(null, arguments);
+      return (_connect = Module["_connect"] = Module["asm"]["wY"]).apply(null, arguments);
     });
     var _getsockopt = (Module["_getsockopt"] = function () {
-      return (_getsockopt = Module["_getsockopt"] = Module["asm"]["rY"]).apply(null, arguments);
+      return (_getsockopt = Module["_getsockopt"] = Module["asm"]["xY"]).apply(null, arguments);
     });
     var _php_network_bind_socket_to_local_addr = (Module["_php_network_bind_socket_to_local_addr"] =
       function () {
         return (_php_network_bind_socket_to_local_addr = Module[
           "_php_network_bind_socket_to_local_addr"
         ] =
-          Module["asm"]["sY"]).apply(null, arguments);
+          Module["asm"]["yY"]).apply(null, arguments);
       });
     var _setsockopt = (Module["_setsockopt"] = function () {
-      return (_setsockopt = Module["_setsockopt"] = Module["asm"]["tY"]).apply(null, arguments);
+      return (_setsockopt = Module["_setsockopt"] = Module["asm"]["zY"]).apply(null, arguments);
     });
     var _bind = (Module["_bind"] = function () {
-      return (_bind = Module["_bind"] = Module["asm"]["uY"]).apply(null, arguments);
+      return (_bind = Module["_bind"] = Module["asm"]["AY"]).apply(null, arguments);
     });
     var _php_network_populate_name_from_sockaddr = (Module[
       "_php_network_populate_name_from_sockaddr"
@@ -20113,180 +20145,180 @@ var PHP = (() => {
       return (_php_network_populate_name_from_sockaddr = Module[
         "_php_network_populate_name_from_sockaddr"
       ] =
-        Module["asm"]["vY"]).apply(null, arguments);
+        Module["asm"]["BY"]).apply(null, arguments);
     });
     var _php_network_get_peer_name = (Module["_php_network_get_peer_name"] = function () {
       return (_php_network_get_peer_name = Module["_php_network_get_peer_name"] =
-        Module["asm"]["wY"]).apply(null, arguments);
+        Module["asm"]["CY"]).apply(null, arguments);
     });
     var _getpeername = (Module["_getpeername"] = function () {
-      return (_getpeername = Module["_getpeername"] = Module["asm"]["xY"]).apply(null, arguments);
+      return (_getpeername = Module["_getpeername"] = Module["asm"]["DY"]).apply(null, arguments);
     });
     var _php_network_get_sock_name = (Module["_php_network_get_sock_name"] = function () {
       return (_php_network_get_sock_name = Module["_php_network_get_sock_name"] =
-        Module["asm"]["yY"]).apply(null, arguments);
+        Module["asm"]["EY"]).apply(null, arguments);
     });
     var _getsockname = (Module["_getsockname"] = function () {
-      return (_getsockname = Module["_getsockname"] = Module["asm"]["zY"]).apply(null, arguments);
+      return (_getsockname = Module["_getsockname"] = Module["asm"]["FY"]).apply(null, arguments);
     });
     var _php_network_accept_incoming = (Module["_php_network_accept_incoming"] = function () {
       return (_php_network_accept_incoming = Module["_php_network_accept_incoming"] =
-        Module["asm"]["AY"]).apply(null, arguments);
+        Module["asm"]["GY"]).apply(null, arguments);
     });
     var _accept = (Module["_accept"] = function () {
-      return (_accept = Module["_accept"] = Module["asm"]["BY"]).apply(null, arguments);
+      return (_accept = Module["_accept"] = Module["asm"]["HY"]).apply(null, arguments);
     });
     var _php_network_connect_socket_to_host = (Module["_php_network_connect_socket_to_host"] =
       function () {
         return (_php_network_connect_socket_to_host = Module[
           "_php_network_connect_socket_to_host"
         ] =
-          Module["asm"]["CY"]).apply(null, arguments);
+          Module["asm"]["IY"]).apply(null, arguments);
       });
     var _php_any_addr = (Module["_php_any_addr"] = function () {
-      return (_php_any_addr = Module["_php_any_addr"] = Module["asm"]["DY"]).apply(null, arguments);
+      return (_php_any_addr = Module["_php_any_addr"] = Module["asm"]["JY"]).apply(null, arguments);
     });
     var _php_sockaddr_size = (Module["_php_sockaddr_size"] = function () {
-      return (_php_sockaddr_size = Module["_php_sockaddr_size"] = Module["asm"]["EY"]).apply(
+      return (_php_sockaddr_size = Module["_php_sockaddr_size"] = Module["asm"]["KY"]).apply(
         null,
         arguments,
       );
     });
     var _strerror_r = (Module["_strerror_r"] = function () {
-      return (_strerror_r = Module["_strerror_r"] = Module["asm"]["FY"]).apply(null, arguments);
+      return (_strerror_r = Module["_strerror_r"] = Module["asm"]["LY"]).apply(null, arguments);
     });
     var _php_set_sock_blocking = (Module["_php_set_sock_blocking"] = function () {
       return (_php_set_sock_blocking = Module["_php_set_sock_blocking"] =
-        Module["asm"]["GY"]).apply(null, arguments);
+        Module["asm"]["MY"]).apply(null, arguments);
     });
     var _poll = (Module["_poll"] = function () {
-      return (_poll = Module["_poll"] = Module["asm"]["HY"]).apply(null, arguments);
+      return (_poll = Module["_poll"] = Module["asm"]["NY"]).apply(null, arguments);
     });
     var _zend_stack_init = (Module["_zend_stack_init"] = function () {
-      return (_zend_stack_init = Module["_zend_stack_init"] = Module["asm"]["IY"]).apply(
+      return (_zend_stack_init = Module["_zend_stack_init"] = Module["asm"]["OY"]).apply(
         null,
         arguments,
       );
     });
     var _zend_stack_top = (Module["_zend_stack_top"] = function () {
-      return (_zend_stack_top = Module["_zend_stack_top"] = Module["asm"]["JY"]).apply(
+      return (_zend_stack_top = Module["_zend_stack_top"] = Module["asm"]["PY"]).apply(
         null,
         arguments,
       );
     });
     var _zend_stack_del_top = (Module["_zend_stack_del_top"] = function () {
-      return (_zend_stack_del_top = Module["_zend_stack_del_top"] = Module["asm"]["KY"]).apply(
+      return (_zend_stack_del_top = Module["_zend_stack_del_top"] = Module["asm"]["QY"]).apply(
         null,
         arguments,
       );
     });
     var _php_output_handler_free = (Module["_php_output_handler_free"] = function () {
       return (_php_output_handler_free = Module["_php_output_handler_free"] =
-        Module["asm"]["LY"]).apply(null, arguments);
+        Module["asm"]["RY"]).apply(null, arguments);
     });
     var _zend_stack_destroy = (Module["_zend_stack_destroy"] = function () {
-      return (_zend_stack_destroy = Module["_zend_stack_destroy"] = Module["asm"]["MY"]).apply(
+      return (_zend_stack_destroy = Module["_zend_stack_destroy"] = Module["asm"]["SY"]).apply(
         null,
         arguments,
       );
     });
     var _php_output_get_status = (Module["_php_output_get_status"] = function () {
       return (_php_output_get_status = Module["_php_output_get_status"] =
-        Module["asm"]["NY"]).apply(null, arguments);
+        Module["asm"]["TY"]).apply(null, arguments);
     });
     var _php_output_write_unbuffered = (Module["_php_output_write_unbuffered"] = function () {
       return (_php_output_write_unbuffered = Module["_php_output_write_unbuffered"] =
-        Module["asm"]["OY"]).apply(null, arguments);
+        Module["asm"]["UY"]).apply(null, arguments);
     });
     var _php_output_flush = (Module["_php_output_flush"] = function () {
-      return (_php_output_flush = Module["_php_output_flush"] = Module["asm"]["PY"]).apply(
+      return (_php_output_flush = Module["_php_output_flush"] = Module["asm"]["VY"]).apply(
         null,
         arguments,
       );
     });
     var _zend_stack_push = (Module["_zend_stack_push"] = function () {
-      return (_zend_stack_push = Module["_zend_stack_push"] = Module["asm"]["QY"]).apply(
+      return (_zend_stack_push = Module["_zend_stack_push"] = Module["asm"]["WY"]).apply(
         null,
         arguments,
       );
     });
     var _php_output_clean = (Module["_php_output_clean"] = function () {
-      return (_php_output_clean = Module["_php_output_clean"] = Module["asm"]["RY"]).apply(
+      return (_php_output_clean = Module["_php_output_clean"] = Module["asm"]["XY"]).apply(
         null,
         arguments,
       );
     });
     var _php_output_clean_all = (Module["_php_output_clean_all"] = function () {
-      return (_php_output_clean_all = Module["_php_output_clean_all"] = Module["asm"]["SY"]).apply(
+      return (_php_output_clean_all = Module["_php_output_clean_all"] = Module["asm"]["YY"]).apply(
         null,
         arguments,
       );
     });
     var _zend_stack_apply_with_argument = (Module["_zend_stack_apply_with_argument"] = function () {
       return (_zend_stack_apply_with_argument = Module["_zend_stack_apply_with_argument"] =
-        Module["asm"]["TY"]).apply(null, arguments);
+        Module["asm"]["ZY"]).apply(null, arguments);
     });
     var _zend_stack_count = (Module["_zend_stack_count"] = function () {
-      return (_zend_stack_count = Module["_zend_stack_count"] = Module["asm"]["UY"]).apply(
+      return (_zend_stack_count = Module["_zend_stack_count"] = Module["asm"]["_Y"]).apply(
         null,
         arguments,
       );
     });
     var _php_output_get_length = (Module["_php_output_get_length"] = function () {
       return (_php_output_get_length = Module["_php_output_get_length"] =
-        Module["asm"]["VY"]).apply(null, arguments);
+        Module["asm"]["$Y"]).apply(null, arguments);
     });
     var _php_output_get_active_handler = (Module["_php_output_get_active_handler"] = function () {
       return (_php_output_get_active_handler = Module["_php_output_get_active_handler"] =
-        Module["asm"]["WY"]).apply(null, arguments);
+        Module["asm"]["aZ"]).apply(null, arguments);
     });
     var _php_output_handler_create_internal = (Module["_php_output_handler_create_internal"] =
       function () {
         return (_php_output_handler_create_internal = Module[
           "_php_output_handler_create_internal"
         ] =
-          Module["asm"]["XY"]).apply(null, arguments);
+          Module["asm"]["bZ"]).apply(null, arguments);
       });
     var _php_output_handler_start = (Module["_php_output_handler_start"] = function () {
       return (_php_output_handler_start = Module["_php_output_handler_start"] =
-        Module["asm"]["YY"]).apply(null, arguments);
+        Module["asm"]["cZ"]).apply(null, arguments);
     });
     var _php_output_start_devnull = (Module["_php_output_start_devnull"] = function () {
       return (_php_output_start_devnull = Module["_php_output_start_devnull"] =
-        Module["asm"]["ZY"]).apply(null, arguments);
+        Module["asm"]["dZ"]).apply(null, arguments);
     });
     var _php_output_handler_create_user = (Module["_php_output_handler_create_user"] = function () {
       return (_php_output_handler_create_user = Module["_php_output_handler_create_user"] =
-        Module["asm"]["_Y"]).apply(null, arguments);
+        Module["asm"]["eZ"]).apply(null, arguments);
     });
     var _php_output_handler_set_context = (Module["_php_output_handler_set_context"] = function () {
       return (_php_output_handler_set_context = Module["_php_output_handler_set_context"] =
-        Module["asm"]["$Y"]).apply(null, arguments);
+        Module["asm"]["fZ"]).apply(null, arguments);
     });
     var _php_output_handler_alias = (Module["_php_output_handler_alias"] = function () {
       return (_php_output_handler_alias = Module["_php_output_handler_alias"] =
-        Module["asm"]["aZ"]).apply(null, arguments);
+        Module["asm"]["gZ"]).apply(null, arguments);
     });
     var _php_output_handler_started = (Module["_php_output_handler_started"] = function () {
       return (_php_output_handler_started = Module["_php_output_handler_started"] =
-        Module["asm"]["bZ"]).apply(null, arguments);
+        Module["asm"]["hZ"]).apply(null, arguments);
     });
     var _zend_stack_base = (Module["_zend_stack_base"] = function () {
-      return (_zend_stack_base = Module["_zend_stack_base"] = Module["asm"]["cZ"]).apply(
+      return (_zend_stack_base = Module["_zend_stack_base"] = Module["asm"]["iZ"]).apply(
         null,
         arguments,
       );
     });
     var _php_output_handler_conflict = (Module["_php_output_handler_conflict"] = function () {
       return (_php_output_handler_conflict = Module["_php_output_handler_conflict"] =
-        Module["asm"]["dZ"]).apply(null, arguments);
+        Module["asm"]["jZ"]).apply(null, arguments);
     });
     var _php_output_handler_conflict_register = (Module["_php_output_handler_conflict_register"] =
       function () {
         return (_php_output_handler_conflict_register = Module[
           "_php_output_handler_conflict_register"
         ] =
-          Module["asm"]["eZ"]).apply(null, arguments);
+          Module["asm"]["kZ"]).apply(null, arguments);
       });
     var _php_output_handler_reverse_conflict_register = (Module[
       "_php_output_handler_reverse_conflict_register"
@@ -20294,185 +20326,185 @@ var PHP = (() => {
       return (_php_output_handler_reverse_conflict_register = Module[
         "_php_output_handler_reverse_conflict_register"
       ] =
-        Module["asm"]["fZ"]).apply(null, arguments);
+        Module["asm"]["lZ"]).apply(null, arguments);
     });
     var _php_output_handler_alias_register = (Module["_php_output_handler_alias_register"] =
       function () {
         return (_php_output_handler_alias_register = Module["_php_output_handler_alias_register"] =
-          Module["asm"]["gZ"]).apply(null, arguments);
+          Module["asm"]["mZ"]).apply(null, arguments);
       });
     var _php_output_handler_hook = (Module["_php_output_handler_hook"] = function () {
       return (_php_output_handler_hook = Module["_php_output_handler_hook"] =
-        Module["asm"]["hZ"]).apply(null, arguments);
+        Module["asm"]["nZ"]).apply(null, arguments);
     });
     var _php_output_handler_dtor = (Module["_php_output_handler_dtor"] = function () {
       return (_php_output_handler_dtor = Module["_php_output_handler_dtor"] =
-        Module["asm"]["iZ"]).apply(null, arguments);
+        Module["asm"]["oZ"]).apply(null, arguments);
     });
     var _zend_is_compiling = (Module["_zend_is_compiling"] = function () {
-      return (_zend_is_compiling = Module["_zend_is_compiling"] = Module["asm"]["jZ"]).apply(
+      return (_zend_is_compiling = Module["_zend_is_compiling"] = Module["asm"]["pZ"]).apply(
         null,
         arguments,
       );
     });
     var _zend_get_compiled_filename = (Module["_zend_get_compiled_filename"] = function () {
       return (_zend_get_compiled_filename = Module["_zend_get_compiled_filename"] =
-        Module["asm"]["kZ"]).apply(null, arguments);
+        Module["asm"]["qZ"]).apply(null, arguments);
     });
     var _zend_get_compiled_lineno = (Module["_zend_get_compiled_lineno"] = function () {
       return (_zend_get_compiled_lineno = Module["_zend_get_compiled_lineno"] =
-        Module["asm"]["lZ"]).apply(null, arguments);
+        Module["asm"]["rZ"]).apply(null, arguments);
     });
     var _php_default_post_reader = (Module["_php_default_post_reader"] = function () {
       return (_php_default_post_reader = Module["_php_default_post_reader"] =
-        Module["asm"]["mZ"]).apply(null, arguments);
+        Module["asm"]["sZ"]).apply(null, arguments);
     });
     var _sapi_read_standard_form_data = (Module["_sapi_read_standard_form_data"] = function () {
       return (_sapi_read_standard_form_data = Module["_sapi_read_standard_form_data"] =
-        Module["asm"]["nZ"]).apply(null, arguments);
+        Module["asm"]["tZ"]).apply(null, arguments);
     });
     var _sapi_register_default_post_reader = (Module["_sapi_register_default_post_reader"] =
       function () {
         return (_sapi_register_default_post_reader = Module["_sapi_register_default_post_reader"] =
-          Module["asm"]["oZ"]).apply(null, arguments);
+          Module["asm"]["uZ"]).apply(null, arguments);
       });
     var _sapi_register_treat_data = (Module["_sapi_register_treat_data"] = function () {
       return (_sapi_register_treat_data = Module["_sapi_register_treat_data"] =
-        Module["asm"]["pZ"]).apply(null, arguments);
+        Module["asm"]["vZ"]).apply(null, arguments);
     });
     var _php_default_treat_data = (Module["_php_default_treat_data"] = function () {
       return (_php_default_treat_data = Module["_php_default_treat_data"] =
-        Module["asm"]["qZ"]).apply(null, arguments);
+        Module["asm"]["wZ"]).apply(null, arguments);
     });
     var _sapi_register_input_filter = (Module["_sapi_register_input_filter"] = function () {
       return (_sapi_register_input_filter = Module["_sapi_register_input_filter"] =
-        Module["asm"]["rZ"]).apply(null, arguments);
+        Module["asm"]["xZ"]).apply(null, arguments);
     });
     var _php_default_input_filter = (Module["_php_default_input_filter"] = function () {
       return (_php_default_input_filter = Module["_php_default_input_filter"] =
-        Module["asm"]["sZ"]).apply(null, arguments);
+        Module["asm"]["yZ"]).apply(null, arguments);
     });
     var _sapi_register_post_entries = (Module["_sapi_register_post_entries"] = function () {
       return (_sapi_register_post_entries = Module["_sapi_register_post_entries"] =
-        Module["asm"]["tZ"]).apply(null, arguments);
+        Module["asm"]["zZ"]).apply(null, arguments);
     });
     var _php_std_post_handler = (Module["_php_std_post_handler"] = function () {
-      return (_php_std_post_handler = Module["_php_std_post_handler"] = Module["asm"]["uZ"]).apply(
+      return (_php_std_post_handler = Module["_php_std_post_handler"] = Module["asm"]["AZ"]).apply(
         null,
         arguments,
       );
     });
     var _rfc1867_post_handler = (Module["_rfc1867_post_handler"] = function () {
-      return (_rfc1867_post_handler = Module["_rfc1867_post_handler"] = Module["asm"]["vZ"]).apply(
+      return (_rfc1867_post_handler = Module["_rfc1867_post_handler"] = Module["asm"]["BZ"]).apply(
         null,
         arguments,
       );
     });
     var _php_ini_builder_prepend = (Module["_php_ini_builder_prepend"] = function () {
       return (_php_ini_builder_prepend = Module["_php_ini_builder_prepend"] =
-        Module["asm"]["wZ"]).apply(null, arguments);
+        Module["asm"]["CZ"]).apply(null, arguments);
     });
     var _php_ini_builder_unquoted = (Module["_php_ini_builder_unquoted"] = function () {
       return (_php_ini_builder_unquoted = Module["_php_ini_builder_unquoted"] =
-        Module["asm"]["xZ"]).apply(null, arguments);
+        Module["asm"]["DZ"]).apply(null, arguments);
     });
     var _php_ini_builder_quoted = (Module["_php_ini_builder_quoted"] = function () {
       return (_php_ini_builder_quoted = Module["_php_ini_builder_quoted"] =
-        Module["asm"]["yZ"]).apply(null, arguments);
+        Module["asm"]["EZ"]).apply(null, arguments);
     });
     var _php_ini_builder_define = (Module["_php_ini_builder_define"] = function () {
       return (_php_ini_builder_define = Module["_php_ini_builder_define"] =
-        Module["asm"]["zZ"]).apply(null, arguments);
+        Module["asm"]["FZ"]).apply(null, arguments);
     });
     var _config_zval_dtor = (Module["_config_zval_dtor"] = function () {
-      return (_config_zval_dtor = Module["_config_zval_dtor"] = Module["asm"]["AZ"]).apply(
+      return (_config_zval_dtor = Module["_config_zval_dtor"] = Module["asm"]["GZ"]).apply(
         null,
         arguments,
       );
     });
     var _free_estring = (Module["_free_estring"] = function () {
-      return (_free_estring = Module["_free_estring"] = Module["asm"]["BZ"]).apply(null, arguments);
+      return (_free_estring = Module["_free_estring"] = Module["asm"]["HZ"]).apply(null, arguments);
     });
     var _scandir = (Module["_scandir"] = function () {
-      return (_scandir = Module["_scandir"] = Module["asm"]["CZ"]).apply(null, arguments);
+      return (_scandir = Module["_scandir"] = Module["asm"]["IZ"]).apply(null, arguments);
     });
     var _alphasort = (Module["_alphasort"] = function () {
-      return (_alphasort = Module["_alphasort"] = Module["asm"]["DZ"]).apply(null, arguments);
+      return (_alphasort = Module["_alphasort"] = Module["asm"]["JZ"]).apply(null, arguments);
     });
     var _strlcat = (Module["_strlcat"] = function () {
-      return (_strlcat = Module["_strlcat"] = Module["asm"]["EZ"]).apply(null, arguments);
+      return (_strlcat = Module["_strlcat"] = Module["asm"]["KZ"]).apply(null, arguments);
     });
     var _php_parse_user_ini_file = (Module["_php_parse_user_ini_file"] = function () {
       return (_php_parse_user_ini_file = Module["_php_parse_user_ini_file"] =
-        Module["asm"]["FZ"]).apply(null, arguments);
+        Module["asm"]["LZ"]).apply(null, arguments);
     });
     var _php_ini_activate_config = (Module["_php_ini_activate_config"] = function () {
       return (_php_ini_activate_config = Module["_php_ini_activate_config"] =
-        Module["asm"]["GZ"]).apply(null, arguments);
+        Module["asm"]["MZ"]).apply(null, arguments);
     });
     var _php_ini_has_per_dir_config = (Module["_php_ini_has_per_dir_config"] = function () {
       return (_php_ini_has_per_dir_config = Module["_php_ini_has_per_dir_config"] =
-        Module["asm"]["HZ"]).apply(null, arguments);
+        Module["asm"]["NZ"]).apply(null, arguments);
     });
     var _php_ini_activate_per_dir_config = (Module["_php_ini_activate_per_dir_config"] =
       function () {
         return (_php_ini_activate_per_dir_config = Module["_php_ini_activate_per_dir_config"] =
-          Module["asm"]["IZ"]).apply(null, arguments);
+          Module["asm"]["OZ"]).apply(null, arguments);
       });
     var _php_ini_has_per_host_config = (Module["_php_ini_has_per_host_config"] = function () {
       return (_php_ini_has_per_host_config = Module["_php_ini_has_per_host_config"] =
-        Module["asm"]["JZ"]).apply(null, arguments);
+        Module["asm"]["PZ"]).apply(null, arguments);
     });
     var _php_ini_activate_per_host_config = (Module["_php_ini_activate_per_host_config"] =
       function () {
         return (_php_ini_activate_per_host_config = Module["_php_ini_activate_per_host_config"] =
-          Module["asm"]["KZ"]).apply(null, arguments);
+          Module["asm"]["QZ"]).apply(null, arguments);
       });
     var _cfg_get_double = (Module["_cfg_get_double"] = function () {
-      return (_cfg_get_double = Module["_cfg_get_double"] = Module["asm"]["LZ"]).apply(
+      return (_cfg_get_double = Module["_cfg_get_double"] = Module["asm"]["RZ"]).apply(
         null,
         arguments,
       );
     });
     var _php_ini_get_configuration_hash = (Module["_php_ini_get_configuration_hash"] = function () {
       return (_php_ini_get_configuration_hash = Module["_php_ini_get_configuration_hash"] =
-        Module["asm"]["MZ"]).apply(null, arguments);
+        Module["asm"]["SZ"]).apply(null, arguments);
     });
     var _zend_load_extension = (Module["_zend_load_extension"] = function () {
-      return (_zend_load_extension = Module["_zend_load_extension"] = Module["asm"]["NZ"]).apply(
+      return (_zend_load_extension = Module["_zend_load_extension"] = Module["asm"]["TZ"]).apply(
         null,
         arguments,
       );
     });
     var _zend_load_extension_handle = (Module["_zend_load_extension_handle"] = function () {
       return (_zend_load_extension_handle = Module["_zend_load_extension_handle"] =
-        Module["asm"]["OZ"]).apply(null, arguments);
+        Module["asm"]["UZ"]).apply(null, arguments);
     });
     var _strnlen = (Module["_strnlen"] = function () {
-      return (_strnlen = Module["_strnlen"] = Module["asm"]["PZ"]).apply(null, arguments);
+      return (_strnlen = Module["_strnlen"] = Module["asm"]["VZ"]).apply(null, arguments);
     });
     var _qsort = (Module["_qsort"] = function () {
-      return (_qsort = Module["_qsort"] = Module["asm"]["QZ"]).apply(null, arguments);
+      return (_qsort = Module["_qsort"] = Module["asm"]["WZ"]).apply(null, arguments);
     });
     var _issetugid = (Module["_issetugid"] = function () {
-      return (_issetugid = Module["_issetugid"] = Module["asm"]["RZ"]).apply(null, arguments);
+      return (_issetugid = Module["_issetugid"] = Module["asm"]["XZ"]).apply(null, arguments);
     });
     var _getpwuid_r = (Module["_getpwuid_r"] = function () {
-      return (_getpwuid_r = Module["_getpwuid_r"] = Module["asm"]["SZ"]).apply(null, arguments);
+      return (_getpwuid_r = Module["_getpwuid_r"] = Module["asm"]["YZ"]).apply(null, arguments);
     });
     var _getpwnam_r = (Module["_getpwnam_r"] = function () {
-      return (_getpwnam_r = Module["_getpwnam_r"] = Module["asm"]["TZ"]).apply(null, arguments);
+      return (_getpwnam_r = Module["_getpwnam_r"] = Module["asm"]["ZZ"]).apply(null, arguments);
     });
     var _isblank = (Module["_isblank"] = function () {
-      return (_isblank = Module["_isblank"] = Module["asm"]["UZ"]).apply(null, arguments);
+      return (_isblank = Module["_isblank"] = Module["asm"]["_Z"]).apply(null, arguments);
     });
     var _php_odbc_connstr_is_quoted = (Module["_php_odbc_connstr_is_quoted"] = function () {
       return (_php_odbc_connstr_is_quoted = Module["_php_odbc_connstr_is_quoted"] =
-        Module["asm"]["VZ"]).apply(null, arguments);
+        Module["asm"]["$Z"]).apply(null, arguments);
     });
     var _php_odbc_connstr_should_quote = (Module["_php_odbc_connstr_should_quote"] = function () {
       return (_php_odbc_connstr_should_quote = Module["_php_odbc_connstr_should_quote"] =
-        Module["asm"]["WZ"]).apply(null, arguments);
+        Module["asm"]["a_"]).apply(null, arguments);
     });
     var _php_odbc_connstr_estimate_quote_length = (Module[
       "_php_odbc_connstr_estimate_quote_length"
@@ -20480,369 +20512,369 @@ var PHP = (() => {
       return (_php_odbc_connstr_estimate_quote_length = Module[
         "_php_odbc_connstr_estimate_quote_length"
       ] =
-        Module["asm"]["XZ"]).apply(null, arguments);
+        Module["asm"]["b_"]).apply(null, arguments);
     });
     var _php_odbc_connstr_quote = (Module["_php_odbc_connstr_quote"] = function () {
       return (_php_odbc_connstr_quote = Module["_php_odbc_connstr_quote"] =
-        Module["asm"]["YZ"]).apply(null, arguments);
+        Module["asm"]["c_"]).apply(null, arguments);
     });
     var _php_open_temporary_fd = (Module["_php_open_temporary_fd"] = function () {
       return (_php_open_temporary_fd = Module["_php_open_temporary_fd"] =
-        Module["asm"]["ZZ"]).apply(null, arguments);
+        Module["asm"]["d_"]).apply(null, arguments);
     });
     var _php_open_temporary_file = (Module["_php_open_temporary_file"] = function () {
       return (_php_open_temporary_file = Module["_php_open_temporary_file"] =
-        Module["asm"]["_Z"]).apply(null, arguments);
+        Module["asm"]["e_"]).apply(null, arguments);
     });
     var _fdopen = (Module["_fdopen"] = function () {
-      return (_fdopen = Module["_fdopen"] = Module["asm"]["$Z"]).apply(null, arguments);
+      return (_fdopen = Module["_fdopen"] = Module["asm"]["f_"]).apply(null, arguments);
     });
     var _syslog = (Module["_syslog"] = function () {
-      return (_syslog = Module["_syslog"] = Module["asm"]["a_"]).apply(null, arguments);
+      return (_syslog = Module["_syslog"] = Module["asm"]["g_"]).apply(null, arguments);
     });
     var _openlog = (Module["_openlog"] = function () {
-      return (_openlog = Module["_openlog"] = Module["asm"]["b_"]).apply(null, arguments);
+      return (_openlog = Module["_openlog"] = Module["asm"]["h_"]).apply(null, arguments);
     });
     var _closelog = (Module["_closelog"] = function () {
-      return (_closelog = Module["_closelog"] = Module["asm"]["c_"]).apply(null, arguments);
+      return (_closelog = Module["_closelog"] = Module["asm"]["i_"]).apply(null, arguments);
     });
     var _zend_llist_clean = (Module["_zend_llist_clean"] = function () {
-      return (_zend_llist_clean = Module["_zend_llist_clean"] = Module["asm"]["d_"]).apply(
+      return (_zend_llist_clean = Module["_zend_llist_clean"] = Module["asm"]["j_"]).apply(
         null,
         arguments,
       );
     });
     var _php_remove_tick_function = (Module["_php_remove_tick_function"] = function () {
       return (_php_remove_tick_function = Module["_php_remove_tick_function"] =
-        Module["asm"]["e_"]).apply(null, arguments);
+        Module["asm"]["k_"]).apply(null, arguments);
     });
     var _php_register_variable = (Module["_php_register_variable"] = function () {
       return (_php_register_variable = Module["_php_register_variable"] =
-        Module["asm"]["f_"]).apply(null, arguments);
+        Module["asm"]["l_"]).apply(null, arguments);
     });
     var _php_register_variable_safe = (Module["_php_register_variable_safe"] = function () {
       return (_php_register_variable_safe = Module["_php_register_variable_safe"] =
-        Module["asm"]["g_"]).apply(null, arguments);
+        Module["asm"]["m_"]).apply(null, arguments);
     });
     var _php_register_variable_ex = (Module["_php_register_variable_ex"] = function () {
       return (_php_register_variable_ex = Module["_php_register_variable_ex"] =
-        Module["asm"]["h_"]).apply(null, arguments);
+        Module["asm"]["n_"]).apply(null, arguments);
     });
     var _php_register_known_variable = (Module["_php_register_known_variable"] = function () {
       return (_php_register_known_variable = Module["_php_register_known_variable"] =
-        Module["asm"]["i_"]).apply(null, arguments);
+        Module["asm"]["o_"]).apply(null, arguments);
     });
     var _php_build_argv = (Module["_php_build_argv"] = function () {
-      return (_php_build_argv = Module["_php_build_argv"] = Module["asm"]["j_"]).apply(
+      return (_php_build_argv = Module["_php_build_argv"] = Module["asm"]["p_"]).apply(
         null,
         arguments,
       );
     });
     var _zend_activate_auto_globals = (Module["_zend_activate_auto_globals"] = function () {
       return (_zend_activate_auto_globals = Module["_zend_activate_auto_globals"] =
-        Module["asm"]["k_"]).apply(null, arguments);
+        Module["asm"]["q_"]).apply(null, arguments);
     });
     var _zend_hash_str_update_ind = (Module["_zend_hash_str_update_ind"] = function () {
       return (_zend_hash_str_update_ind = Module["_zend_hash_str_update_ind"] =
-        Module["asm"]["l_"]).apply(null, arguments);
+        Module["asm"]["r_"]).apply(null, arguments);
     });
     var _destroy_uploaded_files_hash = (Module["_destroy_uploaded_files_hash"] = function () {
       return (_destroy_uploaded_files_hash = Module["_destroy_uploaded_files_hash"] =
-        Module["asm"]["m_"]).apply(null, arguments);
+        Module["asm"]["s_"]).apply(null, arguments);
     });
     var _zend_multibyte_get_internal_encoding = (Module["_zend_multibyte_get_internal_encoding"] =
       function () {
         return (_zend_multibyte_get_internal_encoding = Module[
           "_zend_multibyte_get_internal_encoding"
         ] =
-          Module["asm"]["n_"]).apply(null, arguments);
+          Module["asm"]["t_"]).apply(null, arguments);
       });
     var _zend_multibyte_encoding_converter = (Module["_zend_multibyte_encoding_converter"] =
       function () {
         return (_zend_multibyte_encoding_converter = Module["_zend_multibyte_encoding_converter"] =
-          Module["asm"]["o_"]).apply(null, arguments);
+          Module["asm"]["u_"]).apply(null, arguments);
       });
     var _php_rfc1867_set_multibyte_callbacks = (Module["_php_rfc1867_set_multibyte_callbacks"] =
       function () {
         return (_php_rfc1867_set_multibyte_callbacks = Module[
           "_php_rfc1867_set_multibyte_callbacks"
         ] =
-          Module["asm"]["p_"]).apply(null, arguments);
+          Module["asm"]["v_"]).apply(null, arguments);
       });
     var _zend_multibyte_encoding_detector = (Module["_zend_multibyte_encoding_detector"] =
       function () {
         return (_zend_multibyte_encoding_detector = Module["_zend_multibyte_encoding_detector"] =
-          Module["asm"]["q_"]).apply(null, arguments);
+          Module["asm"]["w_"]).apply(null, arguments);
       });
     var _zend_llist_get_first_ex = (Module["_zend_llist_get_first_ex"] = function () {
       return (_zend_llist_get_first_ex = Module["_zend_llist_get_first_ex"] =
-        Module["asm"]["r_"]).apply(null, arguments);
+        Module["asm"]["x_"]).apply(null, arguments);
     });
     var _zend_llist_get_next_ex = (Module["_zend_llist_get_next_ex"] = function () {
       return (_zend_llist_get_next_ex = Module["_zend_llist_get_next_ex"] =
-        Module["asm"]["s_"]).apply(null, arguments);
+        Module["asm"]["y_"]).apply(null, arguments);
     });
     var _zend_hash_str_add_empty_element = (Module["_zend_hash_str_add_empty_element"] =
       function () {
         return (_zend_hash_str_add_empty_element = Module["_zend_hash_str_add_empty_element"] =
-          Module["asm"]["t_"]).apply(null, arguments);
+          Module["asm"]["z_"]).apply(null, arguments);
       });
     var _sapi_startup = (Module["_sapi_startup"] = function () {
-      return (_sapi_startup = Module["_sapi_startup"] = Module["asm"]["u_"]).apply(null, arguments);
+      return (_sapi_startup = Module["_sapi_startup"] = Module["asm"]["A_"]).apply(null, arguments);
     });
     var _sapi_shutdown = (Module["_sapi_shutdown"] = function () {
-      return (_sapi_shutdown = Module["_sapi_shutdown"] = Module["asm"]["v_"]).apply(
+      return (_sapi_shutdown = Module["_sapi_shutdown"] = Module["asm"]["B_"]).apply(
         null,
         arguments,
       );
     });
     var _sapi_free_header = (Module["_sapi_free_header"] = function () {
-      return (_sapi_free_header = Module["_sapi_free_header"] = Module["asm"]["w_"]).apply(
+      return (_sapi_free_header = Module["_sapi_free_header"] = Module["asm"]["C_"]).apply(
         null,
         arguments,
       );
     });
     var _sapi_get_default_content_type = (Module["_sapi_get_default_content_type"] = function () {
       return (_sapi_get_default_content_type = Module["_sapi_get_default_content_type"] =
-        Module["asm"]["x_"]).apply(null, arguments);
+        Module["asm"]["D_"]).apply(null, arguments);
     });
     var _sapi_get_default_content_type_header = (Module["_sapi_get_default_content_type_header"] =
       function () {
         return (_sapi_get_default_content_type_header = Module[
           "_sapi_get_default_content_type_header"
         ] =
-          Module["asm"]["y_"]).apply(null, arguments);
+          Module["asm"]["E_"]).apply(null, arguments);
       });
     var _sapi_apply_default_charset = (Module["_sapi_apply_default_charset"] = function () {
       return (_sapi_apply_default_charset = Module["_sapi_apply_default_charset"] =
-        Module["asm"]["z_"]).apply(null, arguments);
+        Module["asm"]["F_"]).apply(null, arguments);
     });
     var _sapi_activate_headers_only = (Module["_sapi_activate_headers_only"] = function () {
       return (_sapi_activate_headers_only = Module["_sapi_activate_headers_only"] =
-        Module["asm"]["A_"]).apply(null, arguments);
+        Module["asm"]["G_"]).apply(null, arguments);
     });
     var _sapi_register_post_entry = (Module["_sapi_register_post_entry"] = function () {
       return (_sapi_register_post_entry = Module["_sapi_register_post_entry"] =
-        Module["asm"]["B_"]).apply(null, arguments);
+        Module["asm"]["H_"]).apply(null, arguments);
     });
     var _sapi_unregister_post_entry = (Module["_sapi_unregister_post_entry"] = function () {
       return (_sapi_unregister_post_entry = Module["_sapi_unregister_post_entry"] =
-        Module["asm"]["C_"]).apply(null, arguments);
+        Module["asm"]["I_"]).apply(null, arguments);
     });
     var _sapi_get_fd = (Module["_sapi_get_fd"] = function () {
-      return (_sapi_get_fd = Module["_sapi_get_fd"] = Module["asm"]["D_"]).apply(null, arguments);
+      return (_sapi_get_fd = Module["_sapi_get_fd"] = Module["asm"]["J_"]).apply(null, arguments);
     });
     var _sapi_force_http_10 = (Module["_sapi_force_http_10"] = function () {
-      return (_sapi_force_http_10 = Module["_sapi_force_http_10"] = Module["asm"]["E_"]).apply(
+      return (_sapi_force_http_10 = Module["_sapi_force_http_10"] = Module["asm"]["K_"]).apply(
         null,
         arguments,
       );
     });
     var _sapi_get_target_uid = (Module["_sapi_get_target_uid"] = function () {
-      return (_sapi_get_target_uid = Module["_sapi_get_target_uid"] = Module["asm"]["F_"]).apply(
+      return (_sapi_get_target_uid = Module["_sapi_get_target_uid"] = Module["asm"]["L_"]).apply(
         null,
         arguments,
       );
     });
     var _sapi_get_target_gid = (Module["_sapi_get_target_gid"] = function () {
-      return (_sapi_get_target_gid = Module["_sapi_get_target_gid"] = Module["asm"]["G_"]).apply(
+      return (_sapi_get_target_gid = Module["_sapi_get_target_gid"] = Module["asm"]["M_"]).apply(
         null,
         arguments,
       );
     });
     var _sapi_terminate_process = (Module["_sapi_terminate_process"] = function () {
       return (_sapi_terminate_process = Module["_sapi_terminate_process"] =
-        Module["asm"]["H_"]).apply(null, arguments);
+        Module["asm"]["N_"]).apply(null, arguments);
     });
     var _sapi_add_request_header = (Module["_sapi_add_request_header"] = function () {
       return (_sapi_add_request_header = Module["_sapi_add_request_header"] =
-        Module["asm"]["I_"]).apply(null, arguments);
+        Module["asm"]["O_"]).apply(null, arguments);
     });
     var _ap_php_conv_10 = (Module["_ap_php_conv_10"] = function () {
-      return (_ap_php_conv_10 = Module["_ap_php_conv_10"] = Module["asm"]["J_"]).apply(
+      return (_ap_php_conv_10 = Module["_ap_php_conv_10"] = Module["asm"]["P_"]).apply(
         null,
         arguments,
       );
     });
     var _ap_php_conv_p2 = (Module["_ap_php_conv_p2"] = function () {
-      return (_ap_php_conv_p2 = Module["_ap_php_conv_p2"] = Module["asm"]["K_"]).apply(
+      return (_ap_php_conv_p2 = Module["_ap_php_conv_p2"] = Module["asm"]["Q_"]).apply(
         null,
         arguments,
       );
     });
     var _ap_php_vslprintf = (Module["_ap_php_vslprintf"] = function () {
-      return (_ap_php_vslprintf = Module["_ap_php_vslprintf"] = Module["asm"]["L_"]).apply(
+      return (_ap_php_vslprintf = Module["_ap_php_vslprintf"] = Module["asm"]["R_"]).apply(
         null,
         arguments,
       );
     });
     var _ap_php_vsnprintf = (Module["_ap_php_vsnprintf"] = function () {
-      return (_ap_php_vsnprintf = Module["_ap_php_vsnprintf"] = Module["asm"]["M_"]).apply(
+      return (_ap_php_vsnprintf = Module["_ap_php_vsnprintf"] = Module["asm"]["S_"]).apply(
         null,
         arguments,
       );
     });
     var _ap_php_vasprintf = (Module["_ap_php_vasprintf"] = function () {
-      return (_ap_php_vasprintf = Module["_ap_php_vasprintf"] = Module["asm"]["N_"]).apply(
+      return (_ap_php_vasprintf = Module["_ap_php_vasprintf"] = Module["asm"]["T_"]).apply(
         null,
         arguments,
       );
     });
     var _ap_php_asprintf = (Module["_ap_php_asprintf"] = function () {
-      return (_ap_php_asprintf = Module["_ap_php_asprintf"] = Module["asm"]["O_"]).apply(
+      return (_ap_php_asprintf = Module["_ap_php_asprintf"] = Module["asm"]["U_"]).apply(
         null,
         arguments,
       );
     });
     var _vasprintf = (Module["_vasprintf"] = function () {
-      return (_vasprintf = Module["_vasprintf"] = Module["asm"]["P_"]).apply(null, arguments);
+      return (_vasprintf = Module["_vasprintf"] = Module["asm"]["V_"]).apply(null, arguments);
     });
     var _zend_dtoa = (Module["_zend_dtoa"] = function () {
-      return (_zend_dtoa = Module["_zend_dtoa"] = Module["asm"]["Q_"]).apply(null, arguments);
+      return (_zend_dtoa = Module["_zend_dtoa"] = Module["asm"]["W_"]).apply(null, arguments);
     });
     var _zend_freedtoa = (Module["_zend_freedtoa"] = function () {
-      return (_zend_freedtoa = Module["_zend_freedtoa"] = Module["asm"]["R_"]).apply(
+      return (_zend_freedtoa = Module["_zend_freedtoa"] = Module["asm"]["X_"]).apply(
         null,
         arguments,
       );
     });
     var _strdup = (Module["_strdup"] = function () {
-      return (_strdup = Module["_strdup"] = Module["asm"]["S_"]).apply(null, arguments);
+      return (_strdup = Module["_strdup"] = Module["asm"]["Y_"]).apply(null, arguments);
     });
     var _isascii = (Module["_isascii"] = function () {
-      return (_isascii = Module["_isascii"] = Module["asm"]["T_"]).apply(null, arguments);
+      return (_isascii = Module["_isascii"] = Module["asm"]["Z_"]).apply(null, arguments);
     });
     var _fopencookie = (Module["_fopencookie"] = function () {
-      return (_fopencookie = Module["_fopencookie"] = Module["asm"]["U_"]).apply(null, arguments);
+      return (_fopencookie = Module["_fopencookie"] = Module["asm"]["__"]).apply(null, arguments);
     });
     var _fseek = (Module["_fseek"] = function () {
-      return (_fseek = Module["_fseek"] = Module["asm"]["V_"]).apply(null, arguments);
+      return (_fseek = Module["_fseek"] = Module["asm"]["$_"]).apply(null, arguments);
     });
     var __php_stream_make_seekable = (Module["__php_stream_make_seekable"] = function () {
       return (__php_stream_make_seekable = Module["__php_stream_make_seekable"] =
-        Module["asm"]["W_"]).apply(null, arguments);
+        Module["asm"]["a$"]).apply(null, arguments);
     });
     var _php_stream_bucket_split = (Module["_php_stream_bucket_split"] = function () {
       return (_php_stream_bucket_split = Module["_php_stream_bucket_split"] =
-        Module["asm"]["X_"]).apply(null, arguments);
+        Module["asm"]["b$"]).apply(null, arguments);
     });
     var __php_stream_filter_prepend = (Module["__php_stream_filter_prepend"] = function () {
       return (__php_stream_filter_prepend = Module["__php_stream_filter_prepend"] =
-        Module["asm"]["Y_"]).apply(null, arguments);
+        Module["asm"]["c$"]).apply(null, arguments);
     });
     var __php_glob_stream_get_pattern = (Module["__php_glob_stream_get_pattern"] = function () {
       return (__php_glob_stream_get_pattern = Module["__php_glob_stream_get_pattern"] =
-        Module["asm"]["Z_"]).apply(null, arguments);
+        Module["asm"]["d$"]).apply(null, arguments);
     });
     var __php_stream_mode_to_str = (Module["__php_stream_mode_to_str"] = function () {
       return (__php_stream_mode_to_str = Module["__php_stream_mode_to_str"] =
-        Module["asm"]["__"]).apply(null, arguments);
+        Module["asm"]["e$"]).apply(null, arguments);
     });
     var __php_stream_memory_get_buffer = (Module["__php_stream_memory_get_buffer"] = function () {
       return (__php_stream_memory_get_buffer = Module["__php_stream_memory_get_buffer"] =
-        Module["asm"]["$_"]).apply(null, arguments);
+        Module["asm"]["f$"]).apply(null, arguments);
     });
     var _php_stream_encloses = (Module["_php_stream_encloses"] = function () {
-      return (_php_stream_encloses = Module["_php_stream_encloses"] = Module["asm"]["a$"]).apply(
+      return (_php_stream_encloses = Module["_php_stream_encloses"] = Module["asm"]["g$"]).apply(
         null,
         arguments,
       );
     });
     var __php_stream_temp_open = (Module["__php_stream_temp_open"] = function () {
       return (__php_stream_temp_open = Module["__php_stream_temp_open"] =
-        Module["asm"]["b$"]).apply(null, arguments);
+        Module["asm"]["h$"]).apply(null, arguments);
     });
     var __php_stream_fopen_temporary_file = (Module["__php_stream_fopen_temporary_file"] =
       function () {
         return (__php_stream_fopen_temporary_file = Module["__php_stream_fopen_temporary_file"] =
-          Module["asm"]["c$"]).apply(null, arguments);
+          Module["asm"]["i$"]).apply(null, arguments);
       });
     var __php_stream_free_enclosed = (Module["__php_stream_free_enclosed"] = function () {
       return (__php_stream_free_enclosed = Module["__php_stream_free_enclosed"] =
-        Module["asm"]["d$"]).apply(null, arguments);
+        Module["asm"]["j$"]).apply(null, arguments);
     });
     var __php_stream_mmap_range = (Module["__php_stream_mmap_range"] = function () {
       return (__php_stream_mmap_range = Module["__php_stream_mmap_range"] =
-        Module["asm"]["e$"]).apply(null, arguments);
+        Module["asm"]["k$"]).apply(null, arguments);
     });
     var __php_stream_mmap_unmap = (Module["__php_stream_mmap_unmap"] = function () {
       return (__php_stream_mmap_unmap = Module["__php_stream_mmap_unmap"] =
-        Module["asm"]["f$"]).apply(null, arguments);
+        Module["asm"]["l$"]).apply(null, arguments);
     });
     var __php_stream_mmap_unmap_ex = (Module["__php_stream_mmap_unmap_ex"] = function () {
       return (__php_stream_mmap_unmap_ex = Module["__php_stream_mmap_unmap_ex"] =
-        Module["asm"]["g$"]).apply(null, arguments);
+        Module["asm"]["m$"]).apply(null, arguments);
     });
     var _php_stream_parse_fopen_modes = (Module["_php_stream_parse_fopen_modes"] = function () {
       return (_php_stream_parse_fopen_modes = Module["_php_stream_parse_fopen_modes"] =
-        Module["asm"]["h$"]).apply(null, arguments);
+        Module["asm"]["n$"]).apply(null, arguments);
     });
     var _ftell = (Module["_ftell"] = function () {
-      return (_ftell = Module["_ftell"] = Module["asm"]["i$"]).apply(null, arguments);
+      return (_ftell = Module["_ftell"] = Module["asm"]["o$"]).apply(null, arguments);
     });
     var __php_stream_fopen = (Module["__php_stream_fopen"] = function () {
-      return (__php_stream_fopen = Module["__php_stream_fopen"] = Module["asm"]["j$"]).apply(
+      return (__php_stream_fopen = Module["__php_stream_fopen"] = Module["asm"]["p$"]).apply(
         null,
         arguments,
       );
     });
     var _php_stream_from_persistent_id = (Module["_php_stream_from_persistent_id"] = function () {
       return (_php_stream_from_persistent_id = Module["_php_stream_from_persistent_id"] =
-        Module["asm"]["k$"]).apply(null, arguments);
+        Module["asm"]["q$"]).apply(null, arguments);
     });
     var __php_stream_fopen_with_path = (Module["__php_stream_fopen_with_path"] = function () {
       return (__php_stream_fopen_with_path = Module["__php_stream_fopen_with_path"] =
-        Module["asm"]["l$"]).apply(null, arguments);
+        Module["asm"]["r$"]).apply(null, arguments);
     });
     var _fread = (Module["_fread"] = function () {
-      return (_fread = Module["_fread"] = Module["asm"]["m$"]).apply(null, arguments);
+      return (_fread = Module["_fread"] = Module["asm"]["s$"]).apply(null, arguments);
     });
     var _feof = (Module["_feof"] = function () {
-      return (_feof = Module["_feof"] = Module["asm"]["n$"]).apply(null, arguments);
+      return (_feof = Module["_feof"] = Module["asm"]["t$"]).apply(null, arguments);
     });
     var _setvbuf = (Module["_setvbuf"] = function () {
-      return (_setvbuf = Module["_setvbuf"] = Module["asm"]["o$"]).apply(null, arguments);
+      return (_setvbuf = Module["_setvbuf"] = Module["asm"]["u$"]).apply(null, arguments);
     });
     var _fdatasync = (Module["_fdatasync"] = function () {
-      return (_fdatasync = Module["_fdatasync"] = Module["asm"]["p$"]).apply(null, arguments);
+      return (_fdatasync = Module["_fdatasync"] = Module["asm"]["v$"]).apply(null, arguments);
     });
     var _fsync = (Module["_fsync"] = function () {
-      return (_fsync = Module["_fsync"] = Module["asm"]["q$"]).apply(null, arguments);
+      return (_fsync = Module["_fsync"] = Module["asm"]["w$"]).apply(null, arguments);
     });
     var _rewinddir = (Module["_rewinddir"] = function () {
-      return (_rewinddir = Module["_rewinddir"] = Module["asm"]["r$"]).apply(null, arguments);
+      return (_rewinddir = Module["_rewinddir"] = Module["asm"]["x$"]).apply(null, arguments);
     });
     var _rmdir = (Module["_rmdir"] = function () {
-      return (_rmdir = Module["_rmdir"] = Module["asm"]["s$"]).apply(null, arguments);
+      return (_rmdir = Module["_rmdir"] = Module["asm"]["y$"]).apply(null, arguments);
     });
     var __php_stream_fill_read_buffer = (Module["__php_stream_fill_read_buffer"] = function () {
       return (__php_stream_fill_read_buffer = Module["__php_stream_fill_read_buffer"] =
-        Module["asm"]["t$"]).apply(null, arguments);
+        Module["asm"]["z$"]).apply(null, arguments);
     });
     var __php_stream_putc = (Module["__php_stream_putc"] = function () {
-      return (__php_stream_putc = Module["__php_stream_putc"] = Module["asm"]["u$"]).apply(
+      return (__php_stream_putc = Module["__php_stream_putc"] = Module["asm"]["A$"]).apply(
         null,
         arguments,
       );
     });
     var __php_stream_puts = (Module["__php_stream_puts"] = function () {
-      return (__php_stream_puts = Module["__php_stream_puts"] = Module["asm"]["v$"]).apply(
+      return (__php_stream_puts = Module["__php_stream_puts"] = Module["asm"]["B$"]).apply(
         null,
         arguments,
       );
     });
     var __php_stream_copy_to_stream = (Module["__php_stream_copy_to_stream"] = function () {
       return (__php_stream_copy_to_stream = Module["__php_stream_copy_to_stream"] =
-        Module["asm"]["w$"]).apply(null, arguments);
+        Module["asm"]["C$"]).apply(null, arguments);
     });
     var _php_stream_xport_register = (Module["_php_stream_xport_register"] = function () {
       return (_php_stream_xport_register = Module["_php_stream_xport_register"] =
-        Module["asm"]["x$"]).apply(null, arguments);
+        Module["asm"]["D$"]).apply(null, arguments);
     });
     var _php_stream_generic_socket_factory = (Module["_php_stream_generic_socket_factory"] =
       function () {
         return (_php_stream_generic_socket_factory = Module["_php_stream_generic_socket_factory"] =
-          Module["asm"]["y$"]).apply(null, arguments);
+          Module["asm"]["E$"]).apply(null, arguments);
       });
     var _php_register_url_stream_wrapper_volatile = (Module[
       "_php_register_url_stream_wrapper_volatile"
@@ -20850,7 +20882,7 @@ var PHP = (() => {
       return (_php_register_url_stream_wrapper_volatile = Module[
         "_php_register_url_stream_wrapper_volatile"
       ] =
-        Module["asm"]["z$"]).apply(null, arguments);
+        Module["asm"]["F$"]).apply(null, arguments);
     });
     var _php_unregister_url_stream_wrapper_volatile = (Module[
       "_php_unregister_url_stream_wrapper_volatile"
@@ -20858,99 +20890,99 @@ var PHP = (() => {
       return (_php_unregister_url_stream_wrapper_volatile = Module[
         "_php_unregister_url_stream_wrapper_volatile"
       ] =
-        Module["asm"]["A$"]).apply(null, arguments);
+        Module["asm"]["G$"]).apply(null, arguments);
     });
     var _zend_llist_count = (Module["_zend_llist_count"] = function () {
-      return (_zend_llist_count = Module["_zend_llist_count"] = Module["asm"]["B$"]).apply(
+      return (_zend_llist_count = Module["_zend_llist_count"] = Module["asm"]["H$"]).apply(
         null,
         arguments,
       );
     });
     var _php_stream_xport_unregister = (Module["_php_stream_xport_unregister"] = function () {
       return (_php_stream_xport_unregister = Module["_php_stream_xport_unregister"] =
-        Module["asm"]["C$"]).apply(null, arguments);
+        Module["asm"]["I$"]).apply(null, arguments);
     });
     var _php_stream_xport_connect = (Module["_php_stream_xport_connect"] = function () {
       return (_php_stream_xport_connect = Module["_php_stream_xport_connect"] =
-        Module["asm"]["D$"]).apply(null, arguments);
+        Module["asm"]["J$"]).apply(null, arguments);
     });
     var _php_stream_xport_bind = (Module["_php_stream_xport_bind"] = function () {
       return (_php_stream_xport_bind = Module["_php_stream_xport_bind"] =
-        Module["asm"]["E$"]).apply(null, arguments);
+        Module["asm"]["K$"]).apply(null, arguments);
     });
     var _php_stream_xport_listen = (Module["_php_stream_xport_listen"] = function () {
       return (_php_stream_xport_listen = Module["_php_stream_xport_listen"] =
-        Module["asm"]["F$"]).apply(null, arguments);
+        Module["asm"]["L$"]).apply(null, arguments);
     });
     var _add_property_resource_ex = (Module["_add_property_resource_ex"] = function () {
       return (_add_property_resource_ex = Module["_add_property_resource_ex"] =
-        Module["asm"]["G$"]).apply(null, arguments);
+        Module["asm"]["M$"]).apply(null, arguments);
     });
     var _send = (Module["_send"] = function () {
-      return (_send = Module["_send"] = Module["asm"]["H$"]).apply(null, arguments);
+      return (_send = Module["_send"] = Module["asm"]["N$"]).apply(null, arguments);
     });
     var _recv = (Module["_recv"] = function () {
-      return (_recv = Module["_recv"] = Module["asm"]["I$"]).apply(null, arguments);
+      return (_recv = Module["_recv"] = Module["asm"]["O$"]).apply(null, arguments);
     });
     var _listen = (Module["_listen"] = function () {
-      return (_listen = Module["_listen"] = Module["asm"]["J$"]).apply(null, arguments);
+      return (_listen = Module["_listen"] = Module["asm"]["P$"]).apply(null, arguments);
     });
     var _shutdown = (Module["_shutdown"] = function () {
-      return (_shutdown = Module["_shutdown"] = Module["asm"]["K$"]).apply(null, arguments);
+      return (_shutdown = Module["_shutdown"] = Module["asm"]["Q$"]).apply(null, arguments);
     });
     var _sendto = (Module["_sendto"] = function () {
-      return (_sendto = Module["_sendto"] = Module["asm"]["L$"]).apply(null, arguments);
+      return (_sendto = Module["_sendto"] = Module["asm"]["R$"]).apply(null, arguments);
     });
     var _recvfrom = (Module["_recvfrom"] = function () {
-      return (_recvfrom = Module["_recvfrom"] = Module["asm"]["M$"]).apply(null, arguments);
+      return (_recvfrom = Module["_recvfrom"] = Module["asm"]["S$"]).apply(null, arguments);
     });
     var _zend_build_cfg = (Module["_zend_build_cfg"] = function () {
-      return (_zend_build_cfg = Module["_zend_build_cfg"] = Module["asm"]["N$"]).apply(
+      return (_zend_build_cfg = Module["_zend_build_cfg"] = Module["asm"]["T$"]).apply(
         null,
         arguments,
       );
     });
     var _zend_dump_op_array = (Module["_zend_dump_op_array"] = function () {
-      return (_zend_dump_op_array = Module["_zend_dump_op_array"] = Module["asm"]["O$"]).apply(
+      return (_zend_dump_op_array = Module["_zend_dump_op_array"] = Module["asm"]["U$"]).apply(
         null,
         arguments,
       );
     });
     var __zend_get_special_const = (Module["__zend_get_special_const"] = function () {
       return (__zend_get_special_const = Module["__zend_get_special_const"] =
-        Module["asm"]["P$"]).apply(null, arguments);
+        Module["asm"]["V$"]).apply(null, arguments);
     });
     var _zend_create_member_string = (Module["_zend_create_member_string"] = function () {
       return (_zend_create_member_string = Module["_zend_create_member_string"] =
-        Module["asm"]["Q$"]).apply(null, arguments);
+        Module["asm"]["W$"]).apply(null, arguments);
     });
     var _zend_may_throw = (Module["_zend_may_throw"] = function () {
-      return (_zend_may_throw = Module["_zend_may_throw"] = Module["asm"]["R$"]).apply(
+      return (_zend_may_throw = Module["_zend_may_throw"] = Module["asm"]["X$"]).apply(
         null,
         arguments,
       );
     });
     var _zend_array_type_info = (Module["_zend_array_type_info"] = function () {
-      return (_zend_array_type_info = Module["_zend_array_type_info"] = Module["asm"]["S$"]).apply(
+      return (_zend_array_type_info = Module["_zend_array_type_info"] = Module["asm"]["Y$"]).apply(
         null,
         arguments,
       );
     });
     var _zend_cfg_build_predecessors = (Module["_zend_cfg_build_predecessors"] = function () {
       return (_zend_cfg_build_predecessors = Module["_zend_cfg_build_predecessors"] =
-        Module["asm"]["T$"]).apply(null, arguments);
+        Module["asm"]["Z$"]).apply(null, arguments);
     });
     var _zend_cfg_compute_dominators_tree = (Module["_zend_cfg_compute_dominators_tree"] =
       function () {
         return (_zend_cfg_compute_dominators_tree = Module["_zend_cfg_compute_dominators_tree"] =
-          Module["asm"]["U$"]).apply(null, arguments);
+          Module["asm"]["_$"]).apply(null, arguments);
       });
     var _zend_cfg_identify_loops = (Module["_zend_cfg_identify_loops"] = function () {
       return (_zend_cfg_identify_loops = Module["_zend_cfg_identify_loops"] =
-        Module["asm"]["V$"]).apply(null, arguments);
+        Module["asm"]["$$"]).apply(null, arguments);
     });
     var _zend_build_ssa = (Module["_zend_build_ssa"] = function () {
-      return (_zend_build_ssa = Module["_zend_build_ssa"] = Module["asm"]["W$"]).apply(
+      return (_zend_build_ssa = Module["_zend_build_ssa"] = Module["asm"]["a0"]).apply(
         null,
         arguments,
       );
@@ -20958,410 +20990,410 @@ var PHP = (() => {
     var _zend_ssa_compute_use_def_chains = (Module["_zend_ssa_compute_use_def_chains"] =
       function () {
         return (_zend_ssa_compute_use_def_chains = Module["_zend_ssa_compute_use_def_chains"] =
-          Module["asm"]["X$"]).apply(null, arguments);
+          Module["asm"]["b0"]).apply(null, arguments);
       });
     var _zend_ssa_find_false_dependencies = (Module["_zend_ssa_find_false_dependencies"] =
       function () {
         return (_zend_ssa_find_false_dependencies = Module["_zend_ssa_find_false_dependencies"] =
-          Module["asm"]["Y$"]).apply(null, arguments);
+          Module["asm"]["c0"]).apply(null, arguments);
       });
     var _zend_ssa_find_sccs = (Module["_zend_ssa_find_sccs"] = function () {
-      return (_zend_ssa_find_sccs = Module["_zend_ssa_find_sccs"] = Module["asm"]["Z$"]).apply(
+      return (_zend_ssa_find_sccs = Module["_zend_ssa_find_sccs"] = Module["asm"]["d0"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ssa_inference = (Module["_zend_ssa_inference"] = function () {
-      return (_zend_ssa_inference = Module["_zend_ssa_inference"] = Module["asm"]["_$"]).apply(
+      return (_zend_ssa_inference = Module["_zend_ssa_inference"] = Module["asm"]["e0"]).apply(
         null,
         arguments,
       );
     });
     var _zend_std_get_constructor = (Module["_zend_std_get_constructor"] = function () {
       return (_zend_std_get_constructor = Module["_zend_std_get_constructor"] =
-        Module["asm"]["$$"]).apply(null, arguments);
+        Module["asm"]["f0"]).apply(null, arguments);
     });
     var _zend_get_call_op = (Module["_zend_get_call_op"] = function () {
-      return (_zend_get_call_op = Module["_zend_get_call_op"] = Module["asm"]["a0"]).apply(
+      return (_zend_get_call_op = Module["_zend_get_call_op"] = Module["asm"]["g0"]).apply(
         null,
         arguments,
       );
     });
     var _zend_dump_var = (Module["_zend_dump_var"] = function () {
-      return (_zend_dump_var = Module["_zend_dump_var"] = Module["asm"]["b0"]).apply(
+      return (_zend_dump_var = Module["_zend_dump_var"] = Module["asm"]["h0"]).apply(
         null,
         arguments,
       );
     });
     var _increment_function = (Module["_increment_function"] = function () {
-      return (_increment_function = Module["_increment_function"] = Module["asm"]["c0"]).apply(
+      return (_increment_function = Module["_increment_function"] = Module["asm"]["i0"]).apply(
         null,
         arguments,
       );
     });
     var _decrement_function = (Module["_decrement_function"] = function () {
-      return (_decrement_function = Module["_decrement_function"] = Module["asm"]["d0"]).apply(
+      return (_decrement_function = Module["_decrement_function"] = Module["asm"]["j0"]).apply(
         null,
         arguments,
       );
     });
     var _zend_analyze_calls = (Module["_zend_analyze_calls"] = function () {
-      return (_zend_analyze_calls = Module["_zend_analyze_calls"] = Module["asm"]["e0"]).apply(
+      return (_zend_analyze_calls = Module["_zend_analyze_calls"] = Module["asm"]["k0"]).apply(
         null,
         arguments,
       );
     });
     var _zend_build_call_graph = (Module["_zend_build_call_graph"] = function () {
       return (_zend_build_call_graph = Module["_zend_build_call_graph"] =
-        Module["asm"]["f0"]).apply(null, arguments);
+        Module["asm"]["l0"]).apply(null, arguments);
     });
     var _zend_analyze_call_graph = (Module["_zend_analyze_call_graph"] = function () {
       return (_zend_analyze_call_graph = Module["_zend_analyze_call_graph"] =
-        Module["asm"]["g0"]).apply(null, arguments);
+        Module["asm"]["m0"]).apply(null, arguments);
     });
     var _zend_build_call_map = (Module["_zend_build_call_map"] = function () {
-      return (_zend_build_call_map = Module["_zend_build_call_map"] = Module["asm"]["h0"]).apply(
+      return (_zend_build_call_map = Module["_zend_build_call_map"] = Module["asm"]["n0"]).apply(
         null,
         arguments,
       );
     });
     var _zend_dfg_add_use_def_op = (Module["_zend_dfg_add_use_def_op"] = function () {
       return (_zend_dfg_add_use_def_op = Module["_zend_dfg_add_use_def_op"] =
-        Module["asm"]["i0"]).apply(null, arguments);
+        Module["asm"]["o0"]).apply(null, arguments);
     });
     var _putc = (Module["_putc"] = function () {
-      return (_putc = Module["_putc"] = Module["asm"]["j0"]).apply(null, arguments);
+      return (_putc = Module["_putc"] = Module["asm"]["p0"]).apply(null, arguments);
     });
     var _zend_dump_ssa_var = (Module["_zend_dump_ssa_var"] = function () {
-      return (_zend_dump_ssa_var = Module["_zend_dump_ssa_var"] = Module["asm"]["k0"]).apply(
+      return (_zend_dump_ssa_var = Module["_zend_dump_ssa_var"] = Module["asm"]["q0"]).apply(
         null,
         arguments,
       );
     });
     var _zend_dump_op = (Module["_zend_dump_op"] = function () {
-      return (_zend_dump_op = Module["_zend_dump_op"] = Module["asm"]["l0"]).apply(null, arguments);
+      return (_zend_dump_op = Module["_zend_dump_op"] = Module["asm"]["r0"]).apply(null, arguments);
     });
     var _zend_get_opcode_name = (Module["_zend_get_opcode_name"] = function () {
-      return (_zend_get_opcode_name = Module["_zend_get_opcode_name"] = Module["asm"]["m0"]).apply(
+      return (_zend_get_opcode_name = Module["_zend_get_opcode_name"] = Module["asm"]["s0"]).apply(
         null,
         arguments,
       );
     });
     var _zend_get_opcode_flags = (Module["_zend_get_opcode_flags"] = function () {
       return (_zend_get_opcode_flags = Module["_zend_get_opcode_flags"] =
-        Module["asm"]["n0"]).apply(null, arguments);
+        Module["asm"]["t0"]).apply(null, arguments);
     });
     var _zend_dump_op_line = (Module["_zend_dump_op_line"] = function () {
-      return (_zend_dump_op_line = Module["_zend_dump_op_line"] = Module["asm"]["o0"]).apply(
+      return (_zend_dump_op_line = Module["_zend_dump_op_line"] = Module["asm"]["u0"]).apply(
         null,
         arguments,
       );
     });
     var _zend_get_func_info = (Module["_zend_get_func_info"] = function () {
-      return (_zend_get_func_info = Module["_zend_get_func_info"] = Module["asm"]["p0"]).apply(
+      return (_zend_get_func_info = Module["_zend_get_func_info"] = Module["asm"]["v0"]).apply(
         null,
         arguments,
       );
     });
     var _zend_get_resource_handle = (Module["_zend_get_resource_handle"] = function () {
       return (_zend_get_resource_handle = Module["_zend_get_resource_handle"] =
-        Module["asm"]["q0"]).apply(null, arguments);
+        Module["asm"]["w0"]).apply(null, arguments);
     });
     var _zend_inference_propagate_range = (Module["_zend_inference_propagate_range"] = function () {
       return (_zend_inference_propagate_range = Module["_zend_inference_propagate_range"] =
-        Module["asm"]["r0"]).apply(null, arguments);
+        Module["asm"]["x0"]).apply(null, arguments);
     });
     var _zend_array_element_type = (Module["_zend_array_element_type"] = function () {
       return (_zend_array_element_type = Module["_zend_array_element_type"] =
-        Module["asm"]["s0"]).apply(null, arguments);
+        Module["asm"]["y0"]).apply(null, arguments);
     });
     var _zend_fetch_arg_info_type = (Module["_zend_fetch_arg_info_type"] = function () {
       return (_zend_fetch_arg_info_type = Module["_zend_fetch_arg_info_type"] =
-        Module["asm"]["t0"]).apply(null, arguments);
+        Module["asm"]["z0"]).apply(null, arguments);
     });
     var _zend_update_type_info = (Module["_zend_update_type_info"] = function () {
       return (_zend_update_type_info = Module["_zend_update_type_info"] =
-        Module["asm"]["u0"]).apply(null, arguments);
+        Module["asm"]["A0"]).apply(null, arguments);
     });
     var _zend_init_func_return_info = (Module["_zend_init_func_return_info"] = function () {
       return (_zend_init_func_return_info = Module["_zend_init_func_return_info"] =
-        Module["asm"]["v0"]).apply(null, arguments);
+        Module["asm"]["B0"]).apply(null, arguments);
     });
     var _zend_may_throw_ex = (Module["_zend_may_throw_ex"] = function () {
-      return (_zend_may_throw_ex = Module["_zend_may_throw_ex"] = Module["asm"]["w0"]).apply(
+      return (_zend_may_throw_ex = Module["_zend_may_throw_ex"] = Module["asm"]["C0"]).apply(
         null,
         arguments,
       );
     });
     var _get_binary_op = (Module["_get_binary_op"] = function () {
-      return (_get_binary_op = Module["_get_binary_op"] = Module["asm"]["x0"]).apply(
+      return (_get_binary_op = Module["_get_binary_op"] = Module["asm"]["D0"]).apply(
         null,
         arguments,
       );
     });
     var _zend_binary_op_produces_error = (Module["_zend_binary_op_produces_error"] = function () {
       return (_zend_binary_op_produces_error = Module["_zend_binary_op_produces_error"] =
-        Module["asm"]["y0"]).apply(null, arguments);
+        Module["asm"]["E0"]).apply(null, arguments);
     });
     var _get_unary_op = (Module["_get_unary_op"] = function () {
-      return (_get_unary_op = Module["_get_unary_op"] = Module["asm"]["z0"]).apply(null, arguments);
+      return (_get_unary_op = Module["_get_unary_op"] = Module["asm"]["F0"]).apply(null, arguments);
     });
     var _zend_unary_op_produces_error = (Module["_zend_unary_op_produces_error"] = function () {
       return (_zend_unary_op_produces_error = Module["_zend_unary_op_produces_error"] =
-        Module["asm"]["A0"]).apply(null, arguments);
+        Module["asm"]["G0"]).apply(null, arguments);
     });
     var _zend_recalc_live_ranges = (Module["_zend_recalc_live_ranges"] = function () {
       return (_zend_recalc_live_ranges = Module["_zend_recalc_live_ranges"] =
-        Module["asm"]["B0"]).apply(null, arguments);
+        Module["asm"]["H0"]).apply(null, arguments);
     });
     var _zend_optimizer_register_pass = (Module["_zend_optimizer_register_pass"] = function () {
       return (_zend_optimizer_register_pass = Module["_zend_optimizer_register_pass"] =
-        Module["asm"]["C0"]).apply(null, arguments);
+        Module["asm"]["I0"]).apply(null, arguments);
     });
     var _zend_optimizer_unregister_pass = (Module["_zend_optimizer_unregister_pass"] = function () {
       return (_zend_optimizer_unregister_pass = Module["_zend_optimizer_unregister_pass"] =
-        Module["asm"]["D0"]).apply(null, arguments);
+        Module["asm"]["J0"]).apply(null, arguments);
     });
     var _zend_ssa_rename_op = (Module["_zend_ssa_rename_op"] = function () {
-      return (_zend_ssa_rename_op = Module["_zend_ssa_rename_op"] = Module["asm"]["E0"]).apply(
+      return (_zend_ssa_rename_op = Module["_zend_ssa_rename_op"] = Module["asm"]["K0"]).apply(
         null,
         arguments,
       );
     });
     var _zend_mm_refresh_key_child = (Module["_zend_mm_refresh_key_child"] = function () {
       return (_zend_mm_refresh_key_child = Module["_zend_mm_refresh_key_child"] =
-        Module["asm"]["F0"]).apply(null, arguments);
+        Module["asm"]["L0"]).apply(null, arguments);
     });
     var _zend_mm_gc = (Module["_zend_mm_gc"] = function () {
-      return (_zend_mm_gc = Module["_zend_mm_gc"] = Module["asm"]["G0"]).apply(null, arguments);
+      return (_zend_mm_gc = Module["_zend_mm_gc"] = Module["asm"]["M0"]).apply(null, arguments);
     });
     var _zend_mm_shutdown = (Module["_zend_mm_shutdown"] = function () {
-      return (_zend_mm_shutdown = Module["_zend_mm_shutdown"] = Module["asm"]["H0"]).apply(
+      return (_zend_mm_shutdown = Module["_zend_mm_shutdown"] = Module["asm"]["N0"]).apply(
         null,
         arguments,
       );
     });
     var ___zend_free = (Module["___zend_free"] = function () {
-      return (___zend_free = Module["___zend_free"] = Module["asm"]["I0"]).apply(null, arguments);
+      return (___zend_free = Module["___zend_free"] = Module["asm"]["O0"]).apply(null, arguments);
     });
     var __zend_mm_alloc = (Module["__zend_mm_alloc"] = function () {
-      return (__zend_mm_alloc = Module["__zend_mm_alloc"] = Module["asm"]["J0"]).apply(
+      return (__zend_mm_alloc = Module["__zend_mm_alloc"] = Module["asm"]["P0"]).apply(
         null,
         arguments,
       );
     });
     var __zend_mm_free = (Module["__zend_mm_free"] = function () {
-      return (__zend_mm_free = Module["__zend_mm_free"] = Module["asm"]["K0"]).apply(
+      return (__zend_mm_free = Module["__zend_mm_free"] = Module["asm"]["Q0"]).apply(
         null,
         arguments,
       );
     });
     var __zend_mm_realloc = (Module["__zend_mm_realloc"] = function () {
-      return (__zend_mm_realloc = Module["__zend_mm_realloc"] = Module["asm"]["L0"]).apply(
+      return (__zend_mm_realloc = Module["__zend_mm_realloc"] = Module["asm"]["R0"]).apply(
         null,
         arguments,
       );
     });
     var __zend_mm_realloc2 = (Module["__zend_mm_realloc2"] = function () {
-      return (__zend_mm_realloc2 = Module["__zend_mm_realloc2"] = Module["asm"]["M0"]).apply(
+      return (__zend_mm_realloc2 = Module["__zend_mm_realloc2"] = Module["asm"]["S0"]).apply(
         null,
         arguments,
       );
     });
     var __zend_mm_block_size = (Module["__zend_mm_block_size"] = function () {
-      return (__zend_mm_block_size = Module["__zend_mm_block_size"] = Module["asm"]["N0"]).apply(
+      return (__zend_mm_block_size = Module["__zend_mm_block_size"] = Module["asm"]["T0"]).apply(
         null,
         arguments,
       );
     });
     var _is_zend_ptr = (Module["_is_zend_ptr"] = function () {
-      return (_is_zend_ptr = Module["_is_zend_ptr"] = Module["asm"]["O0"]).apply(null, arguments);
+      return (_is_zend_ptr = Module["_is_zend_ptr"] = Module["asm"]["U0"]).apply(null, arguments);
     });
     var __efree_8 = (Module["__efree_8"] = function () {
-      return (__efree_8 = Module["__efree_8"] = Module["asm"]["P0"]).apply(null, arguments);
+      return (__efree_8 = Module["__efree_8"] = Module["asm"]["V0"]).apply(null, arguments);
     });
     var __efree_16 = (Module["__efree_16"] = function () {
-      return (__efree_16 = Module["__efree_16"] = Module["asm"]["Q0"]).apply(null, arguments);
+      return (__efree_16 = Module["__efree_16"] = Module["asm"]["W0"]).apply(null, arguments);
     });
     var __efree_24 = (Module["__efree_24"] = function () {
-      return (__efree_24 = Module["__efree_24"] = Module["asm"]["R0"]).apply(null, arguments);
+      return (__efree_24 = Module["__efree_24"] = Module["asm"]["X0"]).apply(null, arguments);
     });
     var __efree_40 = (Module["__efree_40"] = function () {
-      return (__efree_40 = Module["__efree_40"] = Module["asm"]["S0"]).apply(null, arguments);
+      return (__efree_40 = Module["__efree_40"] = Module["asm"]["Y0"]).apply(null, arguments);
     });
     var __efree_56 = (Module["__efree_56"] = function () {
-      return (__efree_56 = Module["__efree_56"] = Module["asm"]["T0"]).apply(null, arguments);
+      return (__efree_56 = Module["__efree_56"] = Module["asm"]["Z0"]).apply(null, arguments);
     });
     var __efree_64 = (Module["__efree_64"] = function () {
-      return (__efree_64 = Module["__efree_64"] = Module["asm"]["U0"]).apply(null, arguments);
+      return (__efree_64 = Module["__efree_64"] = Module["asm"]["_0"]).apply(null, arguments);
     });
     var __efree_80 = (Module["__efree_80"] = function () {
-      return (__efree_80 = Module["__efree_80"] = Module["asm"]["V0"]).apply(null, arguments);
+      return (__efree_80 = Module["__efree_80"] = Module["asm"]["$0"]).apply(null, arguments);
     });
     var __efree_96 = (Module["__efree_96"] = function () {
-      return (__efree_96 = Module["__efree_96"] = Module["asm"]["W0"]).apply(null, arguments);
+      return (__efree_96 = Module["__efree_96"] = Module["asm"]["a1"]).apply(null, arguments);
     });
     var __efree_112 = (Module["__efree_112"] = function () {
-      return (__efree_112 = Module["__efree_112"] = Module["asm"]["X0"]).apply(null, arguments);
+      return (__efree_112 = Module["__efree_112"] = Module["asm"]["b1"]).apply(null, arguments);
     });
     var __efree_128 = (Module["__efree_128"] = function () {
-      return (__efree_128 = Module["__efree_128"] = Module["asm"]["Y0"]).apply(null, arguments);
+      return (__efree_128 = Module["__efree_128"] = Module["asm"]["c1"]).apply(null, arguments);
     });
     var __efree_192 = (Module["__efree_192"] = function () {
-      return (__efree_192 = Module["__efree_192"] = Module["asm"]["Z0"]).apply(null, arguments);
+      return (__efree_192 = Module["__efree_192"] = Module["asm"]["d1"]).apply(null, arguments);
     });
     var __efree_224 = (Module["__efree_224"] = function () {
-      return (__efree_224 = Module["__efree_224"] = Module["asm"]["_0"]).apply(null, arguments);
+      return (__efree_224 = Module["__efree_224"] = Module["asm"]["e1"]).apply(null, arguments);
     });
     var __efree_256 = (Module["__efree_256"] = function () {
-      return (__efree_256 = Module["__efree_256"] = Module["asm"]["$0"]).apply(null, arguments);
+      return (__efree_256 = Module["__efree_256"] = Module["asm"]["f1"]).apply(null, arguments);
     });
     var __efree_320 = (Module["__efree_320"] = function () {
-      return (__efree_320 = Module["__efree_320"] = Module["asm"]["a1"]).apply(null, arguments);
+      return (__efree_320 = Module["__efree_320"] = Module["asm"]["g1"]).apply(null, arguments);
     });
     var __efree_384 = (Module["__efree_384"] = function () {
-      return (__efree_384 = Module["__efree_384"] = Module["asm"]["b1"]).apply(null, arguments);
+      return (__efree_384 = Module["__efree_384"] = Module["asm"]["h1"]).apply(null, arguments);
     });
     var __efree_448 = (Module["__efree_448"] = function () {
-      return (__efree_448 = Module["__efree_448"] = Module["asm"]["c1"]).apply(null, arguments);
+      return (__efree_448 = Module["__efree_448"] = Module["asm"]["i1"]).apply(null, arguments);
     });
     var __efree_512 = (Module["__efree_512"] = function () {
-      return (__efree_512 = Module["__efree_512"] = Module["asm"]["d1"]).apply(null, arguments);
+      return (__efree_512 = Module["__efree_512"] = Module["asm"]["j1"]).apply(null, arguments);
     });
     var __efree_640 = (Module["__efree_640"] = function () {
-      return (__efree_640 = Module["__efree_640"] = Module["asm"]["e1"]).apply(null, arguments);
+      return (__efree_640 = Module["__efree_640"] = Module["asm"]["k1"]).apply(null, arguments);
     });
     var __efree_768 = (Module["__efree_768"] = function () {
-      return (__efree_768 = Module["__efree_768"] = Module["asm"]["f1"]).apply(null, arguments);
+      return (__efree_768 = Module["__efree_768"] = Module["asm"]["l1"]).apply(null, arguments);
     });
     var __efree_896 = (Module["__efree_896"] = function () {
-      return (__efree_896 = Module["__efree_896"] = Module["asm"]["g1"]).apply(null, arguments);
+      return (__efree_896 = Module["__efree_896"] = Module["asm"]["m1"]).apply(null, arguments);
     });
     var __efree_1024 = (Module["__efree_1024"] = function () {
-      return (__efree_1024 = Module["__efree_1024"] = Module["asm"]["h1"]).apply(null, arguments);
+      return (__efree_1024 = Module["__efree_1024"] = Module["asm"]["n1"]).apply(null, arguments);
     });
     var __efree_1280 = (Module["__efree_1280"] = function () {
-      return (__efree_1280 = Module["__efree_1280"] = Module["asm"]["i1"]).apply(null, arguments);
+      return (__efree_1280 = Module["__efree_1280"] = Module["asm"]["o1"]).apply(null, arguments);
     });
     var __efree_1536 = (Module["__efree_1536"] = function () {
-      return (__efree_1536 = Module["__efree_1536"] = Module["asm"]["j1"]).apply(null, arguments);
+      return (__efree_1536 = Module["__efree_1536"] = Module["asm"]["p1"]).apply(null, arguments);
     });
     var __efree_1792 = (Module["__efree_1792"] = function () {
-      return (__efree_1792 = Module["__efree_1792"] = Module["asm"]["k1"]).apply(null, arguments);
+      return (__efree_1792 = Module["__efree_1792"] = Module["asm"]["q1"]).apply(null, arguments);
     });
     var __efree_2048 = (Module["__efree_2048"] = function () {
-      return (__efree_2048 = Module["__efree_2048"] = Module["asm"]["l1"]).apply(null, arguments);
+      return (__efree_2048 = Module["__efree_2048"] = Module["asm"]["r1"]).apply(null, arguments);
     });
     var __efree_2560 = (Module["__efree_2560"] = function () {
-      return (__efree_2560 = Module["__efree_2560"] = Module["asm"]["m1"]).apply(null, arguments);
+      return (__efree_2560 = Module["__efree_2560"] = Module["asm"]["s1"]).apply(null, arguments);
     });
     var __efree_3072 = (Module["__efree_3072"] = function () {
-      return (__efree_3072 = Module["__efree_3072"] = Module["asm"]["n1"]).apply(null, arguments);
+      return (__efree_3072 = Module["__efree_3072"] = Module["asm"]["t1"]).apply(null, arguments);
     });
     var __efree_huge = (Module["__efree_huge"] = function () {
-      return (__efree_huge = Module["__efree_huge"] = Module["asm"]["o1"]).apply(null, arguments);
+      return (__efree_huge = Module["__efree_huge"] = Module["asm"]["u1"]).apply(null, arguments);
     });
     var __erealloc2 = (Module["__erealloc2"] = function () {
-      return (__erealloc2 = Module["__erealloc2"] = Module["asm"]["p1"]).apply(null, arguments);
+      return (__erealloc2 = Module["__erealloc2"] = Module["asm"]["v1"]).apply(null, arguments);
     });
     var __zend_mem_block_size = (Module["__zend_mem_block_size"] = function () {
-      return (__zend_mem_block_size = Module["__zend_mem_block_size"] = Module["asm"]["q1"]).apply(
+      return (__zend_mem_block_size = Module["__zend_mem_block_size"] = Module["asm"]["w1"]).apply(
         null,
         arguments,
       );
     });
     var _start_memory_manager = (Module["_start_memory_manager"] = function () {
-      return (_start_memory_manager = Module["_start_memory_manager"] = Module["asm"]["r1"]).apply(
+      return (_start_memory_manager = Module["_start_memory_manager"] = Module["asm"]["x1"]).apply(
         null,
         arguments,
       );
     });
     var _zend_mm_set_heap = (Module["_zend_mm_set_heap"] = function () {
-      return (_zend_mm_set_heap = Module["_zend_mm_set_heap"] = Module["asm"]["s1"]).apply(
+      return (_zend_mm_set_heap = Module["_zend_mm_set_heap"] = Module["asm"]["y1"]).apply(
         null,
         arguments,
       );
     });
     var _zend_mm_get_heap = (Module["_zend_mm_get_heap"] = function () {
-      return (_zend_mm_get_heap = Module["_zend_mm_get_heap"] = Module["asm"]["t1"]).apply(
+      return (_zend_mm_get_heap = Module["_zend_mm_get_heap"] = Module["asm"]["z1"]).apply(
         null,
         arguments,
       );
     });
     var _zend_mm_is_custom_heap = (Module["_zend_mm_is_custom_heap"] = function () {
       return (_zend_mm_is_custom_heap = Module["_zend_mm_is_custom_heap"] =
-        Module["asm"]["u1"]).apply(null, arguments);
+        Module["asm"]["A1"]).apply(null, arguments);
     });
     var _zend_mm_set_custom_handlers = (Module["_zend_mm_set_custom_handlers"] = function () {
       return (_zend_mm_set_custom_handlers = Module["_zend_mm_set_custom_handlers"] =
-        Module["asm"]["v1"]).apply(null, arguments);
+        Module["asm"]["B1"]).apply(null, arguments);
     });
     var _zend_mm_set_custom_handlers_ex = (Module["_zend_mm_set_custom_handlers_ex"] = function () {
       return (_zend_mm_set_custom_handlers_ex = Module["_zend_mm_set_custom_handlers_ex"] =
-        Module["asm"]["w1"]).apply(null, arguments);
+        Module["asm"]["C1"]).apply(null, arguments);
     });
     var _zend_mm_get_custom_handlers = (Module["_zend_mm_get_custom_handlers"] = function () {
       return (_zend_mm_get_custom_handlers = Module["_zend_mm_get_custom_handlers"] =
-        Module["asm"]["x1"]).apply(null, arguments);
+        Module["asm"]["D1"]).apply(null, arguments);
     });
     var _zend_mm_get_custom_handlers_ex = (Module["_zend_mm_get_custom_handlers_ex"] = function () {
       return (_zend_mm_get_custom_handlers_ex = Module["_zend_mm_get_custom_handlers_ex"] =
-        Module["asm"]["y1"]).apply(null, arguments);
+        Module["asm"]["E1"]).apply(null, arguments);
     });
     var _zend_mm_get_storage = (Module["_zend_mm_get_storage"] = function () {
-      return (_zend_mm_get_storage = Module["_zend_mm_get_storage"] = Module["asm"]["z1"]).apply(
+      return (_zend_mm_get_storage = Module["_zend_mm_get_storage"] = Module["asm"]["F1"]).apply(
         null,
         arguments,
       );
     });
     var _zend_mm_startup = (Module["_zend_mm_startup"] = function () {
-      return (_zend_mm_startup = Module["_zend_mm_startup"] = Module["asm"]["A1"]).apply(
+      return (_zend_mm_startup = Module["_zend_mm_startup"] = Module["asm"]["G1"]).apply(
         null,
         arguments,
       );
     });
     var _zend_mm_startup_ex = (Module["_zend_mm_startup_ex"] = function () {
-      return (_zend_mm_startup_ex = Module["_zend_mm_startup_ex"] = Module["asm"]["B1"]).apply(
+      return (_zend_mm_startup_ex = Module["_zend_mm_startup_ex"] = Module["asm"]["H1"]).apply(
         null,
         arguments,
       );
     });
     var _madvise = (Module["_madvise"] = function () {
-      return (_madvise = Module["_madvise"] = Module["asm"]["C1"]).apply(null, arguments);
+      return (_madvise = Module["_madvise"] = Module["asm"]["I1"]).apply(null, arguments);
     });
     var _zend_set_dl_use_deepbind = (Module["_zend_set_dl_use_deepbind"] = function () {
       return (_zend_set_dl_use_deepbind = Module["_zend_set_dl_use_deepbind"] =
-        Module["asm"]["D1"]).apply(null, arguments);
+        Module["asm"]["J1"]).apply(null, arguments);
     });
     var _zend_get_parameters_array_ex = (Module["_zend_get_parameters_array_ex"] = function () {
       return (_zend_get_parameters_array_ex = Module["_zend_get_parameters_array_ex"] =
-        Module["asm"]["E1"]).apply(null, arguments);
+        Module["asm"]["K1"]).apply(null, arguments);
     });
     var _zend_copy_parameters_array = (Module["_zend_copy_parameters_array"] = function () {
       return (_zend_copy_parameters_array = Module["_zend_copy_parameters_array"] =
-        Module["asm"]["F1"]).apply(null, arguments);
+        Module["asm"]["L1"]).apply(null, arguments);
     });
     var _zend_wrong_property_read = (Module["_zend_wrong_property_read"] = function () {
       return (_zend_wrong_property_read = Module["_zend_wrong_property_read"] =
-        Module["asm"]["G1"]).apply(null, arguments);
+        Module["asm"]["M1"]).apply(null, arguments);
     });
     var _zend_get_type_by_const = (Module["_zend_get_type_by_const"] = function () {
       return (_zend_get_type_by_const = Module["_zend_get_type_by_const"] =
-        Module["asm"]["H1"]).apply(null, arguments);
+        Module["asm"]["N1"]).apply(null, arguments);
     });
     var _zend_wrong_callback_error = (Module["_zend_wrong_callback_error"] = function () {
       return (_zend_wrong_callback_error = Module["_zend_wrong_callback_error"] =
-        Module["asm"]["I1"]).apply(null, arguments);
+        Module["asm"]["O1"]).apply(null, arguments);
     });
     var _zend_wrong_callback_or_null_error = (Module["_zend_wrong_callback_or_null_error"] =
       function () {
         return (_zend_wrong_callback_or_null_error = Module["_zend_wrong_callback_or_null_error"] =
-          Module["asm"]["J1"]).apply(null, arguments);
+          Module["asm"]["P1"]).apply(null, arguments);
       });
     var _zend_wrong_parameter_class_error = (Module["_zend_wrong_parameter_class_error"] =
       function () {
         return (_zend_wrong_parameter_class_error = Module["_zend_wrong_parameter_class_error"] =
-          Module["asm"]["K1"]).apply(null, arguments);
+          Module["asm"]["Q1"]).apply(null, arguments);
       });
     var _zend_wrong_parameter_class_or_null_error = (Module[
       "_zend_wrong_parameter_class_or_null_error"
@@ -21369,7 +21401,7 @@ var PHP = (() => {
       return (_zend_wrong_parameter_class_or_null_error = Module[
         "_zend_wrong_parameter_class_or_null_error"
       ] =
-        Module["asm"]["L1"]).apply(null, arguments);
+        Module["asm"]["R1"]).apply(null, arguments);
     });
     var _zend_wrong_parameter_class_or_string_error = (Module[
       "_zend_wrong_parameter_class_or_string_error"
@@ -21377,7 +21409,7 @@ var PHP = (() => {
       return (_zend_wrong_parameter_class_or_string_error = Module[
         "_zend_wrong_parameter_class_or_string_error"
       ] =
-        Module["asm"]["M1"]).apply(null, arguments);
+        Module["asm"]["S1"]).apply(null, arguments);
     });
     var _zend_wrong_parameter_class_or_string_or_null_error = (Module[
       "_zend_wrong_parameter_class_or_string_or_null_error"
@@ -21385,7 +21417,7 @@ var PHP = (() => {
       return (_zend_wrong_parameter_class_or_string_or_null_error = Module[
         "_zend_wrong_parameter_class_or_string_or_null_error"
       ] =
-        Module["asm"]["N1"]).apply(null, arguments);
+        Module["asm"]["T1"]).apply(null, arguments);
     });
     var _zend_wrong_parameter_class_or_long_error = (Module[
       "_zend_wrong_parameter_class_or_long_error"
@@ -21393,7 +21425,7 @@ var PHP = (() => {
       return (_zend_wrong_parameter_class_or_long_error = Module[
         "_zend_wrong_parameter_class_or_long_error"
       ] =
-        Module["asm"]["O1"]).apply(null, arguments);
+        Module["asm"]["U1"]).apply(null, arguments);
     });
     var _zend_wrong_parameter_class_or_long_or_null_error = (Module[
       "_zend_wrong_parameter_class_or_long_or_null_error"
@@ -21401,29 +21433,29 @@ var PHP = (() => {
       return (_zend_wrong_parameter_class_or_long_or_null_error = Module[
         "_zend_wrong_parameter_class_or_long_or_null_error"
       ] =
-        Module["asm"]["P1"]).apply(null, arguments);
+        Module["asm"]["V1"]).apply(null, arguments);
     });
     var _zend_unexpected_extra_named_error = (Module["_zend_unexpected_extra_named_error"] =
       function () {
         return (_zend_unexpected_extra_named_error = Module["_zend_unexpected_extra_named_error"] =
-          Module["asm"]["Q1"]).apply(null, arguments);
+          Module["asm"]["W1"]).apply(null, arguments);
       });
     var _zend_argument_error_variadic = (Module["_zend_argument_error_variadic"] = function () {
       return (_zend_argument_error_variadic = Module["_zend_argument_error_variadic"] =
-        Module["asm"]["R1"]).apply(null, arguments);
+        Module["asm"]["X1"]).apply(null, arguments);
     });
     var _zend_class_redeclaration_error_ex = (Module["_zend_class_redeclaration_error_ex"] =
       function () {
         return (_zend_class_redeclaration_error_ex = Module["_zend_class_redeclaration_error_ex"] =
-          Module["asm"]["S1"]).apply(null, arguments);
+          Module["asm"]["Y1"]).apply(null, arguments);
       });
     var _zend_parse_arg_bool_weak = (Module["_zend_parse_arg_bool_weak"] = function () {
       return (_zend_parse_arg_bool_weak = Module["_zend_parse_arg_bool_weak"] =
-        Module["asm"]["T1"]).apply(null, arguments);
+        Module["asm"]["Z1"]).apply(null, arguments);
     });
     var _zend_parse_arg_long_weak = (Module["_zend_parse_arg_long_weak"] = function () {
       return (_zend_parse_arg_long_weak = Module["_zend_parse_arg_long_weak"] =
-        Module["asm"]["U1"]).apply(null, arguments);
+        Module["asm"]["_1"]).apply(null, arguments);
     });
     var _zend_incompatible_string_to_long_error = (Module[
       "_zend_incompatible_string_to_long_error"
@@ -21431,18 +21463,18 @@ var PHP = (() => {
       return (_zend_incompatible_string_to_long_error = Module[
         "_zend_incompatible_string_to_long_error"
       ] =
-        Module["asm"]["V1"]).apply(null, arguments);
+        Module["asm"]["$1"]).apply(null, arguments);
     });
     var _zend_parse_arg_double_weak = (Module["_zend_parse_arg_double_weak"] = function () {
       return (_zend_parse_arg_double_weak = Module["_zend_parse_arg_double_weak"] =
-        Module["asm"]["W1"]).apply(null, arguments);
+        Module["asm"]["a2"]).apply(null, arguments);
     });
     var _zend_parse_arg_str_weak = (Module["_zend_parse_arg_str_weak"] = function () {
       return (_zend_parse_arg_str_weak = Module["_zend_parse_arg_str_weak"] =
-        Module["asm"]["X1"]).apply(null, arguments);
+        Module["asm"]["b2"]).apply(null, arguments);
     });
     var _zend_parse_parameter = (Module["_zend_parse_parameter"] = function () {
-      return (_zend_parse_parameter = Module["_zend_parse_parameter"] = Module["asm"]["Y1"]).apply(
+      return (_zend_parse_parameter = Module["_zend_parse_parameter"] = Module["asm"]["c2"]).apply(
         null,
         arguments,
       );
@@ -21450,20 +21482,20 @@ var PHP = (() => {
     var _zend_parse_method_parameters_ex = (Module["_zend_parse_method_parameters_ex"] =
       function () {
         return (_zend_parse_method_parameters_ex = Module["_zend_parse_method_parameters_ex"] =
-          Module["asm"]["Z1"]).apply(null, arguments);
+          Module["asm"]["d2"]).apply(null, arguments);
       });
     var _zend_merge_properties = (Module["_zend_merge_properties"] = function () {
       return (_zend_merge_properties = Module["_zend_merge_properties"] =
-        Module["asm"]["_1"]).apply(null, arguments);
+        Module["asm"]["e2"]).apply(null, arguments);
     });
     var _zend_verify_class_constant_type = (Module["_zend_verify_class_constant_type"] =
       function () {
         return (_zend_verify_class_constant_type = Module["_zend_verify_class_constant_type"] =
-          Module["asm"]["$1"]).apply(null, arguments);
+          Module["asm"]["f2"]).apply(null, arguments);
       });
     var _object_properties_init_ex = (Module["_object_properties_init_ex"] = function () {
       return (_object_properties_init_ex = Module["_object_properties_init_ex"] =
-        Module["asm"]["a2"]).apply(null, arguments);
+        Module["asm"]["g2"]).apply(null, arguments);
     });
     var _zend_readonly_property_modification_error = (Module[
       "_zend_readonly_property_modification_error"
@@ -21471,124 +21503,124 @@ var PHP = (() => {
       return (_zend_readonly_property_modification_error = Module[
         "_zend_readonly_property_modification_error"
       ] =
-        Module["asm"]["b2"]).apply(null, arguments);
+        Module["asm"]["h2"]).apply(null, arguments);
     });
     var _add_assoc_resource_ex = (Module["_add_assoc_resource_ex"] = function () {
       return (_add_assoc_resource_ex = Module["_add_assoc_resource_ex"] =
-        Module["asm"]["c2"]).apply(null, arguments);
+        Module["asm"]["i2"]).apply(null, arguments);
     });
     var _add_assoc_array_ex = (Module["_add_assoc_array_ex"] = function () {
-      return (_add_assoc_array_ex = Module["_add_assoc_array_ex"] = Module["asm"]["d2"]).apply(
+      return (_add_assoc_array_ex = Module["_add_assoc_array_ex"] = Module["asm"]["j2"]).apply(
         null,
         arguments,
       );
     });
     var _add_assoc_object_ex = (Module["_add_assoc_object_ex"] = function () {
-      return (_add_assoc_object_ex = Module["_add_assoc_object_ex"] = Module["asm"]["e2"]).apply(
+      return (_add_assoc_object_ex = Module["_add_assoc_object_ex"] = Module["asm"]["k2"]).apply(
         null,
         arguments,
       );
     });
     var _add_assoc_reference_ex = (Module["_add_assoc_reference_ex"] = function () {
       return (_add_assoc_reference_ex = Module["_add_assoc_reference_ex"] =
-        Module["asm"]["f2"]).apply(null, arguments);
+        Module["asm"]["l2"]).apply(null, arguments);
     });
     var _add_index_null = (Module["_add_index_null"] = function () {
-      return (_add_index_null = Module["_add_index_null"] = Module["asm"]["g2"]).apply(
+      return (_add_index_null = Module["_add_index_null"] = Module["asm"]["m2"]).apply(
         null,
         arguments,
       );
     });
     var _add_index_bool = (Module["_add_index_bool"] = function () {
-      return (_add_index_bool = Module["_add_index_bool"] = Module["asm"]["h2"]).apply(
+      return (_add_index_bool = Module["_add_index_bool"] = Module["asm"]["n2"]).apply(
         null,
         arguments,
       );
     });
     var _add_index_resource = (Module["_add_index_resource"] = function () {
-      return (_add_index_resource = Module["_add_index_resource"] = Module["asm"]["i2"]).apply(
+      return (_add_index_resource = Module["_add_index_resource"] = Module["asm"]["o2"]).apply(
         null,
         arguments,
       );
     });
     var _add_index_array = (Module["_add_index_array"] = function () {
-      return (_add_index_array = Module["_add_index_array"] = Module["asm"]["j2"]).apply(
+      return (_add_index_array = Module["_add_index_array"] = Module["asm"]["p2"]).apply(
         null,
         arguments,
       );
     });
     var _add_index_object = (Module["_add_index_object"] = function () {
-      return (_add_index_object = Module["_add_index_object"] = Module["asm"]["k2"]).apply(
+      return (_add_index_object = Module["_add_index_object"] = Module["asm"]["q2"]).apply(
         null,
         arguments,
       );
     });
     var _add_index_reference = (Module["_add_index_reference"] = function () {
-      return (_add_index_reference = Module["_add_index_reference"] = Module["asm"]["l2"]).apply(
+      return (_add_index_reference = Module["_add_index_reference"] = Module["asm"]["r2"]).apply(
         null,
         arguments,
       );
     });
     var _add_next_index_bool = (Module["_add_next_index_bool"] = function () {
-      return (_add_next_index_bool = Module["_add_next_index_bool"] = Module["asm"]["m2"]).apply(
+      return (_add_next_index_bool = Module["_add_next_index_bool"] = Module["asm"]["s2"]).apply(
         null,
         arguments,
       );
     });
     var _add_next_index_double = (Module["_add_next_index_double"] = function () {
       return (_add_next_index_double = Module["_add_next_index_double"] =
-        Module["asm"]["n2"]).apply(null, arguments);
+        Module["asm"]["t2"]).apply(null, arguments);
     });
     var _add_next_index_array = (Module["_add_next_index_array"] = function () {
-      return (_add_next_index_array = Module["_add_next_index_array"] = Module["asm"]["o2"]).apply(
+      return (_add_next_index_array = Module["_add_next_index_array"] = Module["asm"]["u2"]).apply(
         null,
         arguments,
       );
     });
     var _add_next_index_reference = (Module["_add_next_index_reference"] = function () {
       return (_add_next_index_reference = Module["_add_next_index_reference"] =
-        Module["asm"]["p2"]).apply(null, arguments);
+        Module["asm"]["v2"]).apply(null, arguments);
     });
     var _add_property_long_ex = (Module["_add_property_long_ex"] = function () {
-      return (_add_property_long_ex = Module["_add_property_long_ex"] = Module["asm"]["q2"]).apply(
+      return (_add_property_long_ex = Module["_add_property_long_ex"] = Module["asm"]["w2"]).apply(
         null,
         arguments,
       );
     });
     var _add_property_bool_ex = (Module["_add_property_bool_ex"] = function () {
-      return (_add_property_bool_ex = Module["_add_property_bool_ex"] = Module["asm"]["r2"]).apply(
+      return (_add_property_bool_ex = Module["_add_property_bool_ex"] = Module["asm"]["x2"]).apply(
         null,
         arguments,
       );
     });
     var _add_property_double_ex = (Module["_add_property_double_ex"] = function () {
       return (_add_property_double_ex = Module["_add_property_double_ex"] =
-        Module["asm"]["s2"]).apply(null, arguments);
+        Module["asm"]["y2"]).apply(null, arguments);
     });
     var _add_property_str_ex = (Module["_add_property_str_ex"] = function () {
-      return (_add_property_str_ex = Module["_add_property_str_ex"] = Module["asm"]["t2"]).apply(
+      return (_add_property_str_ex = Module["_add_property_str_ex"] = Module["asm"]["z2"]).apply(
         null,
         arguments,
       );
     });
     var _add_property_stringl_ex = (Module["_add_property_stringl_ex"] = function () {
       return (_add_property_stringl_ex = Module["_add_property_stringl_ex"] =
-        Module["asm"]["u2"]).apply(null, arguments);
+        Module["asm"]["A2"]).apply(null, arguments);
     });
     var _add_property_array_ex = (Module["_add_property_array_ex"] = function () {
       return (_add_property_array_ex = Module["_add_property_array_ex"] =
-        Module["asm"]["v2"]).apply(null, arguments);
+        Module["asm"]["B2"]).apply(null, arguments);
     });
     var _add_property_object_ex = (Module["_add_property_object_ex"] = function () {
       return (_add_property_object_ex = Module["_add_property_object_ex"] =
-        Module["asm"]["w2"]).apply(null, arguments);
+        Module["asm"]["C2"]).apply(null, arguments);
     });
     var _add_property_reference_ex = (Module["_add_property_reference_ex"] = function () {
       return (_add_property_reference_ex = Module["_add_property_reference_ex"] =
-        Module["asm"]["x2"]).apply(null, arguments);
+        Module["asm"]["D2"]).apply(null, arguments);
     });
     var _zend_destroy_modules = (Module["_zend_destroy_modules"] = function () {
-      return (_zend_destroy_modules = Module["_zend_destroy_modules"] = Module["asm"]["y2"]).apply(
+      return (_zend_destroy_modules = Module["_zend_destroy_modules"] = Module["asm"]["E2"]).apply(
         null,
         arguments,
       );
@@ -21598,11 +21630,11 @@ var PHP = (() => {
         return (_zend_hash_graceful_reverse_destroy = Module[
           "_zend_hash_graceful_reverse_destroy"
         ] =
-          Module["asm"]["z2"]).apply(null, arguments);
+          Module["asm"]["F2"]).apply(null, arguments);
       });
     var _zend_next_free_module = (Module["_zend_next_free_module"] = function () {
       return (_zend_next_free_module = Module["_zend_next_free_module"] =
-        Module["asm"]["A2"]).apply(null, arguments);
+        Module["asm"]["G2"]).apply(null, arguments);
     });
     var _zend_check_magic_method_implementation = (Module[
       "_zend_check_magic_method_implementation"
@@ -21610,335 +21642,335 @@ var PHP = (() => {
       return (_zend_check_magic_method_implementation = Module[
         "_zend_check_magic_method_implementation"
       ] =
-        Module["asm"]["B2"]).apply(null, arguments);
+        Module["asm"]["H2"]).apply(null, arguments);
     });
     var _zend_add_magic_method = (Module["_zend_add_magic_method"] = function () {
       return (_zend_add_magic_method = Module["_zend_add_magic_method"] =
-        Module["asm"]["C2"]).apply(null, arguments);
+        Module["asm"]["I2"]).apply(null, arguments);
     });
     var _zend_unregister_functions = (Module["_zend_unregister_functions"] = function () {
       return (_zend_unregister_functions = Module["_zend_unregister_functions"] =
-        Module["asm"]["D2"]).apply(null, arguments);
+        Module["asm"]["J2"]).apply(null, arguments);
     });
     var _zend_startup_module = (Module["_zend_startup_module"] = function () {
-      return (_zend_startup_module = Module["_zend_startup_module"] = Module["asm"]["E2"]).apply(
+      return (_zend_startup_module = Module["_zend_startup_module"] = Module["asm"]["K2"]).apply(
         null,
         arguments,
       );
     });
     var _zend_get_module_started = (Module["_zend_get_module_started"] = function () {
       return (_zend_get_module_started = Module["_zend_get_module_started"] =
-        Module["asm"]["F2"]).apply(null, arguments);
+        Module["asm"]["L2"]).apply(null, arguments);
     });
     var _zend_register_internal_class_ex = (Module["_zend_register_internal_class_ex"] =
       function () {
         return (_zend_register_internal_class_ex = Module["_zend_register_internal_class_ex"] =
-          Module["asm"]["G2"]).apply(null, arguments);
+          Module["asm"]["M2"]).apply(null, arguments);
       });
     var _zend_do_implement_interface = (Module["_zend_do_implement_interface"] = function () {
       return (_zend_do_implement_interface = Module["_zend_do_implement_interface"] =
-        Module["asm"]["H2"]).apply(null, arguments);
+        Module["asm"]["N2"]).apply(null, arguments);
     });
     var _zend_register_internal_class = (Module["_zend_register_internal_class"] = function () {
       return (_zend_register_internal_class = Module["_zend_register_internal_class"] =
-        Module["asm"]["I2"]).apply(null, arguments);
+        Module["asm"]["O2"]).apply(null, arguments);
     });
     var _zend_register_class_alias_ex = (Module["_zend_register_class_alias_ex"] = function () {
       return (_zend_register_class_alias_ex = Module["_zend_register_class_alias_ex"] =
-        Module["asm"]["J2"]).apply(null, arguments);
+        Module["asm"]["P2"]).apply(null, arguments);
     });
     var _zend_set_hash_symbol = (Module["_zend_set_hash_symbol"] = function () {
-      return (_zend_set_hash_symbol = Module["_zend_set_hash_symbol"] = Module["asm"]["K2"]).apply(
+      return (_zend_set_hash_symbol = Module["_zend_set_hash_symbol"] = Module["asm"]["Q2"]).apply(
         null,
         arguments,
       );
     });
     var _zend_disable_class = (Module["_zend_disable_class"] = function () {
-      return (_zend_disable_class = Module["_zend_disable_class"] = Module["asm"]["L2"]).apply(
+      return (_zend_disable_class = Module["_zend_disable_class"] = Module["asm"]["R2"]).apply(
         null,
         arguments,
       );
     });
     var _zend_type_release = (Module["_zend_type_release"] = function () {
-      return (_zend_type_release = Module["_zend_type_release"] = Module["asm"]["M2"]).apply(
+      return (_zend_type_release = Module["_zend_type_release"] = Module["asm"]["S2"]).apply(
         null,
         arguments,
       );
     });
     var _zend_get_callable_name_ex = (Module["_zend_get_callable_name_ex"] = function () {
       return (_zend_get_callable_name_ex = Module["_zend_get_callable_name_ex"] =
-        Module["asm"]["N2"]).apply(null, arguments);
+        Module["asm"]["T2"]).apply(null, arguments);
     });
     var _zend_get_callable_name = (Module["_zend_get_callable_name"] = function () {
       return (_zend_get_callable_name = Module["_zend_get_callable_name"] =
-        Module["asm"]["O2"]).apply(null, arguments);
+        Module["asm"]["U2"]).apply(null, arguments);
     });
     var _zend_is_callable_at_frame = (Module["_zend_is_callable_at_frame"] = function () {
       return (_zend_is_callable_at_frame = Module["_zend_is_callable_at_frame"] =
-        Module["asm"]["P2"]).apply(null, arguments);
+        Module["asm"]["V2"]).apply(null, arguments);
     });
     var _zend_is_callable = (Module["_zend_is_callable"] = function () {
-      return (_zend_is_callable = Module["_zend_is_callable"] = Module["asm"]["Q2"]).apply(
+      return (_zend_is_callable = Module["_zend_is_callable"] = Module["asm"]["W2"]).apply(
         null,
         arguments,
       );
     });
     var _zend_make_callable = (Module["_zend_make_callable"] = function () {
-      return (_zend_make_callable = Module["_zend_make_callable"] = Module["asm"]["R2"]).apply(
+      return (_zend_make_callable = Module["_zend_make_callable"] = Module["asm"]["X2"]).apply(
         null,
         arguments,
       );
     });
     var _zend_fcall_info_args_clear = (Module["_zend_fcall_info_args_clear"] = function () {
       return (_zend_fcall_info_args_clear = Module["_zend_fcall_info_args_clear"] =
-        Module["asm"]["S2"]).apply(null, arguments);
+        Module["asm"]["Y2"]).apply(null, arguments);
     });
     var _zend_fcall_info_args_save = (Module["_zend_fcall_info_args_save"] = function () {
       return (_zend_fcall_info_args_save = Module["_zend_fcall_info_args_save"] =
-        Module["asm"]["T2"]).apply(null, arguments);
+        Module["asm"]["Z2"]).apply(null, arguments);
     });
     var _zend_fcall_info_args_restore = (Module["_zend_fcall_info_args_restore"] = function () {
       return (_zend_fcall_info_args_restore = Module["_zend_fcall_info_args_restore"] =
-        Module["asm"]["U2"]).apply(null, arguments);
+        Module["asm"]["_2"]).apply(null, arguments);
     });
     var _zend_fcall_info_args_ex = (Module["_zend_fcall_info_args_ex"] = function () {
       return (_zend_fcall_info_args_ex = Module["_zend_fcall_info_args_ex"] =
-        Module["asm"]["V2"]).apply(null, arguments);
+        Module["asm"]["$2"]).apply(null, arguments);
     });
     var _zend_fcall_info_args = (Module["_zend_fcall_info_args"] = function () {
-      return (_zend_fcall_info_args = Module["_zend_fcall_info_args"] = Module["asm"]["W2"]).apply(
+      return (_zend_fcall_info_args = Module["_zend_fcall_info_args"] = Module["asm"]["a3"]).apply(
         null,
         arguments,
       );
     });
     var _zend_fcall_info_argp = (Module["_zend_fcall_info_argp"] = function () {
-      return (_zend_fcall_info_argp = Module["_zend_fcall_info_argp"] = Module["asm"]["X2"]).apply(
+      return (_zend_fcall_info_argp = Module["_zend_fcall_info_argp"] = Module["asm"]["b3"]).apply(
         null,
         arguments,
       );
     });
     var _zend_fcall_info_argv = (Module["_zend_fcall_info_argv"] = function () {
-      return (_zend_fcall_info_argv = Module["_zend_fcall_info_argv"] = Module["asm"]["Y2"]).apply(
+      return (_zend_fcall_info_argv = Module["_zend_fcall_info_argv"] = Module["asm"]["c3"]).apply(
         null,
         arguments,
       );
     });
     var _zend_fcall_info_argn = (Module["_zend_fcall_info_argn"] = function () {
-      return (_zend_fcall_info_argn = Module["_zend_fcall_info_argn"] = Module["asm"]["Z2"]).apply(
+      return (_zend_fcall_info_argn = Module["_zend_fcall_info_argn"] = Module["asm"]["d3"]).apply(
         null,
         arguments,
       );
     });
     var _zend_fcall_info_call = (Module["_zend_fcall_info_call"] = function () {
-      return (_zend_fcall_info_call = Module["_zend_fcall_info_call"] = Module["asm"]["_2"]).apply(
+      return (_zend_fcall_info_call = Module["_zend_fcall_info_call"] = Module["asm"]["e3"]).apply(
         null,
         arguments,
       );
     });
     var _zend_try_assign_typed_ref_ex = (Module["_zend_try_assign_typed_ref_ex"] = function () {
       return (_zend_try_assign_typed_ref_ex = Module["_zend_try_assign_typed_ref_ex"] =
-        Module["asm"]["$2"]).apply(null, arguments);
+        Module["asm"]["f3"]).apply(null, arguments);
     });
     var _zend_try_assign_typed_ref_bool = (Module["_zend_try_assign_typed_ref_bool"] = function () {
       return (_zend_try_assign_typed_ref_bool = Module["_zend_try_assign_typed_ref_bool"] =
-        Module["asm"]["a3"]).apply(null, arguments);
+        Module["asm"]["g3"]).apply(null, arguments);
     });
     var _zend_try_assign_typed_ref_res = (Module["_zend_try_assign_typed_ref_res"] = function () {
       return (_zend_try_assign_typed_ref_res = Module["_zend_try_assign_typed_ref_res"] =
-        Module["asm"]["b3"]).apply(null, arguments);
+        Module["asm"]["h3"]).apply(null, arguments);
     });
     var _zend_try_assign_typed_ref_zval = (Module["_zend_try_assign_typed_ref_zval"] = function () {
       return (_zend_try_assign_typed_ref_zval = Module["_zend_try_assign_typed_ref_zval"] =
-        Module["asm"]["c3"]).apply(null, arguments);
+        Module["asm"]["i3"]).apply(null, arguments);
     });
     var _zend_declare_property_ex = (Module["_zend_declare_property_ex"] = function () {
       return (_zend_declare_property_ex = Module["_zend_declare_property_ex"] =
-        Module["asm"]["d3"]).apply(null, arguments);
+        Module["asm"]["j3"]).apply(null, arguments);
     });
     var _zend_declare_property = (Module["_zend_declare_property"] = function () {
       return (_zend_declare_property = Module["_zend_declare_property"] =
-        Module["asm"]["e3"]).apply(null, arguments);
+        Module["asm"]["k3"]).apply(null, arguments);
     });
     var _zend_declare_property_null = (Module["_zend_declare_property_null"] = function () {
       return (_zend_declare_property_null = Module["_zend_declare_property_null"] =
-        Module["asm"]["f3"]).apply(null, arguments);
+        Module["asm"]["l3"]).apply(null, arguments);
     });
     var _zend_declare_property_bool = (Module["_zend_declare_property_bool"] = function () {
       return (_zend_declare_property_bool = Module["_zend_declare_property_bool"] =
-        Module["asm"]["g3"]).apply(null, arguments);
+        Module["asm"]["m3"]).apply(null, arguments);
     });
     var _zend_declare_property_long = (Module["_zend_declare_property_long"] = function () {
       return (_zend_declare_property_long = Module["_zend_declare_property_long"] =
-        Module["asm"]["h3"]).apply(null, arguments);
+        Module["asm"]["n3"]).apply(null, arguments);
     });
     var _zend_declare_property_double = (Module["_zend_declare_property_double"] = function () {
       return (_zend_declare_property_double = Module["_zend_declare_property_double"] =
-        Module["asm"]["i3"]).apply(null, arguments);
+        Module["asm"]["o3"]).apply(null, arguments);
     });
     var _zend_declare_property_string = (Module["_zend_declare_property_string"] = function () {
       return (_zend_declare_property_string = Module["_zend_declare_property_string"] =
-        Module["asm"]["j3"]).apply(null, arguments);
+        Module["asm"]["p3"]).apply(null, arguments);
     });
     var _zend_declare_property_stringl = (Module["_zend_declare_property_stringl"] = function () {
       return (_zend_declare_property_stringl = Module["_zend_declare_property_stringl"] =
-        Module["asm"]["k3"]).apply(null, arguments);
+        Module["asm"]["q3"]).apply(null, arguments);
     });
     var _zend_declare_class_constant_ex = (Module["_zend_declare_class_constant_ex"] = function () {
       return (_zend_declare_class_constant_ex = Module["_zend_declare_class_constant_ex"] =
-        Module["asm"]["l3"]).apply(null, arguments);
+        Module["asm"]["r3"]).apply(null, arguments);
     });
     var _zend_declare_class_constant = (Module["_zend_declare_class_constant"] = function () {
       return (_zend_declare_class_constant = Module["_zend_declare_class_constant"] =
-        Module["asm"]["m3"]).apply(null, arguments);
+        Module["asm"]["s3"]).apply(null, arguments);
     });
     var _zend_declare_class_constant_null = (Module["_zend_declare_class_constant_null"] =
       function () {
         return (_zend_declare_class_constant_null = Module["_zend_declare_class_constant_null"] =
-          Module["asm"]["n3"]).apply(null, arguments);
+          Module["asm"]["t3"]).apply(null, arguments);
       });
     var _zend_declare_class_constant_long = (Module["_zend_declare_class_constant_long"] =
       function () {
         return (_zend_declare_class_constant_long = Module["_zend_declare_class_constant_long"] =
-          Module["asm"]["o3"]).apply(null, arguments);
+          Module["asm"]["u3"]).apply(null, arguments);
       });
     var _zend_declare_class_constant_bool = (Module["_zend_declare_class_constant_bool"] =
       function () {
         return (_zend_declare_class_constant_bool = Module["_zend_declare_class_constant_bool"] =
-          Module["asm"]["p3"]).apply(null, arguments);
+          Module["asm"]["v3"]).apply(null, arguments);
       });
     var _zend_declare_class_constant_double = (Module["_zend_declare_class_constant_double"] =
       function () {
         return (_zend_declare_class_constant_double = Module[
           "_zend_declare_class_constant_double"
         ] =
-          Module["asm"]["q3"]).apply(null, arguments);
+          Module["asm"]["w3"]).apply(null, arguments);
       });
     var _zend_declare_class_constant_stringl = (Module["_zend_declare_class_constant_stringl"] =
       function () {
         return (_zend_declare_class_constant_stringl = Module[
           "_zend_declare_class_constant_stringl"
         ] =
-          Module["asm"]["r3"]).apply(null, arguments);
+          Module["asm"]["x3"]).apply(null, arguments);
       });
     var _zend_declare_class_constant_string = (Module["_zend_declare_class_constant_string"] =
       function () {
         return (_zend_declare_class_constant_string = Module[
           "_zend_declare_class_constant_string"
         ] =
-          Module["asm"]["s3"]).apply(null, arguments);
+          Module["asm"]["y3"]).apply(null, arguments);
       });
     var _zend_unset_property = (Module["_zend_unset_property"] = function () {
-      return (_zend_unset_property = Module["_zend_unset_property"] = Module["asm"]["t3"]).apply(
+      return (_zend_unset_property = Module["_zend_unset_property"] = Module["asm"]["z3"]).apply(
         null,
         arguments,
       );
     });
     var _zend_update_property_bool = (Module["_zend_update_property_bool"] = function () {
       return (_zend_update_property_bool = Module["_zend_update_property_bool"] =
-        Module["asm"]["u3"]).apply(null, arguments);
+        Module["asm"]["A3"]).apply(null, arguments);
     });
     var _zend_update_property_double = (Module["_zend_update_property_double"] = function () {
       return (_zend_update_property_double = Module["_zend_update_property_double"] =
-        Module["asm"]["v3"]).apply(null, arguments);
+        Module["asm"]["B3"]).apply(null, arguments);
     });
     var _zend_update_static_property = (Module["_zend_update_static_property"] = function () {
       return (_zend_update_static_property = Module["_zend_update_static_property"] =
-        Module["asm"]["w3"]).apply(null, arguments);
+        Module["asm"]["C3"]).apply(null, arguments);
     });
     var _zend_update_static_property_null = (Module["_zend_update_static_property_null"] =
       function () {
         return (_zend_update_static_property_null = Module["_zend_update_static_property_null"] =
-          Module["asm"]["x3"]).apply(null, arguments);
+          Module["asm"]["D3"]).apply(null, arguments);
       });
     var _zend_update_static_property_bool = (Module["_zend_update_static_property_bool"] =
       function () {
         return (_zend_update_static_property_bool = Module["_zend_update_static_property_bool"] =
-          Module["asm"]["y3"]).apply(null, arguments);
+          Module["asm"]["E3"]).apply(null, arguments);
       });
     var _zend_update_static_property_long = (Module["_zend_update_static_property_long"] =
       function () {
         return (_zend_update_static_property_long = Module["_zend_update_static_property_long"] =
-          Module["asm"]["z3"]).apply(null, arguments);
+          Module["asm"]["F3"]).apply(null, arguments);
       });
     var _zend_update_static_property_double = (Module["_zend_update_static_property_double"] =
       function () {
         return (_zend_update_static_property_double = Module[
           "_zend_update_static_property_double"
         ] =
-          Module["asm"]["A3"]).apply(null, arguments);
+          Module["asm"]["G3"]).apply(null, arguments);
       });
     var _zend_update_static_property_string = (Module["_zend_update_static_property_string"] =
       function () {
         return (_zend_update_static_property_string = Module[
           "_zend_update_static_property_string"
         ] =
-          Module["asm"]["B3"]).apply(null, arguments);
+          Module["asm"]["H3"]).apply(null, arguments);
       });
     var _zend_update_static_property_stringl = (Module["_zend_update_static_property_stringl"] =
       function () {
         return (_zend_update_static_property_stringl = Module[
           "_zend_update_static_property_stringl"
         ] =
-          Module["asm"]["C3"]).apply(null, arguments);
+          Module["asm"]["I3"]).apply(null, arguments);
       });
     var _zend_read_static_property = (Module["_zend_read_static_property"] = function () {
       return (_zend_read_static_property = Module["_zend_read_static_property"] =
-        Module["asm"]["D3"]).apply(null, arguments);
+        Module["asm"]["J3"]).apply(null, arguments);
     });
     var _zend_save_error_handling = (Module["_zend_save_error_handling"] = function () {
       return (_zend_save_error_handling = Module["_zend_save_error_handling"] =
-        Module["asm"]["E3"]).apply(null, arguments);
+        Module["asm"]["K3"]).apply(null, arguments);
     });
     var _zend_get_object_type_case = (Module["_zend_get_object_type_case"] = function () {
       return (_zend_get_object_type_case = Module["_zend_get_object_type_case"] =
-        Module["asm"]["F3"]).apply(null, arguments);
+        Module["asm"]["L3"]).apply(null, arguments);
     });
     var _zend_active_function_ex = (Module["_zend_active_function_ex"] = function () {
       return (_zend_active_function_ex = Module["_zend_active_function_ex"] =
-        Module["asm"]["G3"]).apply(null, arguments);
+        Module["asm"]["M3"]).apply(null, arguments);
     });
     var _zend_initialize_class_data = (Module["_zend_initialize_class_data"] = function () {
       return (_zend_initialize_class_data = Module["_zend_initialize_class_data"] =
-        Module["asm"]["H3"]).apply(null, arguments);
+        Module["asm"]["N3"]).apply(null, arguments);
     });
     var _zend_do_inheritance_ex = (Module["_zend_do_inheritance_ex"] = function () {
       return (_zend_do_inheritance_ex = Module["_zend_do_inheritance_ex"] =
-        Module["asm"]["I3"]).apply(null, arguments);
+        Module["asm"]["O3"]).apply(null, arguments);
     });
     var _zend_get_call_trampoline_func = (Module["_zend_get_call_trampoline_func"] = function () {
       return (_zend_get_call_trampoline_func = Module["_zend_get_call_trampoline_func"] =
-        Module["asm"]["J3"]).apply(null, arguments);
+        Module["asm"]["P3"]).apply(null, arguments);
     });
     var _zend_std_get_static_method = (Module["_zend_std_get_static_method"] = function () {
       return (_zend_std_get_static_method = Module["_zend_std_get_static_method"] =
-        Module["asm"]["K3"]).apply(null, arguments);
+        Module["asm"]["Q3"]).apply(null, arguments);
     });
     var _zend_check_protected = (Module["_zend_check_protected"] = function () {
-      return (_zend_check_protected = Module["_zend_check_protected"] = Module["asm"]["L3"]).apply(
+      return (_zend_check_protected = Module["_zend_check_protected"] = Module["asm"]["R3"]).apply(
         null,
         arguments,
       );
     });
     var _zend_assign_to_typed_ref = (Module["_zend_assign_to_typed_ref"] = function () {
       return (_zend_assign_to_typed_ref = Module["_zend_assign_to_typed_ref"] =
-        Module["asm"]["M3"]).apply(null, arguments);
+        Module["asm"]["S3"]).apply(null, arguments);
     });
     var _zend_compile_string_to_ast = (Module["_zend_compile_string_to_ast"] = function () {
       return (_zend_compile_string_to_ast = Module["_zend_compile_string_to_ast"] =
-        Module["asm"]["N3"]).apply(null, arguments);
+        Module["asm"]["T3"]).apply(null, arguments);
     });
     var _zend_ast_destroy = (Module["_zend_ast_destroy"] = function () {
-      return (_zend_ast_destroy = Module["_zend_ast_destroy"] = Module["asm"]["O3"]).apply(
+      return (_zend_ast_destroy = Module["_zend_ast_destroy"] = Module["asm"]["U3"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ast_create_znode = (Module["_zend_ast_create_znode"] = function () {
       return (_zend_ast_create_znode = Module["_zend_ast_create_znode"] =
-        Module["asm"]["P3"]).apply(null, arguments);
+        Module["asm"]["V3"]).apply(null, arguments);
     });
     var _zend_ast_create_fcc = (Module["_zend_ast_create_fcc"] = function () {
-      return (_zend_ast_create_fcc = Module["_zend_ast_create_fcc"] = Module["asm"]["Q3"]).apply(
+      return (_zend_ast_create_fcc = Module["_zend_ast_create_fcc"] = Module["asm"]["W3"]).apply(
         null,
         arguments,
       );
@@ -21946,148 +21978,148 @@ var PHP = (() => {
     var _zend_ast_create_zval_with_lineno = (Module["_zend_ast_create_zval_with_lineno"] =
       function () {
         return (_zend_ast_create_zval_with_lineno = Module["_zend_ast_create_zval_with_lineno"] =
-          Module["asm"]["R3"]).apply(null, arguments);
+          Module["asm"]["X3"]).apply(null, arguments);
       });
     var _zend_ast_create_zval_ex = (Module["_zend_ast_create_zval_ex"] = function () {
       return (_zend_ast_create_zval_ex = Module["_zend_ast_create_zval_ex"] =
-        Module["asm"]["S3"]).apply(null, arguments);
+        Module["asm"]["Y3"]).apply(null, arguments);
     });
     var _zend_ast_create_zval = (Module["_zend_ast_create_zval"] = function () {
-      return (_zend_ast_create_zval = Module["_zend_ast_create_zval"] = Module["asm"]["T3"]).apply(
+      return (_zend_ast_create_zval = Module["_zend_ast_create_zval"] = Module["asm"]["Z3"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ast_create_zval_from_str = (Module["_zend_ast_create_zval_from_str"] = function () {
       return (_zend_ast_create_zval_from_str = Module["_zend_ast_create_zval_from_str"] =
-        Module["asm"]["U3"]).apply(null, arguments);
+        Module["asm"]["_3"]).apply(null, arguments);
     });
     var _zend_ast_create_zval_from_long = (Module["_zend_ast_create_zval_from_long"] = function () {
       return (_zend_ast_create_zval_from_long = Module["_zend_ast_create_zval_from_long"] =
-        Module["asm"]["V3"]).apply(null, arguments);
+        Module["asm"]["$3"]).apply(null, arguments);
     });
     var _zend_ast_create_constant = (Module["_zend_ast_create_constant"] = function () {
       return (_zend_ast_create_constant = Module["_zend_ast_create_constant"] =
-        Module["asm"]["W3"]).apply(null, arguments);
+        Module["asm"]["a4"]).apply(null, arguments);
     });
     var _zend_ast_create_op_array = (Module["_zend_ast_create_op_array"] = function () {
       return (_zend_ast_create_op_array = Module["_zend_ast_create_op_array"] =
-        Module["asm"]["X3"]).apply(null, arguments);
+        Module["asm"]["b4"]).apply(null, arguments);
     });
     var _zend_ast_create_class_const_or_name = (Module["_zend_ast_create_class_const_or_name"] =
       function () {
         return (_zend_ast_create_class_const_or_name = Module[
           "_zend_ast_create_class_const_or_name"
         ] =
-          Module["asm"]["Y3"]).apply(null, arguments);
+          Module["asm"]["c4"]).apply(null, arguments);
       });
     var _zend_ast_create_1 = (Module["_zend_ast_create_1"] = function () {
-      return (_zend_ast_create_1 = Module["_zend_ast_create_1"] = Module["asm"]["Z3"]).apply(
+      return (_zend_ast_create_1 = Module["_zend_ast_create_1"] = Module["asm"]["d4"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ast_create_2 = (Module["_zend_ast_create_2"] = function () {
-      return (_zend_ast_create_2 = Module["_zend_ast_create_2"] = Module["asm"]["_3"]).apply(
+      return (_zend_ast_create_2 = Module["_zend_ast_create_2"] = Module["asm"]["e4"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ast_create_decl = (Module["_zend_ast_create_decl"] = function () {
-      return (_zend_ast_create_decl = Module["_zend_ast_create_decl"] = Module["asm"]["$3"]).apply(
+      return (_zend_ast_create_decl = Module["_zend_ast_create_decl"] = Module["asm"]["f4"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ast_create_0 = (Module["_zend_ast_create_0"] = function () {
-      return (_zend_ast_create_0 = Module["_zend_ast_create_0"] = Module["asm"]["a4"]).apply(
+      return (_zend_ast_create_0 = Module["_zend_ast_create_0"] = Module["asm"]["g4"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ast_create_3 = (Module["_zend_ast_create_3"] = function () {
-      return (_zend_ast_create_3 = Module["_zend_ast_create_3"] = Module["asm"]["b4"]).apply(
+      return (_zend_ast_create_3 = Module["_zend_ast_create_3"] = Module["asm"]["h4"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ast_create_4 = (Module["_zend_ast_create_4"] = function () {
-      return (_zend_ast_create_4 = Module["_zend_ast_create_4"] = Module["asm"]["c4"]).apply(
+      return (_zend_ast_create_4 = Module["_zend_ast_create_4"] = Module["asm"]["i4"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ast_create_5 = (Module["_zend_ast_create_5"] = function () {
-      return (_zend_ast_create_5 = Module["_zend_ast_create_5"] = Module["asm"]["d4"]).apply(
+      return (_zend_ast_create_5 = Module["_zend_ast_create_5"] = Module["asm"]["j4"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ast_create_va = (Module["_zend_ast_create_va"] = function () {
-      return (_zend_ast_create_va = Module["_zend_ast_create_va"] = Module["asm"]["e4"]).apply(
+      return (_zend_ast_create_va = Module["_zend_ast_create_va"] = Module["asm"]["k4"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ast_create_n = (Module["_zend_ast_create_n"] = function () {
-      return (_zend_ast_create_n = Module["_zend_ast_create_n"] = Module["asm"]["f4"]).apply(
+      return (_zend_ast_create_n = Module["_zend_ast_create_n"] = Module["asm"]["l4"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ast_create_ex_n = (Module["_zend_ast_create_ex_n"] = function () {
-      return (_zend_ast_create_ex_n = Module["_zend_ast_create_ex_n"] = Module["asm"]["g4"]).apply(
+      return (_zend_ast_create_ex_n = Module["_zend_ast_create_ex_n"] = Module["asm"]["m4"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ast_create_list_0 = (Module["_zend_ast_create_list_0"] = function () {
       return (_zend_ast_create_list_0 = Module["_zend_ast_create_list_0"] =
-        Module["asm"]["h4"]).apply(null, arguments);
+        Module["asm"]["n4"]).apply(null, arguments);
     });
     var _zend_ast_create_list_1 = (Module["_zend_ast_create_list_1"] = function () {
       return (_zend_ast_create_list_1 = Module["_zend_ast_create_list_1"] =
-        Module["asm"]["i4"]).apply(null, arguments);
+        Module["asm"]["o4"]).apply(null, arguments);
     });
     var _zend_ast_create_list_2 = (Module["_zend_ast_create_list_2"] = function () {
       return (_zend_ast_create_list_2 = Module["_zend_ast_create_list_2"] =
-        Module["asm"]["j4"]).apply(null, arguments);
+        Module["asm"]["p4"]).apply(null, arguments);
     });
     var _concat_function = (Module["_concat_function"] = function () {
-      return (_concat_function = Module["_concat_function"] = Module["asm"]["k4"]).apply(
+      return (_concat_function = Module["_concat_function"] = Module["asm"]["q4"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ast_list_add = (Module["_zend_ast_list_add"] = function () {
-      return (_zend_ast_list_add = Module["_zend_ast_list_add"] = Module["asm"]["l4"]).apply(
+      return (_zend_ast_list_add = Module["_zend_ast_list_add"] = Module["asm"]["r4"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ast_evaluate_ex = (Module["_zend_ast_evaluate_ex"] = function () {
-      return (_zend_ast_evaluate_ex = Module["_zend_ast_evaluate_ex"] = Module["asm"]["m4"]).apply(
+      return (_zend_ast_evaluate_ex = Module["_zend_ast_evaluate_ex"] = Module["asm"]["s4"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ast_evaluate_inner = (Module["_zend_ast_evaluate_inner"] = function () {
       return (_zend_ast_evaluate_inner = Module["_zend_ast_evaluate_inner"] =
-        Module["asm"]["n4"]).apply(null, arguments);
+        Module["asm"]["t4"]).apply(null, arguments);
     });
     var _is_smaller_function = (Module["_is_smaller_function"] = function () {
-      return (_is_smaller_function = Module["_is_smaller_function"] = Module["asm"]["o4"]).apply(
+      return (_is_smaller_function = Module["_is_smaller_function"] = Module["asm"]["u4"]).apply(
         null,
         arguments,
       );
     });
     var _is_smaller_or_equal_function = (Module["_is_smaller_or_equal_function"] = function () {
       return (_is_smaller_or_equal_function = Module["_is_smaller_or_equal_function"] =
-        Module["asm"]["p4"]).apply(null, arguments);
+        Module["asm"]["v4"]).apply(null, arguments);
     });
     var _zend_fetch_dimension_const = (Module["_zend_fetch_dimension_const"] = function () {
       return (_zend_fetch_dimension_const = Module["_zend_fetch_dimension_const"] =
-        Module["asm"]["q4"]).apply(null, arguments);
+        Module["asm"]["w4"]).apply(null, arguments);
     });
     var _zend_invalid_class_constant_type_error = (Module[
       "_zend_invalid_class_constant_type_error"
@@ -22095,64 +22127,64 @@ var PHP = (() => {
       return (_zend_invalid_class_constant_type_error = Module[
         "_zend_invalid_class_constant_type_error"
       ] =
-        Module["asm"]["r4"]).apply(null, arguments);
+        Module["asm"]["x4"]).apply(null, arguments);
     });
     var _zend_get_class_constant_ex = (Module["_zend_get_class_constant_ex"] = function () {
       return (_zend_get_class_constant_ex = Module["_zend_get_class_constant_ex"] =
-        Module["asm"]["s4"]).apply(null, arguments);
+        Module["asm"]["y4"]).apply(null, arguments);
     });
     var _zend_fetch_function_str = (Module["_zend_fetch_function_str"] = function () {
       return (_zend_fetch_function_str = Module["_zend_fetch_function_str"] =
-        Module["asm"]["t4"]).apply(null, arguments);
+        Module["asm"]["z4"]).apply(null, arguments);
     });
     var _zend_hash_find_ptr_lc = (Module["_zend_hash_find_ptr_lc"] = function () {
       return (_zend_hash_find_ptr_lc = Module["_zend_hash_find_ptr_lc"] =
-        Module["asm"]["u4"]).apply(null, arguments);
+        Module["asm"]["A4"]).apply(null, arguments);
     });
     var _zend_bad_method_call = (Module["_zend_bad_method_call"] = function () {
-      return (_zend_bad_method_call = Module["_zend_bad_method_call"] = Module["asm"]["v4"]).apply(
+      return (_zend_bad_method_call = Module["_zend_bad_method_call"] = Module["asm"]["B4"]).apply(
         null,
         arguments,
       );
     });
     var _zend_undefined_method = (Module["_zend_undefined_method"] = function () {
       return (_zend_undefined_method = Module["_zend_undefined_method"] =
-        Module["asm"]["w4"]).apply(null, arguments);
+        Module["asm"]["C4"]).apply(null, arguments);
     });
     var _zend_non_static_method_call = (Module["_zend_non_static_method_call"] = function () {
       return (_zend_non_static_method_call = Module["_zend_non_static_method_call"] =
-        Module["asm"]["x4"]).apply(null, arguments);
+        Module["asm"]["D4"]).apply(null, arguments);
     });
     var _zend_abstract_method_call = (Module["_zend_abstract_method_call"] = function () {
       return (_zend_abstract_method_call = Module["_zend_abstract_method_call"] =
-        Module["asm"]["y4"]).apply(null, arguments);
+        Module["asm"]["E4"]).apply(null, arguments);
     });
     var _zend_create_closure = (Module["_zend_create_closure"] = function () {
-      return (_zend_create_closure = Module["_zend_create_closure"] = Module["asm"]["z4"]).apply(
+      return (_zend_create_closure = Module["_zend_create_closure"] = Module["asm"]["F4"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ast_evaluate = (Module["_zend_ast_evaluate"] = function () {
-      return (_zend_ast_evaluate = Module["_zend_ast_evaluate"] = Module["asm"]["A4"]).apply(
+      return (_zend_ast_evaluate = Module["_zend_ast_evaluate"] = Module["asm"]["G4"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ast_copy = (Module["_zend_ast_copy"] = function () {
-      return (_zend_ast_copy = Module["_zend_ast_copy"] = Module["asm"]["B4"]).apply(
+      return (_zend_ast_copy = Module["_zend_ast_copy"] = Module["asm"]["H4"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ast_ref_destroy = (Module["_zend_ast_ref_destroy"] = function () {
-      return (_zend_ast_ref_destroy = Module["_zend_ast_ref_destroy"] = Module["asm"]["C4"]).apply(
+      return (_zend_ast_ref_destroy = Module["_zend_ast_ref_destroy"] = Module["asm"]["I4"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ast_apply = (Module["_zend_ast_apply"] = function () {
-      return (_zend_ast_apply = Module["_zend_ast_apply"] = Module["asm"]["D4"]).apply(
+      return (_zend_ast_apply = Module["_zend_ast_apply"] = Module["asm"]["J4"]).apply(
         null,
         arguments,
       );
@@ -22163,140 +22195,140 @@ var PHP = (() => {
       return (_zend_std_build_object_properties_array = Module[
         "_zend_std_build_object_properties_array"
       ] =
-        Module["asm"]["E4"]).apply(null, arguments);
+        Module["asm"]["K4"]).apply(null, arguments);
     });
     var _zend_symtable_to_proptable = (Module["_zend_symtable_to_proptable"] = function () {
       return (_zend_symtable_to_proptable = Module["_zend_symtable_to_proptable"] =
-        Module["asm"]["F4"]).apply(null, arguments);
+        Module["asm"]["L4"]).apply(null, arguments);
     });
     var _zend_fetch_class_with_scope = (Module["_zend_fetch_class_with_scope"] = function () {
       return (_zend_fetch_class_with_scope = Module["_zend_fetch_class_with_scope"] =
-        Module["asm"]["G4"]).apply(null, arguments);
+        Module["asm"]["M4"]).apply(null, arguments);
     });
     var _function_add_ref = (Module["_function_add_ref"] = function () {
-      return (_function_add_ref = Module["_function_add_ref"] = Module["asm"]["H4"]).apply(
+      return (_function_add_ref = Module["_function_add_ref"] = Module["asm"]["N4"]).apply(
         null,
         arguments,
       );
     });
     var _zend_atomic_bool_init = (Module["_zend_atomic_bool_init"] = function () {
       return (_zend_atomic_bool_init = Module["_zend_atomic_bool_init"] =
-        Module["asm"]["I4"]).apply(null, arguments);
+        Module["asm"]["O4"]).apply(null, arguments);
     });
     var _zend_atomic_int_init = (Module["_zend_atomic_int_init"] = function () {
-      return (_zend_atomic_int_init = Module["_zend_atomic_int_init"] = Module["asm"]["J4"]).apply(
+      return (_zend_atomic_int_init = Module["_zend_atomic_int_init"] = Module["asm"]["P4"]).apply(
         null,
         arguments,
       );
     });
     var _zend_atomic_bool_exchange = (Module["_zend_atomic_bool_exchange"] = function () {
       return (_zend_atomic_bool_exchange = Module["_zend_atomic_bool_exchange"] =
-        Module["asm"]["K4"]).apply(null, arguments);
+        Module["asm"]["Q4"]).apply(null, arguments);
     });
     var _zend_atomic_bool_compare_exchange = (Module["_zend_atomic_bool_compare_exchange"] =
       function () {
         return (_zend_atomic_bool_compare_exchange = Module["_zend_atomic_bool_compare_exchange"] =
-          Module["asm"]["L4"]).apply(null, arguments);
+          Module["asm"]["R4"]).apply(null, arguments);
       });
     var _zend_atomic_int_compare_exchange = (Module["_zend_atomic_int_compare_exchange"] =
       function () {
         return (_zend_atomic_int_compare_exchange = Module["_zend_atomic_int_compare_exchange"] =
-          Module["asm"]["M4"]).apply(null, arguments);
+          Module["asm"]["S4"]).apply(null, arguments);
       });
     var _zend_atomic_bool_store = (Module["_zend_atomic_bool_store"] = function () {
       return (_zend_atomic_bool_store = Module["_zend_atomic_bool_store"] =
-        Module["asm"]["N4"]).apply(null, arguments);
+        Module["asm"]["T4"]).apply(null, arguments);
     });
     var _zend_atomic_int_store = (Module["_zend_atomic_int_store"] = function () {
       return (_zend_atomic_int_store = Module["_zend_atomic_int_store"] =
-        Module["asm"]["O4"]).apply(null, arguments);
+        Module["asm"]["U4"]).apply(null, arguments);
     });
     var _zend_atomic_bool_load = (Module["_zend_atomic_bool_load"] = function () {
       return (_zend_atomic_bool_load = Module["_zend_atomic_bool_load"] =
-        Module["asm"]["P4"]).apply(null, arguments);
+        Module["asm"]["V4"]).apply(null, arguments);
     });
     var _zend_atomic_int_load = (Module["_zend_atomic_int_load"] = function () {
-      return (_zend_atomic_int_load = Module["_zend_atomic_int_load"] = Module["asm"]["Q4"]).apply(
+      return (_zend_atomic_int_load = Module["_zend_atomic_int_load"] = Module["asm"]["W4"]).apply(
         null,
         arguments,
       );
     });
     var _zend_get_attribute = (Module["_zend_get_attribute"] = function () {
-      return (_zend_get_attribute = Module["_zend_get_attribute"] = Module["asm"]["R4"]).apply(
+      return (_zend_get_attribute = Module["_zend_get_attribute"] = Module["asm"]["X4"]).apply(
         null,
         arguments,
       );
     });
     var _zend_get_parameter_attribute = (Module["_zend_get_parameter_attribute"] = function () {
       return (_zend_get_parameter_attribute = Module["_zend_get_parameter_attribute"] =
-        Module["asm"]["S4"]).apply(null, arguments);
+        Module["asm"]["Y4"]).apply(null, arguments);
     });
     var _zend_get_parameter_attribute_str = (Module["_zend_get_parameter_attribute_str"] =
       function () {
         return (_zend_get_parameter_attribute_str = Module["_zend_get_parameter_attribute_str"] =
-          Module["asm"]["T4"]).apply(null, arguments);
+          Module["asm"]["Z4"]).apply(null, arguments);
       });
     var _zend_mark_internal_attribute = (Module["_zend_mark_internal_attribute"] = function () {
       return (_zend_mark_internal_attribute = Module["_zend_mark_internal_attribute"] =
-        Module["asm"]["U4"]).apply(null, arguments);
+        Module["asm"]["_4"]).apply(null, arguments);
     });
     var _zend_internal_attribute_register = (Module["_zend_internal_attribute_register"] =
       function () {
         return (_zend_internal_attribute_register = Module["_zend_internal_attribute_register"] =
-          Module["asm"]["V4"]).apply(null, arguments);
+          Module["asm"]["$4"]).apply(null, arguments);
       });
     var _zend_internal_attribute_get = (Module["_zend_internal_attribute_get"] = function () {
       return (_zend_internal_attribute_get = Module["_zend_internal_attribute_get"] =
-        Module["asm"]["W4"]).apply(null, arguments);
+        Module["asm"]["a5"]).apply(null, arguments);
     });
     var _zend_vm_stack_extend = (Module["_zend_vm_stack_extend"] = function () {
-      return (_zend_vm_stack_extend = Module["_zend_vm_stack_extend"] = Module["asm"]["X4"]).apply(
+      return (_zend_vm_stack_extend = Module["_zend_vm_stack_extend"] = Module["asm"]["b5"]).apply(
         null,
         arguments,
       );
     });
     var _zval_internal_ptr_dtor = (Module["_zval_internal_ptr_dtor"] = function () {
       return (_zval_internal_ptr_dtor = Module["_zval_internal_ptr_dtor"] =
-        Module["asm"]["Y4"]).apply(null, arguments);
+        Module["asm"]["c5"]).apply(null, arguments);
     });
     var _zend_register_default_classes = (Module["_zend_register_default_classes"] = function () {
       return (_zend_register_default_classes = Module["_zend_register_default_classes"] =
-        Module["asm"]["Z4"]).apply(null, arguments);
+        Module["asm"]["d5"]).apply(null, arguments);
     });
     var _gc_enabled = (Module["_gc_enabled"] = function () {
-      return (_gc_enabled = Module["_gc_enabled"] = Module["asm"]["_4"]).apply(null, arguments);
+      return (_gc_enabled = Module["_gc_enabled"] = Module["asm"]["e5"]).apply(null, arguments);
     });
     var _zend_gc_get_status = (Module["_zend_gc_get_status"] = function () {
-      return (_zend_gc_get_status = Module["_zend_gc_get_status"] = Module["asm"]["$4"]).apply(
+      return (_zend_gc_get_status = Module["_zend_gc_get_status"] = Module["asm"]["f5"]).apply(
         null,
         arguments,
       );
     });
     var _zend_register_constant = (Module["_zend_register_constant"] = function () {
       return (_zend_register_constant = Module["_zend_register_constant"] =
-        Module["asm"]["a5"]).apply(null, arguments);
+        Module["asm"]["g5"]).apply(null, arguments);
     });
     var _zend_error_zstr_at = (Module["_zend_error_zstr_at"] = function () {
-      return (_zend_error_zstr_at = Module["_zend_error_zstr_at"] = Module["asm"]["b5"]).apply(
+      return (_zend_error_zstr_at = Module["_zend_error_zstr_at"] = Module["asm"]["h5"]).apply(
         null,
         arguments,
       );
     });
     var _zend_stack_is_empty = (Module["_zend_stack_is_empty"] = function () {
-      return (_zend_stack_is_empty = Module["_zend_stack_is_empty"] = Module["asm"]["c5"]).apply(
+      return (_zend_stack_is_empty = Module["_zend_stack_is_empty"] = Module["asm"]["i5"]).apply(
         null,
         arguments,
       );
     });
     var _zend_stack_int_top = (Module["_zend_stack_int_top"] = function () {
-      return (_zend_stack_int_top = Module["_zend_stack_int_top"] = Module["asm"]["d5"]).apply(
+      return (_zend_stack_int_top = Module["_zend_stack_int_top"] = Module["asm"]["j5"]).apply(
         null,
         arguments,
       );
     });
     var _zend_fetch_list_dtor_id = (Module["_zend_fetch_list_dtor_id"] = function () {
       return (_zend_fetch_list_dtor_id = Module["_zend_fetch_list_dtor_id"] =
-        Module["asm"]["e5"]).apply(null, arguments);
+        Module["asm"]["k5"]).apply(null, arguments);
     });
     var _zend_generator_check_placeholder_frame = (Module[
       "_zend_generator_check_placeholder_frame"
@@ -22304,95 +22336,95 @@ var PHP = (() => {
       return (_zend_generator_check_placeholder_frame = Module[
         "_zend_generator_check_placeholder_frame"
       ] =
-        Module["asm"]["f5"]).apply(null, arguments);
+        Module["asm"]["l5"]).apply(null, arguments);
     });
     var _zend_get_zval_ptr = (Module["_zend_get_zval_ptr"] = function () {
-      return (_zend_get_zval_ptr = Module["_zend_get_zval_ptr"] = Module["asm"]["g5"]).apply(
+      return (_zend_get_zval_ptr = Module["_zend_get_zval_ptr"] = Module["asm"]["m5"]).apply(
         null,
         arguments,
       );
     });
     var _zend_std_get_class_name = (Module["_zend_std_get_class_name"] = function () {
       return (_zend_std_get_class_name = Module["_zend_std_get_class_name"] =
-        Module["asm"]["h5"]).apply(null, arguments);
+        Module["asm"]["n5"]).apply(null, arguments);
     });
     var _zend_destroy_static_vars = (Module["_zend_destroy_static_vars"] = function () {
       return (_zend_destroy_static_vars = Module["_zend_destroy_static_vars"] =
-        Module["asm"]["i5"]).apply(null, arguments);
+        Module["asm"]["o5"]).apply(null, arguments);
     });
     var _zend_init_rsrc_list = (Module["_zend_init_rsrc_list"] = function () {
-      return (_zend_init_rsrc_list = Module["_zend_init_rsrc_list"] = Module["asm"]["j5"]).apply(
+      return (_zend_init_rsrc_list = Module["_zend_init_rsrc_list"] = Module["asm"]["p5"]).apply(
         null,
         arguments,
       );
     });
     var _zend_restore_compiled_filename = (Module["_zend_restore_compiled_filename"] = function () {
       return (_zend_restore_compiled_filename = Module["_zend_restore_compiled_filename"] =
-        Module["asm"]["k5"]).apply(null, arguments);
+        Module["asm"]["q5"]).apply(null, arguments);
     });
     var _do_bind_function = (Module["_do_bind_function"] = function () {
-      return (_do_bind_function = Module["_do_bind_function"] = Module["asm"]["l5"]).apply(
+      return (_do_bind_function = Module["_do_bind_function"] = Module["asm"]["r5"]).apply(
         null,
         arguments,
       );
     });
     var _zend_bind_class_in_slot = (Module["_zend_bind_class_in_slot"] = function () {
       return (_zend_bind_class_in_slot = Module["_zend_bind_class_in_slot"] =
-        Module["asm"]["m5"]).apply(null, arguments);
+        Module["asm"]["s5"]).apply(null, arguments);
     });
     var _do_bind_class = (Module["_do_bind_class"] = function () {
-      return (_do_bind_class = Module["_do_bind_class"] = Module["asm"]["n5"]).apply(
+      return (_do_bind_class = Module["_do_bind_class"] = Module["asm"]["t5"]).apply(
         null,
         arguments,
       );
     });
     var _zend_is_auto_global_str = (Module["_zend_is_auto_global_str"] = function () {
       return (_zend_is_auto_global_str = Module["_zend_is_auto_global_str"] =
-        Module["asm"]["o5"]).apply(null, arguments);
+        Module["asm"]["u5"]).apply(null, arguments);
     });
     var _lex_scan = (Module["_lex_scan"] = function () {
-      return (_lex_scan = Module["_lex_scan"] = Module["asm"]["p5"]).apply(null, arguments);
+      return (_lex_scan = Module["_lex_scan"] = Module["asm"]["v5"]).apply(null, arguments);
     });
     var _zend_get_compiled_variable_name = (Module["_zend_get_compiled_variable_name"] =
       function () {
         return (_zend_get_compiled_variable_name = Module["_zend_get_compiled_variable_name"] =
-          Module["asm"]["q5"]).apply(null, arguments);
+          Module["asm"]["w5"]).apply(null, arguments);
       });
     var _zend_is_smart_branch = (Module["_zend_is_smart_branch"] = function () {
-      return (_zend_is_smart_branch = Module["_zend_is_smart_branch"] = Module["asm"]["r5"]).apply(
+      return (_zend_is_smart_branch = Module["_zend_is_smart_branch"] = Module["asm"]["x5"]).apply(
         null,
         arguments,
       );
     });
     var _execute_ex = (Module["_execute_ex"] = function () {
-      return (_execute_ex = Module["_execute_ex"] = Module["asm"]["s5"]).apply(null, arguments);
+      return (_execute_ex = Module["_execute_ex"] = Module["asm"]["y5"]).apply(null, arguments);
     });
     var _zend_multibyte_fetch_encoding = (Module["_zend_multibyte_fetch_encoding"] = function () {
       return (_zend_multibyte_fetch_encoding = Module["_zend_multibyte_fetch_encoding"] =
-        Module["asm"]["t5"]).apply(null, arguments);
+        Module["asm"]["z5"]).apply(null, arguments);
     });
     var _zend_multibyte_set_filter = (Module["_zend_multibyte_set_filter"] = function () {
       return (_zend_multibyte_set_filter = Module["_zend_multibyte_set_filter"] =
-        Module["asm"]["u5"]).apply(null, arguments);
+        Module["asm"]["A5"]).apply(null, arguments);
     });
     var _zend_multibyte_yyinput_again = (Module["_zend_multibyte_yyinput_again"] = function () {
       return (_zend_multibyte_yyinput_again = Module["_zend_multibyte_yyinput_again"] =
-        Module["asm"]["v5"]).apply(null, arguments);
+        Module["asm"]["B5"]).apply(null, arguments);
     });
     var _zend_is_op_long_compatible = (Module["_zend_is_op_long_compatible"] = function () {
       return (_zend_is_op_long_compatible = Module["_zend_is_op_long_compatible"] =
-        Module["asm"]["w5"]).apply(null, arguments);
+        Module["asm"]["C5"]).apply(null, arguments);
     });
     var _pass_two = (Module["_pass_two"] = function () {
-      return (_pass_two = Module["_pass_two"] = Module["asm"]["x5"]).apply(null, arguments);
+      return (_pass_two = Module["_pass_two"] = Module["asm"]["D5"]).apply(null, arguments);
     });
     var _zend_error_noreturn_unchecked = (Module["_zend_error_noreturn_unchecked"] = function () {
       return (_zend_error_noreturn_unchecked = Module["_zend_error_noreturn_unchecked"] =
-        Module["asm"]["y5"]).apply(null, arguments);
+        Module["asm"]["E5"]).apply(null, arguments);
     });
     var _get_function_or_method_name = (Module["_get_function_or_method_name"] = function () {
       return (_get_function_or_method_name = Module["_get_function_or_method_name"] =
-        Module["asm"]["z5"]).apply(null, arguments);
+        Module["asm"]["F5"]).apply(null, arguments);
     });
     var _zend_hooked_property_variance_error_ex = (Module[
       "_zend_hooked_property_variance_error_ex"
@@ -22400,153 +22432,153 @@ var PHP = (() => {
       return (_zend_hooked_property_variance_error_ex = Module[
         "_zend_hooked_property_variance_error_ex"
       ] =
-        Module["asm"]["A5"]).apply(null, arguments);
+        Module["asm"]["G5"]).apply(null, arguments);
     });
     var _zend_verify_property_hook_variance = (Module["_zend_verify_property_hook_variance"] =
       function () {
         return (_zend_verify_property_hook_variance = Module[
           "_zend_verify_property_hook_variance"
         ] =
-          Module["asm"]["B5"]).apply(null, arguments);
+          Module["asm"]["H5"]).apply(null, arguments);
       });
     var _zend_hooked_property_variance_error = (Module["_zend_hooked_property_variance_error"] =
       function () {
         return (_zend_hooked_property_variance_error = Module[
           "_zend_hooked_property_variance_error"
         ] =
-          Module["asm"]["C5"]).apply(null, arguments);
+          Module["asm"]["I5"]).apply(null, arguments);
       });
     var _zend_verify_hooked_property = (Module["_zend_verify_hooked_property"] = function () {
       return (_zend_verify_hooked_property = Module["_zend_verify_hooked_property"] =
-        Module["asm"]["D5"]).apply(null, arguments);
+        Module["asm"]["J5"]).apply(null, arguments);
     });
     var _zend_register_null_constant = (Module["_zend_register_null_constant"] = function () {
       return (_zend_register_null_constant = Module["_zend_register_null_constant"] =
-        Module["asm"]["E5"]).apply(null, arguments);
+        Module["asm"]["K5"]).apply(null, arguments);
     });
     var _zend_verify_const_access = (Module["_zend_verify_const_access"] = function () {
       return (_zend_verify_const_access = Module["_zend_verify_const_access"] =
-        Module["asm"]["F5"]).apply(null, arguments);
+        Module["asm"]["L5"]).apply(null, arguments);
     });
     var _zend_get_constant = (Module["_zend_get_constant"] = function () {
-      return (_zend_get_constant = Module["_zend_get_constant"] = Module["asm"]["G5"]).apply(
+      return (_zend_get_constant = Module["_zend_get_constant"] = Module["asm"]["M5"]).apply(
         null,
         arguments,
       );
     });
     var _zend_fetch_class = (Module["_zend_fetch_class"] = function () {
-      return (_zend_fetch_class = Module["_zend_fetch_class"] = Module["asm"]["H5"]).apply(
+      return (_zend_fetch_class = Module["_zend_fetch_class"] = Module["asm"]["N5"]).apply(
         null,
         arguments,
       );
     });
     var _zend_deprecated_class_constant = (Module["_zend_deprecated_class_constant"] = function () {
       return (_zend_deprecated_class_constant = Module["_zend_deprecated_class_constant"] =
-        Module["asm"]["I5"]).apply(null, arguments);
+        Module["asm"]["O5"]).apply(null, arguments);
     });
     var _zend_deprecated_constant = (Module["_zend_deprecated_constant"] = function () {
       return (_zend_deprecated_constant = Module["_zend_deprecated_constant"] =
-        Module["asm"]["J5"]).apply(null, arguments);
+        Module["asm"]["P5"]).apply(null, arguments);
     });
     var _zend_cpu_supports = (Module["_zend_cpu_supports"] = function () {
-      return (_zend_cpu_supports = Module["_zend_cpu_supports"] = Module["asm"]["K5"]).apply(
+      return (_zend_cpu_supports = Module["_zend_cpu_supports"] = Module["asm"]["Q5"]).apply(
         null,
         arguments,
       );
     });
     var _zend_register_interfaces = (Module["_zend_register_interfaces"] = function () {
       return (_zend_register_interfaces = Module["_zend_register_interfaces"] =
-        Module["asm"]["L5"]).apply(null, arguments);
+        Module["asm"]["R5"]).apply(null, arguments);
     });
     var _zend_register_iterator_wrapper = (Module["_zend_register_iterator_wrapper"] = function () {
       return (_zend_register_iterator_wrapper = Module["_zend_register_iterator_wrapper"] =
-        Module["asm"]["M5"]).apply(null, arguments);
+        Module["asm"]["S5"]).apply(null, arguments);
     });
     var _zend_enum_get_case_by_value = (Module["_zend_enum_get_case_by_value"] = function () {
       return (_zend_enum_get_case_by_value = Module["_zend_enum_get_case_by_value"] =
-        Module["asm"]["N5"]).apply(null, arguments);
+        Module["asm"]["T5"]).apply(null, arguments);
     });
     var _zend_enum_add_case = (Module["_zend_enum_add_case"] = function () {
-      return (_zend_enum_add_case = Module["_zend_enum_add_case"] = Module["asm"]["O5"]).apply(
+      return (_zend_enum_add_case = Module["_zend_enum_add_case"] = Module["asm"]["U5"]).apply(
         null,
         arguments,
       );
     });
     var _zend_enum_get_case = (Module["_zend_enum_get_case"] = function () {
-      return (_zend_enum_get_case = Module["_zend_enum_get_case"] = Module["asm"]["P5"]).apply(
+      return (_zend_enum_get_case = Module["_zend_enum_get_case"] = Module["asm"]["V5"]).apply(
         null,
         arguments,
       );
     });
     var _zend_get_exception_base = (Module["_zend_get_exception_base"] = function () {
       return (_zend_get_exception_base = Module["_zend_get_exception_base"] =
-        Module["asm"]["Q5"]).apply(null, arguments);
+        Module["asm"]["W5"]).apply(null, arguments);
     });
     var _zend_exception_set_previous = (Module["_zend_exception_set_previous"] = function () {
       return (_zend_exception_set_previous = Module["_zend_exception_set_previous"] =
-        Module["asm"]["R5"]).apply(null, arguments);
+        Module["asm"]["X5"]).apply(null, arguments);
     });
     var _zend_exception_save = (Module["_zend_exception_save"] = function () {
-      return (_zend_exception_save = Module["_zend_exception_save"] = Module["asm"]["S5"]).apply(
+      return (_zend_exception_save = Module["_zend_exception_save"] = Module["asm"]["Y5"]).apply(
         null,
         arguments,
       );
     });
     var _zend_create_unwind_exit = (Module["_zend_create_unwind_exit"] = function () {
       return (_zend_create_unwind_exit = Module["_zend_create_unwind_exit"] =
-        Module["asm"]["T5"]).apply(null, arguments);
+        Module["asm"]["Z5"]).apply(null, arguments);
     });
     var _zend_create_graceful_exit = (Module["_zend_create_graceful_exit"] = function () {
       return (_zend_create_graceful_exit = Module["_zend_create_graceful_exit"] =
-        Module["asm"]["U5"]).apply(null, arguments);
+        Module["asm"]["_5"]).apply(null, arguments);
     });
     var _zend_throw_graceful_exit = (Module["_zend_throw_graceful_exit"] = function () {
       return (_zend_throw_graceful_exit = Module["_zend_throw_graceful_exit"] =
-        Module["asm"]["V5"]).apply(null, arguments);
+        Module["asm"]["$5"]).apply(null, arguments);
     });
     var __zend_observer_error_notify = (Module["__zend_observer_error_notify"] = function () {
       return (__zend_observer_error_notify = Module["__zend_observer_error_notify"] =
-        Module["asm"]["W5"]).apply(null, arguments);
+        Module["asm"]["a6"]).apply(null, arguments);
     });
     var _zend_init_fpu = (Module["_zend_init_fpu"] = function () {
-      return (_zend_init_fpu = Module["_zend_init_fpu"] = Module["asm"]["X5"]).apply(
+      return (_zend_init_fpu = Module["_zend_init_fpu"] = Module["asm"]["b6"]).apply(
         null,
         arguments,
       );
     });
     var _zend_vm_stack_init = (Module["_zend_vm_stack_init"] = function () {
-      return (_zend_vm_stack_init = Module["_zend_vm_stack_init"] = Module["asm"]["Y5"]).apply(
+      return (_zend_vm_stack_init = Module["_zend_vm_stack_init"] = Module["asm"]["c6"]).apply(
         null,
         arguments,
       );
     });
     var _zend_objects_store_init = (Module["_zend_objects_store_init"] = function () {
       return (_zend_objects_store_init = Module["_zend_objects_store_init"] =
-        Module["asm"]["Z5"]).apply(null, arguments);
+        Module["asm"]["d6"]).apply(null, arguments);
     });
     var _zend_hash_reverse_apply = (Module["_zend_hash_reverse_apply"] = function () {
       return (_zend_hash_reverse_apply = Module["_zend_hash_reverse_apply"] =
-        Module["asm"]["_5"]).apply(null, arguments);
+        Module["asm"]["e6"]).apply(null, arguments);
     });
     var _zend_objects_store_call_destructors = (Module["_zend_objects_store_call_destructors"] =
       function () {
         return (_zend_objects_store_call_destructors = Module[
           "_zend_objects_store_call_destructors"
         ] =
-          Module["asm"]["$5"]).apply(null, arguments);
+          Module["asm"]["f6"]).apply(null, arguments);
       });
     var _zend_cleanup_internal_class_data = (Module["_zend_cleanup_internal_class_data"] =
       function () {
         return (_zend_cleanup_internal_class_data = Module["_zend_cleanup_internal_class_data"] =
-          Module["asm"]["a6"]).apply(null, arguments);
+          Module["asm"]["g6"]).apply(null, arguments);
       });
     var _zend_cleanup_mutable_class_data = (Module["_zend_cleanup_mutable_class_data"] =
       function () {
         return (_zend_cleanup_mutable_class_data = Module["_zend_cleanup_mutable_class_data"] =
-          Module["asm"]["b6"]).apply(null, arguments);
+          Module["asm"]["h6"]).apply(null, arguments);
       });
     var _zend_stack_clean = (Module["_zend_stack_clean"] = function () {
-      return (_zend_stack_clean = Module["_zend_stack_clean"] = Module["asm"]["c6"]).apply(
+      return (_zend_stack_clean = Module["_zend_stack_clean"] = Module["asm"]["i6"]).apply(
         null,
         arguments,
       );
@@ -22557,107 +22589,107 @@ var PHP = (() => {
       return (_zend_objects_store_free_object_storage = Module[
         "_zend_objects_store_free_object_storage"
       ] =
-        Module["asm"]["d6"]).apply(null, arguments);
+        Module["asm"]["j6"]).apply(null, arguments);
     });
     var _zend_vm_stack_destroy = (Module["_zend_vm_stack_destroy"] = function () {
       return (_zend_vm_stack_destroy = Module["_zend_vm_stack_destroy"] =
-        Module["asm"]["e6"]).apply(null, arguments);
+        Module["asm"]["k6"]).apply(null, arguments);
     });
     var _zend_objects_store_destroy = (Module["_zend_objects_store_destroy"] = function () {
       return (_zend_objects_store_destroy = Module["_zend_objects_store_destroy"] =
-        Module["asm"]["f6"]).apply(null, arguments);
+        Module["asm"]["l6"]).apply(null, arguments);
     });
     var _zend_shutdown_fpu = (Module["_zend_shutdown_fpu"] = function () {
-      return (_zend_shutdown_fpu = Module["_zend_shutdown_fpu"] = Module["asm"]["g6"]).apply(
+      return (_zend_shutdown_fpu = Module["_zend_shutdown_fpu"] = Module["asm"]["m6"]).apply(
         null,
         arguments,
       );
     });
     var _get_function_arg_name = (Module["_get_function_arg_name"] = function () {
       return (_get_function_arg_name = Module["_get_function_arg_name"] =
-        Module["asm"]["h6"]).apply(null, arguments);
+        Module["asm"]["n6"]).apply(null, arguments);
     });
     var _zval_update_constant_with_ctx = (Module["_zval_update_constant_with_ctx"] = function () {
       return (_zval_update_constant_with_ctx = Module["_zval_update_constant_with_ctx"] =
-        Module["asm"]["i6"]).apply(null, arguments);
+        Module["asm"]["o6"]).apply(null, arguments);
     });
     var _zval_update_constant = (Module["_zval_update_constant"] = function () {
-      return (_zval_update_constant = Module["_zval_update_constant"] = Module["asm"]["j6"]).apply(
+      return (_zval_update_constant = Module["_zval_update_constant"] = Module["asm"]["p6"]).apply(
         null,
         arguments,
       );
     });
     var _zend_deprecated_function = (Module["_zend_deprecated_function"] = function () {
       return (_zend_deprecated_function = Module["_zend_deprecated_function"] =
-        Module["asm"]["k6"]).apply(null, arguments);
+        Module["asm"]["q6"]).apply(null, arguments);
     });
     var _zend_free_extra_named_params = (Module["_zend_free_extra_named_params"] = function () {
       return (_zend_free_extra_named_params = Module["_zend_free_extra_named_params"] =
-        Module["asm"]["l6"]).apply(null, arguments);
+        Module["asm"]["r6"]).apply(null, arguments);
     });
     var _zend_handle_undef_args = (Module["_zend_handle_undef_args"] = function () {
       return (_zend_handle_undef_args = Module["_zend_handle_undef_args"] =
-        Module["asm"]["m6"]).apply(null, arguments);
+        Module["asm"]["s6"]).apply(null, arguments);
     });
     var _zend_init_func_execute_data = (Module["_zend_init_func_execute_data"] = function () {
       return (_zend_init_func_execute_data = Module["_zend_init_func_execute_data"] =
-        Module["asm"]["n6"]).apply(null, arguments);
+        Module["asm"]["t6"]).apply(null, arguments);
     });
     var _zend_observer_fcall_begin = (Module["_zend_observer_fcall_begin"] = function () {
       return (_zend_observer_fcall_begin = Module["_zend_observer_fcall_begin"] =
-        Module["asm"]["o6"]).apply(null, arguments);
+        Module["asm"]["u6"]).apply(null, arguments);
     });
     var _zend_timeout = (Module["_zend_timeout"] = function () {
-      return (_zend_timeout = Module["_zend_timeout"] = Module["asm"]["p6"]).apply(null, arguments);
+      return (_zend_timeout = Module["_zend_timeout"] = Module["asm"]["v6"]).apply(null, arguments);
     });
     var _zend_hash_index_add_empty_element = (Module["_zend_hash_index_add_empty_element"] =
       function () {
         return (_zend_hash_index_add_empty_element = Module["_zend_hash_index_add_empty_element"] =
-          Module["asm"]["q6"]).apply(null, arguments);
+          Module["asm"]["w6"]).apply(null, arguments);
       });
     var _zend_eval_stringl = (Module["_zend_eval_stringl"] = function () {
-      return (_zend_eval_stringl = Module["_zend_eval_stringl"] = Module["asm"]["r6"]).apply(
+      return (_zend_eval_stringl = Module["_zend_eval_stringl"] = Module["asm"]["x6"]).apply(
         null,
         arguments,
       );
     });
     var _zend_eval_stringl_ex = (Module["_zend_eval_stringl_ex"] = function () {
-      return (_zend_eval_stringl_ex = Module["_zend_eval_stringl_ex"] = Module["asm"]["s6"]).apply(
+      return (_zend_eval_stringl_ex = Module["_zend_eval_stringl_ex"] = Module["asm"]["y6"]).apply(
         null,
         arguments,
       );
     });
     var _zend_eval_string_ex = (Module["_zend_eval_string_ex"] = function () {
-      return (_zend_eval_string_ex = Module["_zend_eval_string_ex"] = Module["asm"]["t6"]).apply(
+      return (_zend_eval_string_ex = Module["_zend_eval_string_ex"] = Module["asm"]["z6"]).apply(
         null,
         arguments,
       );
     });
     var _setitimer = (Module["_setitimer"] = function () {
-      return (_setitimer = Module["_setitimer"] = Module["asm"]["u6"]).apply(null, arguments);
+      return (_setitimer = Module["_setitimer"] = Module["asm"]["A6"]).apply(null, arguments);
     });
     var _zend_hash_del_ind = (Module["_zend_hash_del_ind"] = function () {
-      return (_zend_hash_del_ind = Module["_zend_hash_del_ind"] = Module["asm"]["v6"]).apply(
+      return (_zend_hash_del_ind = Module["_zend_hash_del_ind"] = Module["asm"]["B6"]).apply(
         null,
         arguments,
       );
     });
     var _zend_attach_symbol_table = (Module["_zend_attach_symbol_table"] = function () {
       return (_zend_attach_symbol_table = Module["_zend_attach_symbol_table"] =
-        Module["asm"]["w6"]).apply(null, arguments);
+        Module["asm"]["C6"]).apply(null, arguments);
     });
     var _zend_detach_symbol_table = (Module["_zend_detach_symbol_table"] = function () {
       return (_zend_detach_symbol_table = Module["_zend_detach_symbol_table"] =
-        Module["asm"]["x6"]).apply(null, arguments);
+        Module["asm"]["D6"]).apply(null, arguments);
     });
     var _zend_set_local_var = (Module["_zend_set_local_var"] = function () {
-      return (_zend_set_local_var = Module["_zend_set_local_var"] = Module["asm"]["y6"]).apply(
+      return (_zend_set_local_var = Module["_zend_set_local_var"] = Module["asm"]["E6"]).apply(
         null,
         arguments,
       );
     });
     var _zend_hash_func = (Module["_zend_hash_func"] = function () {
-      return (_zend_hash_func = Module["_zend_hash_func"] = Module["asm"]["z6"]).apply(
+      return (_zend_hash_func = Module["_zend_hash_func"] = Module["asm"]["F6"]).apply(
         null,
         arguments,
       );
@@ -22667,40 +22699,40 @@ var PHP = (() => {
         return (_zend_observer_fcall_end_prechecked = Module[
           "_zend_observer_fcall_end_prechecked"
         ] =
-          Module["asm"]["A6"]).apply(null, arguments);
+          Module["asm"]["G6"]).apply(null, arguments);
       });
     var _zend_signal = (Module["_zend_signal"] = function () {
-      return (_zend_signal = Module["_zend_signal"] = Module["asm"]["B6"]).apply(null, arguments);
+      return (_zend_signal = Module["_zend_signal"] = Module["asm"]["H6"]).apply(null, arguments);
     });
     var __exit = (Module["__exit"] = function () {
-      return (__exit = Module["__exit"] = Module["asm"]["C6"]).apply(null, arguments);
+      return (__exit = Module["__exit"] = Module["asm"]["I6"]).apply(null, arguments);
     });
     var _zend_vm_stack_init_ex = (Module["_zend_vm_stack_init_ex"] = function () {
       return (_zend_vm_stack_init_ex = Module["_zend_vm_stack_init_ex"] =
-        Module["asm"]["D6"]).apply(null, arguments);
+        Module["asm"]["J6"]).apply(null, arguments);
     });
     var _zend_get_compiled_variable_value = (Module["_zend_get_compiled_variable_value"] =
       function () {
         return (_zend_get_compiled_variable_value = Module["_zend_get_compiled_variable_value"] =
-          Module["asm"]["E6"]).apply(null, arguments);
+          Module["asm"]["K6"]).apply(null, arguments);
       });
     var _zend_gcc_global_regs = (Module["_zend_gcc_global_regs"] = function () {
-      return (_zend_gcc_global_regs = Module["_zend_gcc_global_regs"] = Module["asm"]["F6"]).apply(
+      return (_zend_gcc_global_regs = Module["_zend_gcc_global_regs"] = Module["asm"]["L6"]).apply(
         null,
         arguments,
       );
     });
     var _zend_cannot_pass_by_reference = (Module["_zend_cannot_pass_by_reference"] = function () {
       return (_zend_cannot_pass_by_reference = Module["_zend_cannot_pass_by_reference"] =
-        Module["asm"]["G6"]).apply(null, arguments);
+        Module["asm"]["M6"]).apply(null, arguments);
     });
     var _zend_verify_arg_error = (Module["_zend_verify_arg_error"] = function () {
       return (_zend_verify_arg_error = Module["_zend_verify_arg_error"] =
-        Module["asm"]["H6"]).apply(null, arguments);
+        Module["asm"]["N6"]).apply(null, arguments);
     });
     var _zend_verify_scalar_type_hint = (Module["_zend_verify_scalar_type_hint"] = function () {
       return (_zend_verify_scalar_type_hint = Module["_zend_verify_scalar_type_hint"] =
-        Module["asm"]["I6"]).apply(null, arguments);
+        Module["asm"]["O6"]).apply(null, arguments);
     });
     var _zend_readonly_property_indirect_modification_error = (Module[
       "_zend_readonly_property_indirect_modification_error"
@@ -22708,7 +22740,7 @@ var PHP = (() => {
       return (_zend_readonly_property_indirect_modification_error = Module[
         "_zend_readonly_property_indirect_modification_error"
       ] =
-        Module["asm"]["J6"]).apply(null, arguments);
+        Module["asm"]["P6"]).apply(null, arguments);
     });
     var _zend_object_released_while_assigning_to_property_error = (Module[
       "_zend_object_released_while_assigning_to_property_error"
@@ -22716,7 +22748,7 @@ var PHP = (() => {
       return (_zend_object_released_while_assigning_to_property_error = Module[
         "_zend_object_released_while_assigning_to_property_error"
       ] =
-        Module["asm"]["K6"]).apply(null, arguments);
+        Module["asm"]["Q6"]).apply(null, arguments);
     });
     var _zend_asymmetric_visibility_property_modification_error = (Module[
       "_zend_asymmetric_visibility_property_modification_error"
@@ -22724,102 +22756,102 @@ var PHP = (() => {
       return (_zend_asymmetric_visibility_property_modification_error = Module[
         "_zend_asymmetric_visibility_property_modification_error"
       ] =
-        Module["asm"]["L6"]).apply(null, arguments);
+        Module["asm"]["R6"]).apply(null, arguments);
     });
     var _zend_check_user_type_slow = (Module["_zend_check_user_type_slow"] = function () {
       return (_zend_check_user_type_slow = Module["_zend_check_user_type_slow"] =
-        Module["asm"]["M6"]).apply(null, arguments);
+        Module["asm"]["S6"]).apply(null, arguments);
     });
     var _zend_missing_arg_error = (Module["_zend_missing_arg_error"] = function () {
       return (_zend_missing_arg_error = Module["_zend_missing_arg_error"] =
-        Module["asm"]["N6"]).apply(null, arguments);
+        Module["asm"]["T6"]).apply(null, arguments);
     });
     var _zend_verify_return_error = (Module["_zend_verify_return_error"] = function () {
       return (_zend_verify_return_error = Module["_zend_verify_return_error"] =
-        Module["asm"]["O6"]).apply(null, arguments);
+        Module["asm"]["U6"]).apply(null, arguments);
     });
     var _zend_verify_never_error = (Module["_zend_verify_never_error"] = function () {
       return (_zend_verify_never_error = Module["_zend_verify_never_error"] =
-        Module["asm"]["P6"]).apply(null, arguments);
+        Module["asm"]["V6"]).apply(null, arguments);
     });
     var _zend_frameless_observed_call = (Module["_zend_frameless_observed_call"] = function () {
       return (_zend_frameless_observed_call = Module["_zend_frameless_observed_call"] =
-        Module["asm"]["Q6"]).apply(null, arguments);
+        Module["asm"]["W6"]).apply(null, arguments);
     });
     var _zend_observer_fcall_begin_prechecked = (Module["_zend_observer_fcall_begin_prechecked"] =
       function () {
         return (_zend_observer_fcall_begin_prechecked = Module[
           "_zend_observer_fcall_begin_prechecked"
         ] =
-          Module["asm"]["R6"]).apply(null, arguments);
+          Module["asm"]["X6"]).apply(null, arguments);
       });
     var _zend_wrong_string_offset_error = (Module["_zend_wrong_string_offset_error"] = function () {
       return (_zend_wrong_string_offset_error = Module["_zend_wrong_string_offset_error"] =
-        Module["asm"]["S6"]).apply(null, arguments);
+        Module["asm"]["Y6"]).apply(null, arguments);
     });
     var _zend_error_unchecked = (Module["_zend_error_unchecked"] = function () {
-      return (_zend_error_unchecked = Module["_zend_error_unchecked"] = Module["asm"]["T6"]).apply(
+      return (_zend_error_unchecked = Module["_zend_error_unchecked"] = Module["asm"]["Z6"]).apply(
         null,
         arguments,
       );
     });
     var _zend_nodiscard_function = (Module["_zend_nodiscard_function"] = function () {
       return (_zend_nodiscard_function = Module["_zend_nodiscard_function"] =
-        Module["asm"]["U6"]).apply(null, arguments);
+        Module["asm"]["_6"]).apply(null, arguments);
     });
     var _zend_use_of_deprecated_trait = (Module["_zend_use_of_deprecated_trait"] = function () {
       return (_zend_use_of_deprecated_trait = Module["_zend_use_of_deprecated_trait"] =
-        Module["asm"]["V6"]).apply(null, arguments);
+        Module["asm"]["$6"]).apply(null, arguments);
     });
     var _zend_false_to_array_deprecated = (Module["_zend_false_to_array_deprecated"] = function () {
       return (_zend_false_to_array_deprecated = Module["_zend_false_to_array_deprecated"] =
-        Module["asm"]["W6"]).apply(null, arguments);
+        Module["asm"]["a7"]).apply(null, arguments);
     });
     var _zend_undefined_offset_write = (Module["_zend_undefined_offset_write"] = function () {
       return (_zend_undefined_offset_write = Module["_zend_undefined_offset_write"] =
-        Module["asm"]["X6"]).apply(null, arguments);
+        Module["asm"]["b7"]).apply(null, arguments);
     });
     var _zend_undefined_index_write = (Module["_zend_undefined_index_write"] = function () {
       return (_zend_undefined_index_write = Module["_zend_undefined_index_write"] =
-        Module["asm"]["Y6"]).apply(null, arguments);
+        Module["asm"]["c7"]).apply(null, arguments);
     });
     var _zend_verify_ref_array_assignable = (Module["_zend_verify_ref_array_assignable"] =
       function () {
         return (_zend_verify_ref_array_assignable = Module["_zend_verify_ref_array_assignable"] =
-          Module["asm"]["Z6"]).apply(null, arguments);
+          Module["asm"]["d7"]).apply(null, arguments);
       });
     var _zend_fetch_static_property = (Module["_zend_fetch_static_property"] = function () {
       return (_zend_fetch_static_property = Module["_zend_fetch_static_property"] =
-        Module["asm"]["_6"]).apply(null, arguments);
+        Module["asm"]["e7"]).apply(null, arguments);
     });
     var _zend_throw_ref_type_error_type = (Module["_zend_throw_ref_type_error_type"] = function () {
       return (_zend_throw_ref_type_error_type = Module["_zend_throw_ref_type_error_type"] =
-        Module["asm"]["$6"]).apply(null, arguments);
+        Module["asm"]["f7"]).apply(null, arguments);
     });
     var _zend_throw_ref_type_error_zval = (Module["_zend_throw_ref_type_error_zval"] = function () {
       return (_zend_throw_ref_type_error_zval = Module["_zend_throw_ref_type_error_zval"] =
-        Module["asm"]["a7"]).apply(null, arguments);
+        Module["asm"]["g7"]).apply(null, arguments);
     });
     var _zend_throw_conflicting_coercion_error = (Module["_zend_throw_conflicting_coercion_error"] =
       function () {
         return (_zend_throw_conflicting_coercion_error = Module[
           "_zend_throw_conflicting_coercion_error"
         ] =
-          Module["asm"]["b7"]).apply(null, arguments);
+          Module["asm"]["h7"]).apply(null, arguments);
       });
     var _zend_assign_to_typed_ref_ex = (Module["_zend_assign_to_typed_ref_ex"] = function () {
       return (_zend_assign_to_typed_ref_ex = Module["_zend_assign_to_typed_ref_ex"] =
-        Module["asm"]["c7"]).apply(null, arguments);
+        Module["asm"]["i7"]).apply(null, arguments);
     });
     var _zend_verify_prop_assignable_by_ref_ex = (Module["_zend_verify_prop_assignable_by_ref_ex"] =
       function () {
         return (_zend_verify_prop_assignable_by_ref_ex = Module[
           "_zend_verify_prop_assignable_by_ref_ex"
         ] =
-          Module["asm"]["d7"]).apply(null, arguments);
+          Module["asm"]["j7"]).apply(null, arguments);
       });
     var _execute_internal = (Module["_execute_internal"] = function () {
-      return (_execute_internal = Module["_execute_internal"] = Module["asm"]["e7"]).apply(
+      return (_execute_internal = Module["_execute_internal"] = Module["asm"]["k7"]).apply(
         null,
         arguments,
       );
@@ -22827,130 +22859,130 @@ var PHP = (() => {
     var _zend_clean_and_cache_symbol_table = (Module["_zend_clean_and_cache_symbol_table"] =
       function () {
         return (_zend_clean_and_cache_symbol_table = Module["_zend_clean_and_cache_symbol_table"] =
-          Module["asm"]["f7"]).apply(null, arguments);
+          Module["asm"]["l7"]).apply(null, arguments);
       });
     var _zend_symtable_clean = (Module["_zend_symtable_clean"] = function () {
-      return (_zend_symtable_clean = Module["_zend_symtable_clean"] = Module["asm"]["g7"]).apply(
+      return (_zend_symtable_clean = Module["_zend_symtable_clean"] = Module["asm"]["m7"]).apply(
         null,
         arguments,
       );
     });
     var _zend_free_compiled_variables = (Module["_zend_free_compiled_variables"] = function () {
       return (_zend_free_compiled_variables = Module["_zend_free_compiled_variables"] =
-        Module["asm"]["h7"]).apply(null, arguments);
+        Module["asm"]["n7"]).apply(null, arguments);
     });
     var _zend_fcall_interrupt = (Module["_zend_fcall_interrupt"] = function () {
-      return (_zend_fcall_interrupt = Module["_zend_fcall_interrupt"] = Module["asm"]["i7"]).apply(
+      return (_zend_fcall_interrupt = Module["_zend_fcall_interrupt"] = Module["asm"]["o7"]).apply(
         null,
         arguments,
       );
     });
     var _zend_init_func_run_time_cache = (Module["_zend_init_func_run_time_cache"] = function () {
       return (_zend_init_func_run_time_cache = Module["_zend_init_func_run_time_cache"] =
-        Module["asm"]["j7"]).apply(null, arguments);
+        Module["asm"]["p7"]).apply(null, arguments);
     });
     var _zend_init_code_execute_data = (Module["_zend_init_code_execute_data"] = function () {
       return (_zend_init_code_execute_data = Module["_zend_init_code_execute_data"] =
-        Module["asm"]["k7"]).apply(null, arguments);
+        Module["asm"]["q7"]).apply(null, arguments);
     });
     var _zend_init_execute_data = (Module["_zend_init_execute_data"] = function () {
       return (_zend_init_execute_data = Module["_zend_init_execute_data"] =
-        Module["asm"]["l7"]).apply(null, arguments);
+        Module["asm"]["r7"]).apply(null, arguments);
     });
     var _zend_unfinished_calls_gc = (Module["_zend_unfinished_calls_gc"] = function () {
       return (_zend_unfinished_calls_gc = Module["_zend_unfinished_calls_gc"] =
-        Module["asm"]["m7"]).apply(null, arguments);
+        Module["asm"]["s7"]).apply(null, arguments);
     });
     var _zend_cleanup_unfinished_execution = (Module["_zend_cleanup_unfinished_execution"] =
       function () {
         return (_zend_cleanup_unfinished_execution = Module["_zend_cleanup_unfinished_execution"] =
-          Module["asm"]["n7"]).apply(null, arguments);
+          Module["asm"]["t7"]).apply(null, arguments);
       });
     var _zend_unfinished_execution_gc = (Module["_zend_unfinished_execution_gc"] = function () {
       return (_zend_unfinished_execution_gc = Module["_zend_unfinished_execution_gc"] =
-        Module["asm"]["o7"]).apply(null, arguments);
+        Module["asm"]["u7"]).apply(null, arguments);
     });
     var _zend_unfinished_execution_gc_ex = (Module["_zend_unfinished_execution_gc_ex"] =
       function () {
         return (_zend_unfinished_execution_gc_ex = Module["_zend_unfinished_execution_gc_ex"] =
-          Module["asm"]["p7"]).apply(null, arguments);
+          Module["asm"]["v7"]).apply(null, arguments);
       });
     var _zend_get_opcode_handler_func = (Module["_zend_get_opcode_handler_func"] = function () {
       return (_zend_get_opcode_handler_func = Module["_zend_get_opcode_handler_func"] =
-        Module["asm"]["q7"]).apply(null, arguments);
+        Module["asm"]["w7"]).apply(null, arguments);
     });
     var _zend_get_halt_op = (Module["_zend_get_halt_op"] = function () {
-      return (_zend_get_halt_op = Module["_zend_get_halt_op"] = Module["asm"]["r7"]).apply(
+      return (_zend_get_halt_op = Module["_zend_get_halt_op"] = Module["asm"]["x7"]).apply(
         null,
         arguments,
       );
     });
     var _zend_vm_kind = (Module["_zend_vm_kind"] = function () {
-      return (_zend_vm_kind = Module["_zend_vm_kind"] = Module["asm"]["s7"]).apply(null, arguments);
+      return (_zend_vm_kind = Module["_zend_vm_kind"] = Module["asm"]["y7"]).apply(null, arguments);
     });
     var _zend_vm_call_opcode_handler = (Module["_zend_vm_call_opcode_handler"] = function () {
       return (_zend_vm_call_opcode_handler = Module["_zend_vm_call_opcode_handler"] =
-        Module["asm"]["t7"]).apply(null, arguments);
+        Module["asm"]["z7"]).apply(null, arguments);
     });
     var _zend_set_user_opcode_handler = (Module["_zend_set_user_opcode_handler"] = function () {
       return (_zend_set_user_opcode_handler = Module["_zend_set_user_opcode_handler"] =
-        Module["asm"]["u7"]).apply(null, arguments);
+        Module["asm"]["A7"]).apply(null, arguments);
     });
     var _zend_get_user_opcode_handler = (Module["_zend_get_user_opcode_handler"] = function () {
       return (_zend_get_user_opcode_handler = Module["_zend_get_user_opcode_handler"] =
-        Module["asm"]["v7"]).apply(null, arguments);
+        Module["asm"]["B7"]).apply(null, arguments);
     });
     var __zend_hash_index_find = (Module["__zend_hash_index_find"] = function () {
       return (__zend_hash_index_find = Module["__zend_hash_index_find"] =
-        Module["asm"]["w7"]).apply(null, arguments);
+        Module["asm"]["C7"]).apply(null, arguments);
     });
     var _sub_function = (Module["_sub_function"] = function () {
-      return (_sub_function = Module["_sub_function"] = Module["asm"]["x7"]).apply(null, arguments);
+      return (_sub_function = Module["_sub_function"] = Module["asm"]["D7"]).apply(null, arguments);
     });
     var _div_function = (Module["_div_function"] = function () {
-      return (_div_function = Module["_div_function"] = Module["asm"]["y7"]).apply(null, arguments);
+      return (_div_function = Module["_div_function"] = Module["asm"]["E7"]).apply(null, arguments);
     });
     var _mod_function = (Module["_mod_function"] = function () {
-      return (_mod_function = Module["_mod_function"] = Module["asm"]["z7"]).apply(null, arguments);
+      return (_mod_function = Module["_mod_function"] = Module["asm"]["F7"]).apply(null, arguments);
     });
     var _shift_left_function = (Module["_shift_left_function"] = function () {
-      return (_shift_left_function = Module["_shift_left_function"] = Module["asm"]["A7"]).apply(
+      return (_shift_left_function = Module["_shift_left_function"] = Module["asm"]["G7"]).apply(
         null,
         arguments,
       );
     });
     var _shift_right_function = (Module["_shift_right_function"] = function () {
-      return (_shift_right_function = Module["_shift_right_function"] = Module["asm"]["B7"]).apply(
+      return (_shift_right_function = Module["_shift_right_function"] = Module["asm"]["H7"]).apply(
         null,
         arguments,
       );
     });
     var _bitwise_or_function = (Module["_bitwise_or_function"] = function () {
-      return (_bitwise_or_function = Module["_bitwise_or_function"] = Module["asm"]["C7"]).apply(
+      return (_bitwise_or_function = Module["_bitwise_or_function"] = Module["asm"]["I7"]).apply(
         null,
         arguments,
       );
     });
     var _bitwise_and_function = (Module["_bitwise_and_function"] = function () {
-      return (_bitwise_and_function = Module["_bitwise_and_function"] = Module["asm"]["D7"]).apply(
+      return (_bitwise_and_function = Module["_bitwise_and_function"] = Module["asm"]["J7"]).apply(
         null,
         arguments,
       );
     });
     var _bitwise_xor_function = (Module["_bitwise_xor_function"] = function () {
-      return (_bitwise_xor_function = Module["_bitwise_xor_function"] = Module["asm"]["E7"]).apply(
+      return (_bitwise_xor_function = Module["_bitwise_xor_function"] = Module["asm"]["K7"]).apply(
         null,
         arguments,
       );
     });
     var _bitwise_not_function = (Module["_bitwise_not_function"] = function () {
-      return (_bitwise_not_function = Module["_bitwise_not_function"] = Module["asm"]["F7"]).apply(
+      return (_bitwise_not_function = Module["_bitwise_not_function"] = Module["asm"]["L7"]).apply(
         null,
         arguments,
       );
     });
     var _boolean_xor_function = (Module["_boolean_xor_function"] = function () {
-      return (_boolean_xor_function = Module["_boolean_xor_function"] = Module["asm"]["G7"]).apply(
+      return (_boolean_xor_function = Module["_boolean_xor_function"] = Module["asm"]["M7"]).apply(
         null,
         arguments,
       );
@@ -22961,46 +22993,46 @@ var PHP = (() => {
       return (_zend_asymmetric_property_has_set_access = Module[
         "_zend_asymmetric_property_has_set_access"
       ] =
-        Module["asm"]["H7"]).apply(null, arguments);
+        Module["asm"]["N7"]).apply(null, arguments);
     });
     var _compile_filename = (Module["_compile_filename"] = function () {
-      return (_compile_filename = Module["_compile_filename"] = Module["asm"]["I7"]).apply(
+      return (_compile_filename = Module["_compile_filename"] = Module["asm"]["O7"]).apply(
         null,
         arguments,
       );
     });
     var _zend_iterator_unwrap = (Module["_zend_iterator_unwrap"] = function () {
-      return (_zend_iterator_unwrap = Module["_zend_iterator_unwrap"] = Module["asm"]["J7"]).apply(
+      return (_zend_iterator_unwrap = Module["_zend_iterator_unwrap"] = Module["asm"]["P7"]).apply(
         null,
         arguments,
       );
     });
     var _zend_fiber_switch_block = (Module["_zend_fiber_switch_block"] = function () {
       return (_zend_fiber_switch_block = Module["_zend_fiber_switch_block"] =
-        Module["asm"]["K7"]).apply(null, arguments);
+        Module["asm"]["Q7"]).apply(null, arguments);
     });
     var _zend_fiber_switch_unblock = (Module["_zend_fiber_switch_unblock"] = function () {
       return (_zend_fiber_switch_unblock = Module["_zend_fiber_switch_unblock"] =
-        Module["asm"]["L7"]).apply(null, arguments);
+        Module["asm"]["R7"]).apply(null, arguments);
     });
     var _zend_generator_close = (Module["_zend_generator_close"] = function () {
-      return (_zend_generator_close = Module["_zend_generator_close"] = Module["asm"]["M7"]).apply(
+      return (_zend_generator_close = Module["_zend_generator_close"] = Module["asm"]["S7"]).apply(
         null,
         arguments,
       );
     });
     var _compare_function = (Module["_compare_function"] = function () {
-      return (_compare_function = Module["_compare_function"] = Module["asm"]["N7"]).apply(
+      return (_compare_function = Module["_compare_function"] = Module["asm"]["T7"]).apply(
         null,
         arguments,
       );
     });
     var _zend_std_unset_static_property = (Module["_zend_std_unset_static_property"] = function () {
       return (_zend_std_unset_static_property = Module["_zend_std_unset_static_property"] =
-        Module["asm"]["O7"]).apply(null, arguments);
+        Module["asm"]["U7"]).apply(null, arguments);
     });
     var _zend_hash_real_init = (Module["_zend_hash_real_init"] = function () {
-      return (_zend_hash_real_init = Module["_zend_hash_real_init"] = Module["asm"]["P7"]).apply(
+      return (_zend_hash_real_init = Module["_zend_hash_real_init"] = Module["asm"]["V7"]).apply(
         null,
         arguments,
       );
@@ -23008,34 +23040,34 @@ var PHP = (() => {
     var _zend_extension_dispatch_message = (Module["_zend_extension_dispatch_message"] =
       function () {
         return (_zend_extension_dispatch_message = Module["_zend_extension_dispatch_message"] =
-          Module["asm"]["Q7"]).apply(null, arguments);
+          Module["asm"]["W7"]).apply(null, arguments);
       });
     var _zend_llist_apply_with_del = (Module["_zend_llist_apply_with_del"] = function () {
       return (_zend_llist_apply_with_del = Module["_zend_llist_apply_with_del"] =
-        Module["asm"]["R7"]).apply(null, arguments);
+        Module["asm"]["X7"]).apply(null, arguments);
     });
     var _zend_llist_apply_with_arguments = (Module["_zend_llist_apply_with_arguments"] =
       function () {
         return (_zend_llist_apply_with_arguments = Module["_zend_llist_apply_with_arguments"] =
-          Module["asm"]["S7"]).apply(null, arguments);
+          Module["asm"]["Y7"]).apply(null, arguments);
       });
     var _zend_add_system_entropy = (Module["_zend_add_system_entropy"] = function () {
       return (_zend_add_system_entropy = Module["_zend_add_system_entropy"] =
-        Module["asm"]["T7"]).apply(null, arguments);
+        Module["asm"]["Z7"]).apply(null, arguments);
     });
     var _zend_get_op_array_extension_handle = (Module["_zend_get_op_array_extension_handle"] =
       function () {
         return (_zend_get_op_array_extension_handle = Module[
           "_zend_get_op_array_extension_handle"
         ] =
-          Module["asm"]["U7"]).apply(null, arguments);
+          Module["asm"]["_7"]).apply(null, arguments);
       });
     var _zend_get_op_array_extension_handles = (Module["_zend_get_op_array_extension_handles"] =
       function () {
         return (_zend_get_op_array_extension_handles = Module[
           "_zend_get_op_array_extension_handles"
         ] =
-          Module["asm"]["V7"]).apply(null, arguments);
+          Module["asm"]["$7"]).apply(null, arguments);
       });
     var _zend_get_internal_function_extension_handle = (Module[
       "_zend_get_internal_function_extension_handle"
@@ -23043,7 +23075,7 @@ var PHP = (() => {
       return (_zend_get_internal_function_extension_handle = Module[
         "_zend_get_internal_function_extension_handle"
       ] =
-        Module["asm"]["W7"]).apply(null, arguments);
+        Module["asm"]["a8"]).apply(null, arguments);
     });
     var _zend_get_internal_function_extension_handles = (Module[
       "_zend_get_internal_function_extension_handles"
@@ -23051,110 +23083,110 @@ var PHP = (() => {
       return (_zend_get_internal_function_extension_handles = Module[
         "_zend_get_internal_function_extension_handles"
       ] =
-        Module["asm"]["X7"]).apply(null, arguments);
+        Module["asm"]["b8"]).apply(null, arguments);
     });
     var _zend_reset_internal_run_time_cache = (Module["_zend_reset_internal_run_time_cache"] =
       function () {
         return (_zend_reset_internal_run_time_cache = Module[
           "_zend_reset_internal_run_time_cache"
         ] =
-          Module["asm"]["Y7"]).apply(null, arguments);
+          Module["asm"]["c8"]).apply(null, arguments);
       });
     var _zend_append_version_info = (Module["_zend_append_version_info"] = function () {
       return (_zend_append_version_info = Module["_zend_append_version_info"] =
-        Module["asm"]["Z7"]).apply(null, arguments);
+        Module["asm"]["d8"]).apply(null, arguments);
     });
     var _zend_fiber_switch_blocked = (Module["_zend_fiber_switch_blocked"] = function () {
       return (_zend_fiber_switch_blocked = Module["_zend_fiber_switch_blocked"] =
-        Module["asm"]["_7"]).apply(null, arguments);
+        Module["asm"]["e8"]).apply(null, arguments);
     });
     var _zend_fiber_init_context = (Module["_zend_fiber_init_context"] = function () {
       return (_zend_fiber_init_context = Module["_zend_fiber_init_context"] =
-        Module["asm"]["$7"]).apply(null, arguments);
+        Module["asm"]["f8"]).apply(null, arguments);
     });
     var _zend_observer_fiber_init_notify = (Module["_zend_observer_fiber_init_notify"] =
       function () {
         return (_zend_observer_fiber_init_notify = Module["_zend_observer_fiber_init_notify"] =
-          Module["asm"]["a8"]).apply(null, arguments);
+          Module["asm"]["g8"]).apply(null, arguments);
       });
     var _zend_fiber_destroy_context = (Module["_zend_fiber_destroy_context"] = function () {
       return (_zend_fiber_destroy_context = Module["_zend_fiber_destroy_context"] =
-        Module["asm"]["b8"]).apply(null, arguments);
+        Module["asm"]["h8"]).apply(null, arguments);
     });
     var _zend_observer_fiber_destroy_notify = (Module["_zend_observer_fiber_destroy_notify"] =
       function () {
         return (_zend_observer_fiber_destroy_notify = Module[
           "_zend_observer_fiber_destroy_notify"
         ] =
-          Module["asm"]["c8"]).apply(null, arguments);
+          Module["asm"]["i8"]).apply(null, arguments);
       });
     var _zend_fiber_switch_context = (Module["_zend_fiber_switch_context"] = function () {
       return (_zend_fiber_switch_context = Module["_zend_fiber_switch_context"] =
-        Module["asm"]["d8"]).apply(null, arguments);
+        Module["asm"]["j8"]).apply(null, arguments);
     });
     var _zend_observer_fiber_switch_notify = (Module["_zend_observer_fiber_switch_notify"] =
       function () {
         return (_zend_observer_fiber_switch_notify = Module["_zend_observer_fiber_switch_notify"] =
-          Module["asm"]["e8"]).apply(null, arguments);
+          Module["asm"]["k8"]).apply(null, arguments);
       });
     var _zend_fiber_start = (Module["_zend_fiber_start"] = function () {
-      return (_zend_fiber_start = Module["_zend_fiber_start"] = Module["asm"]["f8"]).apply(
+      return (_zend_fiber_start = Module["_zend_fiber_start"] = Module["asm"]["l8"]).apply(
         null,
         arguments,
       );
     });
     var _zend_fiber_resume = (Module["_zend_fiber_resume"] = function () {
-      return (_zend_fiber_resume = Module["_zend_fiber_resume"] = Module["asm"]["g8"]).apply(
+      return (_zend_fiber_resume = Module["_zend_fiber_resume"] = Module["asm"]["m8"]).apply(
         null,
         arguments,
       );
     });
     var _zend_fiber_resume_exception = (Module["_zend_fiber_resume_exception"] = function () {
       return (_zend_fiber_resume_exception = Module["_zend_fiber_resume_exception"] =
-        Module["asm"]["h8"]).apply(null, arguments);
+        Module["asm"]["n8"]).apply(null, arguments);
     });
     var _zend_fiber_suspend = (Module["_zend_fiber_suspend"] = function () {
-      return (_zend_fiber_suspend = Module["_zend_fiber_suspend"] = Module["asm"]["i8"]).apply(
+      return (_zend_fiber_suspend = Module["_zend_fiber_suspend"] = Module["asm"]["o8"]).apply(
         null,
         arguments,
       );
     });
     var _zend_get_page_size = (Module["_zend_get_page_size"] = function () {
-      return (_zend_get_page_size = Module["_zend_get_page_size"] = Module["asm"]["j8"]).apply(
+      return (_zend_get_page_size = Module["_zend_get_page_size"] = Module["asm"]["p8"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ensure_fpu_mode = (Module["_zend_ensure_fpu_mode"] = function () {
-      return (_zend_ensure_fpu_mode = Module["_zend_ensure_fpu_mode"] = Module["asm"]["k8"]).apply(
+      return (_zend_ensure_fpu_mode = Module["_zend_ensure_fpu_mode"] = Module["asm"]["q8"]).apply(
         null,
         arguments,
       );
     });
     var _gc_protect = (Module["_gc_protect"] = function () {
-      return (_gc_protect = Module["_gc_protect"] = Module["asm"]["l8"]).apply(null, arguments);
+      return (_gc_protect = Module["_gc_protect"] = Module["asm"]["r8"]).apply(null, arguments);
     });
     var _gc_protected = (Module["_gc_protected"] = function () {
-      return (_gc_protected = Module["_gc_protected"] = Module["asm"]["m8"]).apply(null, arguments);
+      return (_gc_protected = Module["_gc_protected"] = Module["asm"]["s8"]).apply(null, arguments);
     });
     var _zend_gc_collect_cycles = (Module["_zend_gc_collect_cycles"] = function () {
       return (_zend_gc_collect_cycles = Module["_zend_gc_collect_cycles"] =
-        Module["asm"]["n8"]).apply(null, arguments);
+        Module["asm"]["t8"]).apply(null, arguments);
     });
     var ___jit_debug_register_code = (Module["___jit_debug_register_code"] = function () {
       return (___jit_debug_register_code = Module["___jit_debug_register_code"] =
-        Module["asm"]["o8"]).apply(null, arguments);
+        Module["asm"]["u8"]).apply(null, arguments);
     });
     var _zend_gdb_register_code = (Module["_zend_gdb_register_code"] = function () {
       return (_zend_gdb_register_code = Module["_zend_gdb_register_code"] =
-        Module["asm"]["p8"]).apply(null, arguments);
+        Module["asm"]["v8"]).apply(null, arguments);
     });
     var _zend_gdb_unregister_all = (Module["_zend_gdb_unregister_all"] = function () {
       return (_zend_gdb_unregister_all = Module["_zend_gdb_unregister_all"] =
-        Module["asm"]["q8"]).apply(null, arguments);
+        Module["asm"]["w8"]).apply(null, arguments);
     });
     var _zend_gdb_present = (Module["_zend_gdb_present"] = function () {
-      return (_zend_gdb_present = Module["_zend_gdb_present"] = Module["asm"]["r8"]).apply(
+      return (_zend_gdb_present = Module["_zend_gdb_present"] = Module["asm"]["x8"]).apply(
         null,
         arguments,
       );
@@ -23162,75 +23194,75 @@ var PHP = (() => {
     var _zend_generator_restore_call_stack = (Module["_zend_generator_restore_call_stack"] =
       function () {
         return (_zend_generator_restore_call_stack = Module["_zend_generator_restore_call_stack"] =
-          Module["asm"]["s8"]).apply(null, arguments);
+          Module["asm"]["y8"]).apply(null, arguments);
       });
     var _zend_generator_freeze_call_stack = (Module["_zend_generator_freeze_call_stack"] =
       function () {
         return (_zend_generator_freeze_call_stack = Module["_zend_generator_freeze_call_stack"] =
-          Module["asm"]["t8"]).apply(null, arguments);
+          Module["asm"]["z8"]).apply(null, arguments);
       });
     var _zend_generator_resume = (Module["_zend_generator_resume"] = function () {
       return (_zend_generator_resume = Module["_zend_generator_resume"] =
-        Module["asm"]["u8"]).apply(null, arguments);
+        Module["asm"]["A8"]).apply(null, arguments);
     });
     var _zend_observer_generator_resume = (Module["_zend_observer_generator_resume"] = function () {
       return (_zend_observer_generator_resume = Module["_zend_observer_generator_resume"] =
-        Module["asm"]["v8"]).apply(null, arguments);
+        Module["asm"]["B8"]).apply(null, arguments);
     });
     var _zend_hash_packed_to_hash = (Module["_zend_hash_packed_to_hash"] = function () {
       return (_zend_hash_packed_to_hash = Module["_zend_hash_packed_to_hash"] =
-        Module["asm"]["w8"]).apply(null, arguments);
+        Module["asm"]["C8"]).apply(null, arguments);
     });
     var _zend_hash_get_current_pos_ex = (Module["_zend_hash_get_current_pos_ex"] = function () {
       return (_zend_hash_get_current_pos_ex = Module["_zend_hash_get_current_pos_ex"] =
-        Module["asm"]["x8"]).apply(null, arguments);
+        Module["asm"]["D8"]).apply(null, arguments);
     });
     var _zend_hash_add_or_update = (Module["_zend_hash_add_or_update"] = function () {
       return (_zend_hash_add_or_update = Module["_zend_hash_add_or_update"] =
-        Module["asm"]["y8"]).apply(null, arguments);
+        Module["asm"]["E8"]).apply(null, arguments);
     });
     var _zend_hash_str_add_or_update = (Module["_zend_hash_str_add_or_update"] = function () {
       return (_zend_hash_str_add_or_update = Module["_zend_hash_str_add_or_update"] =
-        Module["asm"]["z8"]).apply(null, arguments);
+        Module["asm"]["F8"]).apply(null, arguments);
     });
     var _zend_hash_index_add_or_update = (Module["_zend_hash_index_add_or_update"] = function () {
       return (_zend_hash_index_add_or_update = Module["_zend_hash_index_add_or_update"] =
-        Module["asm"]["A8"]).apply(null, arguments);
+        Module["asm"]["G8"]).apply(null, arguments);
     });
     var _zend_hash_str_del_ind = (Module["_zend_hash_str_del_ind"] = function () {
       return (_zend_hash_str_del_ind = Module["_zend_hash_str_del_ind"] =
-        Module["asm"]["B8"]).apply(null, arguments);
+        Module["asm"]["H8"]).apply(null, arguments);
     });
     var _zend_hash_graceful_destroy = (Module["_zend_hash_graceful_destroy"] = function () {
       return (_zend_hash_graceful_destroy = Module["_zend_hash_graceful_destroy"] =
-        Module["asm"]["C8"]).apply(null, arguments);
+        Module["asm"]["I8"]).apply(null, arguments);
     });
     var _zend_hash_apply_with_arguments = (Module["_zend_hash_apply_with_arguments"] = function () {
       return (_zend_hash_apply_with_arguments = Module["_zend_hash_apply_with_arguments"] =
-        Module["asm"]["D8"]).apply(null, arguments);
+        Module["asm"]["J8"]).apply(null, arguments);
     });
     var _zend_hash_merge_ex = (Module["_zend_hash_merge_ex"] = function () {
-      return (_zend_hash_merge_ex = Module["_zend_hash_merge_ex"] = Module["asm"]["E8"]).apply(
+      return (_zend_hash_merge_ex = Module["_zend_hash_merge_ex"] = Module["asm"]["K8"]).apply(
         null,
         arguments,
       );
     });
     var _zend_hash_bucket_renum_swap = (Module["_zend_hash_bucket_renum_swap"] = function () {
       return (_zend_hash_bucket_renum_swap = Module["_zend_hash_bucket_renum_swap"] =
-        Module["asm"]["F8"]).apply(null, arguments);
+        Module["asm"]["L8"]).apply(null, arguments);
     });
     var _zend_hash_bucket_packed_swap = (Module["_zend_hash_bucket_packed_swap"] = function () {
       return (_zend_hash_bucket_packed_swap = Module["_zend_hash_bucket_packed_swap"] =
-        Module["asm"]["G8"]).apply(null, arguments);
+        Module["asm"]["M8"]).apply(null, arguments);
     });
     var _zend_html_putc = (Module["_zend_html_putc"] = function () {
-      return (_zend_html_putc = Module["_zend_html_putc"] = Module["asm"]["H8"]).apply(
+      return (_zend_html_putc = Module["_zend_html_putc"] = Module["asm"]["N8"]).apply(
         null,
         arguments,
       );
     });
     var _zend_highlight = (Module["_zend_highlight"] = function () {
-      return (_zend_highlight = Module["_zend_highlight"] = Module["asm"]["I8"]).apply(
+      return (_zend_highlight = Module["_zend_highlight"] = Module["asm"]["O8"]).apply(
         null,
         arguments,
       );
@@ -23238,150 +23270,150 @@ var PHP = (() => {
     var _zend_perform_covariant_type_check = (Module["_zend_perform_covariant_type_check"] =
       function () {
         return (_zend_perform_covariant_type_check = Module["_zend_perform_covariant_type_check"] =
-          Module["asm"]["J8"]).apply(null, arguments);
+          Module["asm"]["P8"]).apply(null, arguments);
       });
     var _zend_error_at_noreturn = (Module["_zend_error_at_noreturn"] = function () {
       return (_zend_error_at_noreturn = Module["_zend_error_at_noreturn"] =
-        Module["asm"]["K8"]).apply(null, arguments);
+        Module["asm"]["Q8"]).apply(null, arguments);
     });
     var _sprintf = (Module["_sprintf"] = function () {
-      return (_sprintf = Module["_sprintf"] = Module["asm"]["L8"]).apply(null, arguments);
+      return (_sprintf = Module["_sprintf"] = Module["asm"]["R8"]).apply(null, arguments);
     });
     var _zend_get_configuration_directive = (Module["_zend_get_configuration_directive"] =
       function () {
         return (_zend_get_configuration_directive = Module["_zend_get_configuration_directive"] =
-          Module["asm"]["M8"]).apply(null, arguments);
+          Module["asm"]["S8"]).apply(null, arguments);
       });
     var _zend_stream_fixup = (Module["_zend_stream_fixup"] = function () {
-      return (_zend_stream_fixup = Module["_zend_stream_fixup"] = Module["asm"]["N8"]).apply(
+      return (_zend_stream_fixup = Module["_zend_stream_fixup"] = Module["asm"]["T8"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ini_startup = (Module["_zend_ini_startup"] = function () {
-      return (_zend_ini_startup = Module["_zend_ini_startup"] = Module["asm"]["O8"]).apply(
+      return (_zend_ini_startup = Module["_zend_ini_startup"] = Module["asm"]["U8"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ini_dtor = (Module["_zend_ini_dtor"] = function () {
-      return (_zend_ini_dtor = Module["_zend_ini_dtor"] = Module["asm"]["P8"]).apply(
+      return (_zend_ini_dtor = Module["_zend_ini_dtor"] = Module["asm"]["V8"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ini_global_shutdown = (Module["_zend_ini_global_shutdown"] = function () {
       return (_zend_ini_global_shutdown = Module["_zend_ini_global_shutdown"] =
-        Module["asm"]["Q8"]).apply(null, arguments);
+        Module["asm"]["W8"]).apply(null, arguments);
     });
     var _zend_ini_deactivate = (Module["_zend_ini_deactivate"] = function () {
-      return (_zend_ini_deactivate = Module["_zend_ini_deactivate"] = Module["asm"]["R8"]).apply(
+      return (_zend_ini_deactivate = Module["_zend_ini_deactivate"] = Module["asm"]["X8"]).apply(
         null,
         arguments,
       );
     });
     var _zend_register_ini_entries = (Module["_zend_register_ini_entries"] = function () {
       return (_zend_register_ini_entries = Module["_zend_register_ini_entries"] =
-        Module["asm"]["S8"]).apply(null, arguments);
+        Module["asm"]["Y8"]).apply(null, arguments);
     });
     var _zend_unregister_ini_entries = (Module["_zend_unregister_ini_entries"] = function () {
       return (_zend_unregister_ini_entries = Module["_zend_unregister_ini_entries"] =
-        Module["asm"]["T8"]).apply(null, arguments);
+        Module["asm"]["Z8"]).apply(null, arguments);
     });
     var _zend_alter_ini_entry_chars_ex = (Module["_zend_alter_ini_entry_chars_ex"] = function () {
       return (_zend_alter_ini_entry_chars_ex = Module["_zend_alter_ini_entry_chars_ex"] =
-        Module["asm"]["U8"]).apply(null, arguments);
+        Module["asm"]["_8"]).apply(null, arguments);
     });
     var _zend_ini_register_displayer = (Module["_zend_ini_register_displayer"] = function () {
       return (_zend_ini_register_displayer = Module["_zend_ini_register_displayer"] =
-        Module["asm"]["V8"]).apply(null, arguments);
+        Module["asm"]["$8"]).apply(null, arguments);
     });
     var _zend_ini_parse_uquantity = (Module["_zend_ini_parse_uquantity"] = function () {
       return (_zend_ini_parse_uquantity = Module["_zend_ini_parse_uquantity"] =
-        Module["asm"]["W8"]).apply(null, arguments);
+        Module["asm"]["a9"]).apply(null, arguments);
     });
     var _display_link_numbers = (Module["_display_link_numbers"] = function () {
-      return (_display_link_numbers = Module["_display_link_numbers"] = Module["asm"]["X8"]).apply(
+      return (_display_link_numbers = Module["_display_link_numbers"] = Module["asm"]["b9"]).apply(
         null,
         arguments,
       );
     });
     var _zend_user_it_new_iterator = (Module["_zend_user_it_new_iterator"] = function () {
       return (_zend_user_it_new_iterator = Module["_zend_user_it_new_iterator"] =
-        Module["asm"]["Y8"]).apply(null, arguments);
+        Module["asm"]["c9"]).apply(null, arguments);
     });
     var _zend_user_it_valid = (Module["_zend_user_it_valid"] = function () {
-      return (_zend_user_it_valid = Module["_zend_user_it_valid"] = Module["asm"]["Z8"]).apply(
+      return (_zend_user_it_valid = Module["_zend_user_it_valid"] = Module["asm"]["d9"]).apply(
         null,
         arguments,
       );
     });
     var _zend_user_it_get_current_data = (Module["_zend_user_it_get_current_data"] = function () {
       return (_zend_user_it_get_current_data = Module["_zend_user_it_get_current_data"] =
-        Module["asm"]["_8"]).apply(null, arguments);
+        Module["asm"]["e9"]).apply(null, arguments);
     });
     var _zend_user_it_get_current_key = (Module["_zend_user_it_get_current_key"] = function () {
       return (_zend_user_it_get_current_key = Module["_zend_user_it_get_current_key"] =
-        Module["asm"]["$8"]).apply(null, arguments);
+        Module["asm"]["f9"]).apply(null, arguments);
     });
     var _zend_user_it_move_forward = (Module["_zend_user_it_move_forward"] = function () {
       return (_zend_user_it_move_forward = Module["_zend_user_it_move_forward"] =
-        Module["asm"]["a9"]).apply(null, arguments);
+        Module["asm"]["g9"]).apply(null, arguments);
     });
     var _zend_user_it_rewind = (Module["_zend_user_it_rewind"] = function () {
-      return (_zend_user_it_rewind = Module["_zend_user_it_rewind"] = Module["asm"]["b9"]).apply(
+      return (_zend_user_it_rewind = Module["_zend_user_it_rewind"] = Module["asm"]["h9"]).apply(
         null,
         arguments,
       );
     });
     var _zend_user_it_get_gc = (Module["_zend_user_it_get_gc"] = function () {
-      return (_zend_user_it_get_gc = Module["_zend_user_it_get_gc"] = Module["asm"]["c9"]).apply(
+      return (_zend_user_it_get_gc = Module["_zend_user_it_get_gc"] = Module["asm"]["i9"]).apply(
         null,
         arguments,
       );
     });
     var _zend_user_it_get_new_iterator = (Module["_zend_user_it_get_new_iterator"] = function () {
       return (_zend_user_it_get_new_iterator = Module["_zend_user_it_get_new_iterator"] =
-        Module["asm"]["d9"]).apply(null, arguments);
+        Module["asm"]["j9"]).apply(null, arguments);
     });
     var _zend_user_serialize = (Module["_zend_user_serialize"] = function () {
-      return (_zend_user_serialize = Module["_zend_user_serialize"] = Module["asm"]["e9"]).apply(
+      return (_zend_user_serialize = Module["_zend_user_serialize"] = Module["asm"]["k9"]).apply(
         null,
         arguments,
       );
     });
     var _zend_user_unserialize = (Module["_zend_user_unserialize"] = function () {
       return (_zend_user_unserialize = Module["_zend_user_unserialize"] =
-        Module["asm"]["f9"]).apply(null, arguments);
+        Module["asm"]["l9"]).apply(null, arguments);
     });
     var _zendparse = (Module["_zendparse"] = function () {
-      return (_zendparse = Module["_zendparse"] = Module["asm"]["g9"]).apply(null, arguments);
+      return (_zendparse = Module["_zendparse"] = Module["asm"]["m9"]).apply(null, arguments);
     });
     var _zend_lex_tstring = (Module["_zend_lex_tstring"] = function () {
-      return (_zend_lex_tstring = Module["_zend_lex_tstring"] = Module["asm"]["h9"]).apply(
+      return (_zend_lex_tstring = Module["_zend_lex_tstring"] = Module["asm"]["n9"]).apply(
         null,
         arguments,
       );
     });
     var _zend_get_scanned_file_offset = (Module["_zend_get_scanned_file_offset"] = function () {
       return (_zend_get_scanned_file_offset = Module["_zend_get_scanned_file_offset"] =
-        Module["asm"]["i9"]).apply(null, arguments);
+        Module["asm"]["o9"]).apply(null, arguments);
     });
     var _zend_ptr_stack_init = (Module["_zend_ptr_stack_init"] = function () {
-      return (_zend_ptr_stack_init = Module["_zend_ptr_stack_init"] = Module["asm"]["j9"]).apply(
+      return (_zend_ptr_stack_init = Module["_zend_ptr_stack_init"] = Module["asm"]["p9"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ptr_stack_clean = (Module["_zend_ptr_stack_clean"] = function () {
-      return (_zend_ptr_stack_clean = Module["_zend_ptr_stack_clean"] = Module["asm"]["k9"]).apply(
+      return (_zend_ptr_stack_clean = Module["_zend_ptr_stack_clean"] = Module["asm"]["q9"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ptr_stack_destroy = (Module["_zend_ptr_stack_destroy"] = function () {
       return (_zend_ptr_stack_destroy = Module["_zend_ptr_stack_destroy"] =
-        Module["asm"]["l9"]).apply(null, arguments);
+        Module["asm"]["r9"]).apply(null, arguments);
     });
     var _zend_multibyte_check_lexer_compatibility = (Module[
       "_zend_multibyte_check_lexer_compatibility"
@@ -23389,61 +23421,61 @@ var PHP = (() => {
       return (_zend_multibyte_check_lexer_compatibility = Module[
         "_zend_multibyte_check_lexer_compatibility"
       ] =
-        Module["asm"]["m9"]).apply(null, arguments);
+        Module["asm"]["s9"]).apply(null, arguments);
     });
     var _zend_multibyte_get_encoding_name = (Module["_zend_multibyte_get_encoding_name"] =
       function () {
         return (_zend_multibyte_get_encoding_name = Module["_zend_multibyte_get_encoding_name"] =
-          Module["asm"]["n9"]).apply(null, arguments);
+          Module["asm"]["t9"]).apply(null, arguments);
       });
     var _compile_file = (Module["_compile_file"] = function () {
-      return (_compile_file = Module["_compile_file"] = Module["asm"]["o9"]).apply(null, arguments);
+      return (_compile_file = Module["_compile_file"] = Module["asm"]["u9"]).apply(null, arguments);
     });
     var _zend_prepare_string_for_scanning = (Module["_zend_prepare_string_for_scanning"] =
       function () {
         return (_zend_prepare_string_for_scanning = Module["_zend_prepare_string_for_scanning"] =
-          Module["asm"]["p9"]).apply(null, arguments);
+          Module["asm"]["v9"]).apply(null, arguments);
       });
     var _compile_string = (Module["_compile_string"] = function () {
-      return (_compile_string = Module["_compile_string"] = Module["asm"]["q9"]).apply(
+      return (_compile_string = Module["_compile_string"] = Module["asm"]["w9"]).apply(
         null,
         arguments,
       );
     });
     var _zend_oct_strtod = (Module["_zend_oct_strtod"] = function () {
-      return (_zend_oct_strtod = Module["_zend_oct_strtod"] = Module["asm"]["r9"]).apply(
+      return (_zend_oct_strtod = Module["_zend_oct_strtod"] = Module["asm"]["x9"]).apply(
         null,
         arguments,
       );
     });
     var _zend_bin_strtod = (Module["_zend_bin_strtod"] = function () {
-      return (_zend_bin_strtod = Module["_zend_bin_strtod"] = Module["asm"]["s9"]).apply(
+      return (_zend_bin_strtod = Module["_zend_bin_strtod"] = Module["asm"]["y9"]).apply(
         null,
         arguments,
       );
     });
     var _zend_hex_strtod = (Module["_zend_hex_strtod"] = function () {
-      return (_zend_hex_strtod = Module["_zend_hex_strtod"] = Module["asm"]["t9"]).apply(
+      return (_zend_hex_strtod = Module["_zend_hex_strtod"] = Module["asm"]["z9"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ptr_stack_reverse_apply = (Module["_zend_ptr_stack_reverse_apply"] = function () {
       return (_zend_ptr_stack_reverse_apply = Module["_zend_ptr_stack_reverse_apply"] =
-        Module["asm"]["u9"]).apply(null, arguments);
+        Module["asm"]["A9"]).apply(null, arguments);
     });
     var _zend_objects_clone_obj = (Module["_zend_objects_clone_obj"] = function () {
       return (_zend_objects_clone_obj = Module["_zend_objects_clone_obj"] =
-        Module["asm"]["v9"]).apply(null, arguments);
+        Module["asm"]["B9"]).apply(null, arguments);
     });
     var _zend_list_insert = (Module["_zend_list_insert"] = function () {
-      return (_zend_list_insert = Module["_zend_list_insert"] = Module["asm"]["w9"]).apply(
+      return (_zend_list_insert = Module["_zend_list_insert"] = Module["asm"]["C9"]).apply(
         null,
         arguments,
       );
     });
     var _zend_list_free = (Module["_zend_list_free"] = function () {
-      return (_zend_list_free = Module["_zend_list_free"] = Module["asm"]["x9"]).apply(
+      return (_zend_list_free = Module["_zend_list_free"] = Module["asm"]["D9"]).apply(
         null,
         arguments,
       );
@@ -23453,39 +23485,39 @@ var PHP = (() => {
         return (_zend_register_persistent_resource_ex = Module[
           "_zend_register_persistent_resource_ex"
         ] =
-          Module["asm"]["y9"]).apply(null, arguments);
+          Module["asm"]["E9"]).apply(null, arguments);
       });
     var _zend_llist_prepend_element = (Module["_zend_llist_prepend_element"] = function () {
       return (_zend_llist_prepend_element = Module["_zend_llist_prepend_element"] =
-        Module["asm"]["z9"]).apply(null, arguments);
+        Module["asm"]["F9"]).apply(null, arguments);
     });
     var _zend_llist_remove_tail = (Module["_zend_llist_remove_tail"] = function () {
       return (_zend_llist_remove_tail = Module["_zend_llist_remove_tail"] =
-        Module["asm"]["A9"]).apply(null, arguments);
+        Module["asm"]["G9"]).apply(null, arguments);
     });
     var _zend_llist_copy = (Module["_zend_llist_copy"] = function () {
-      return (_zend_llist_copy = Module["_zend_llist_copy"] = Module["asm"]["B9"]).apply(
+      return (_zend_llist_copy = Module["_zend_llist_copy"] = Module["asm"]["H9"]).apply(
         null,
         arguments,
       );
     });
     var _zend_llist_sort = (Module["_zend_llist_sort"] = function () {
-      return (_zend_llist_sort = Module["_zend_llist_sort"] = Module["asm"]["C9"]).apply(
+      return (_zend_llist_sort = Module["_zend_llist_sort"] = Module["asm"]["I9"]).apply(
         null,
         arguments,
       );
     });
     var _zend_llist_get_last_ex = (Module["_zend_llist_get_last_ex"] = function () {
       return (_zend_llist_get_last_ex = Module["_zend_llist_get_last_ex"] =
-        Module["asm"]["D9"]).apply(null, arguments);
+        Module["asm"]["J9"]).apply(null, arguments);
     });
     var _zend_llist_get_prev_ex = (Module["_zend_llist_get_prev_ex"] = function () {
       return (_zend_llist_get_prev_ex = Module["_zend_llist_get_prev_ex"] =
-        Module["asm"]["E9"]).apply(null, arguments);
+        Module["asm"]["K9"]).apply(null, arguments);
     });
     var _zend_multibyte_set_functions = (Module["_zend_multibyte_set_functions"] = function () {
       return (_zend_multibyte_set_functions = Module["_zend_multibyte_set_functions"] =
-        Module["asm"]["F9"]).apply(null, arguments);
+        Module["asm"]["L9"]).apply(null, arguments);
     });
     var _zend_multibyte_set_script_encoding_by_string = (Module[
       "_zend_multibyte_set_script_encoding_by_string"
@@ -23493,57 +23525,57 @@ var PHP = (() => {
       return (_zend_multibyte_set_script_encoding_by_string = Module[
         "_zend_multibyte_set_script_encoding_by_string"
       ] =
-        Module["asm"]["G9"]).apply(null, arguments);
+        Module["asm"]["M9"]).apply(null, arguments);
     });
     var _zend_multibyte_restore_functions = (Module["_zend_multibyte_restore_functions"] =
       function () {
         return (_zend_multibyte_restore_functions = Module["_zend_multibyte_restore_functions"] =
-          Module["asm"]["H9"]).apply(null, arguments);
+          Module["asm"]["N9"]).apply(null, arguments);
       });
     var _zend_multibyte_parse_encoding_list = (Module["_zend_multibyte_parse_encoding_list"] =
       function () {
         return (_zend_multibyte_parse_encoding_list = Module[
           "_zend_multibyte_parse_encoding_list"
         ] =
-          Module["asm"]["I9"]).apply(null, arguments);
+          Module["asm"]["O9"]).apply(null, arguments);
       });
     var _zend_multibyte_get_script_encoding = (Module["_zend_multibyte_get_script_encoding"] =
       function () {
         return (_zend_multibyte_get_script_encoding = Module[
           "_zend_multibyte_get_script_encoding"
         ] =
-          Module["asm"]["J9"]).apply(null, arguments);
+          Module["asm"]["P9"]).apply(null, arguments);
       });
     var _zend_multibyte_set_script_encoding = (Module["_zend_multibyte_set_script_encoding"] =
       function () {
         return (_zend_multibyte_set_script_encoding = Module[
           "_zend_multibyte_set_script_encoding"
         ] =
-          Module["asm"]["K9"]).apply(null, arguments);
+          Module["asm"]["Q9"]).apply(null, arguments);
       });
     var _zend_multibyte_set_internal_encoding = (Module["_zend_multibyte_set_internal_encoding"] =
       function () {
         return (_zend_multibyte_set_internal_encoding = Module[
           "_zend_multibyte_set_internal_encoding"
         ] =
-          Module["asm"]["L9"]).apply(null, arguments);
+          Module["asm"]["R9"]).apply(null, arguments);
       });
     var _zend_std_get_gc = (Module["_zend_std_get_gc"] = function () {
-      return (_zend_std_get_gc = Module["_zend_std_get_gc"] = Module["asm"]["M9"]).apply(
+      return (_zend_std_get_gc = Module["_zend_std_get_gc"] = Module["asm"]["S9"]).apply(
         null,
         arguments,
       );
     });
     var _zend_std_get_debug_info = (Module["_zend_std_get_debug_info"] = function () {
       return (_zend_std_get_debug_info = Module["_zend_std_get_debug_info"] =
-        Module["asm"]["N9"]).apply(null, arguments);
+        Module["asm"]["T9"]).apply(null, arguments);
     });
     var _zend_get_property_guard = (Module["_zend_get_property_guard"] = function () {
       return (_zend_get_property_guard = Module["_zend_get_property_guard"] =
-        Module["asm"]["O9"]).apply(null, arguments);
+        Module["asm"]["U9"]).apply(null, arguments);
     });
     var _zend_std_get_closure = (Module["_zend_std_get_closure"] = function () {
-      return (_zend_std_get_closure = Module["_zend_std_get_closure"] = Module["asm"]["P9"]).apply(
+      return (_zend_std_get_closure = Module["_zend_std_get_closure"] = Module["asm"]["V9"]).apply(
         null,
         arguments,
       );
@@ -23553,50 +23585,50 @@ var PHP = (() => {
         return (_zend_hooked_object_build_properties = Module[
           "_zend_hooked_object_build_properties"
         ] =
-          Module["asm"]["Q9"]).apply(null, arguments);
+          Module["asm"]["W9"]).apply(null, arguments);
       });
     var _zend_objects_clone_obj_with = (Module["_zend_objects_clone_obj_with"] = function () {
       return (_zend_objects_clone_obj_with = Module["_zend_objects_clone_obj_with"] =
-        Module["asm"]["R9"]).apply(null, arguments);
+        Module["asm"]["X9"]).apply(null, arguments);
     });
     var _zend_objects_store_put = (Module["_zend_objects_store_put"] = function () {
       return (_zend_objects_store_put = Module["_zend_objects_store_put"] =
-        Module["asm"]["S9"]).apply(null, arguments);
+        Module["asm"]["Y9"]).apply(null, arguments);
     });
     var _zend_weakrefs_notify = (Module["_zend_weakrefs_notify"] = function () {
-      return (_zend_weakrefs_notify = Module["_zend_weakrefs_notify"] = Module["asm"]["T9"]).apply(
+      return (_zend_weakrefs_notify = Module["_zend_weakrefs_notify"] = Module["asm"]["Z9"]).apply(
         null,
         arguments,
       );
     });
     var _zend_observer_fcall_register = (Module["_zend_observer_fcall_register"] = function () {
       return (_zend_observer_fcall_register = Module["_zend_observer_fcall_register"] =
-        Module["asm"]["U9"]).apply(null, arguments);
+        Module["asm"]["_9"]).apply(null, arguments);
     });
     var _zend_observer_activate = (Module["_zend_observer_activate"] = function () {
       return (_zend_observer_activate = Module["_zend_observer_activate"] =
-        Module["asm"]["V9"]).apply(null, arguments);
+        Module["asm"]["$9"]).apply(null, arguments);
     });
     var _zend_observer_add_begin_handler = (Module["_zend_observer_add_begin_handler"] =
       function () {
         return (_zend_observer_add_begin_handler = Module["_zend_observer_add_begin_handler"] =
-          Module["asm"]["W9"]).apply(null, arguments);
+          Module["asm"]["aaa"]).apply(null, arguments);
       });
     var _zend_observer_remove_begin_handler = (Module["_zend_observer_remove_begin_handler"] =
       function () {
         return (_zend_observer_remove_begin_handler = Module[
           "_zend_observer_remove_begin_handler"
         ] =
-          Module["asm"]["X9"]).apply(null, arguments);
+          Module["asm"]["baa"]).apply(null, arguments);
       });
     var _zend_observer_add_end_handler = (Module["_zend_observer_add_end_handler"] = function () {
       return (_zend_observer_add_end_handler = Module["_zend_observer_add_end_handler"] =
-        Module["asm"]["Y9"]).apply(null, arguments);
+        Module["asm"]["caa"]).apply(null, arguments);
     });
     var _zend_observer_remove_end_handler = (Module["_zend_observer_remove_end_handler"] =
       function () {
         return (_zend_observer_remove_end_handler = Module["_zend_observer_remove_end_handler"] =
-          Module["asm"]["Z9"]).apply(null, arguments);
+          Module["asm"]["daa"]).apply(null, arguments);
       });
     var _zend_observer_function_declared_register = (Module[
       "_zend_observer_function_declared_register"
@@ -23604,1488 +23636,1488 @@ var PHP = (() => {
       return (_zend_observer_function_declared_register = Module[
         "_zend_observer_function_declared_register"
       ] =
-        Module["asm"]["_9"]).apply(null, arguments);
+        Module["asm"]["eaa"]).apply(null, arguments);
     });
     var _zend_observer_class_linked_register = (Module["_zend_observer_class_linked_register"] =
       function () {
         return (_zend_observer_class_linked_register = Module[
           "_zend_observer_class_linked_register"
         ] =
-          Module["asm"]["$9"]).apply(null, arguments);
+          Module["asm"]["faa"]).apply(null, arguments);
       });
     var _zend_observer_error_register = (Module["_zend_observer_error_register"] = function () {
       return (_zend_observer_error_register = Module["_zend_observer_error_register"] =
-        Module["asm"]["aaa"]).apply(null, arguments);
+        Module["asm"]["gaa"]).apply(null, arguments);
     });
     var _zend_observer_fiber_init_register = (Module["_zend_observer_fiber_init_register"] =
       function () {
         return (_zend_observer_fiber_init_register = Module["_zend_observer_fiber_init_register"] =
-          Module["asm"]["baa"]).apply(null, arguments);
+          Module["asm"]["haa"]).apply(null, arguments);
       });
     var _zend_observer_fiber_switch_register = (Module["_zend_observer_fiber_switch_register"] =
       function () {
         return (_zend_observer_fiber_switch_register = Module[
           "_zend_observer_fiber_switch_register"
         ] =
-          Module["asm"]["caa"]).apply(null, arguments);
+          Module["asm"]["iaa"]).apply(null, arguments);
       });
     var _zend_observer_fiber_destroy_register = (Module["_zend_observer_fiber_destroy_register"] =
       function () {
         return (_zend_observer_fiber_destroy_register = Module[
           "_zend_observer_fiber_destroy_register"
         ] =
-          Module["asm"]["daa"]).apply(null, arguments);
+          Module["asm"]["jaa"]).apply(null, arguments);
       });
     var _destroy_zend_function = (Module["_destroy_zend_function"] = function () {
       return (_destroy_zend_function = Module["_destroy_zend_function"] =
-        Module["asm"]["eaa"]).apply(null, arguments);
+        Module["asm"]["kaa"]).apply(null, arguments);
     });
     var _boolean_not_function = (Module["_boolean_not_function"] = function () {
-      return (_boolean_not_function = Module["_boolean_not_function"] = Module["asm"]["faa"]).apply(
+      return (_boolean_not_function = Module["_boolean_not_function"] = Module["asm"]["laa"]).apply(
         null,
         arguments,
       );
     });
     var _is_identical_function = (Module["_is_identical_function"] = function () {
       return (_is_identical_function = Module["_is_identical_function"] =
-        Module["asm"]["gaa"]).apply(null, arguments);
+        Module["asm"]["maa"]).apply(null, arguments);
     });
     var _is_not_identical_function = (Module["_is_not_identical_function"] = function () {
       return (_is_not_identical_function = Module["_is_not_identical_function"] =
-        Module["asm"]["haa"]).apply(null, arguments);
+        Module["asm"]["naa"]).apply(null, arguments);
     });
     var _is_equal_function = (Module["_is_equal_function"] = function () {
-      return (_is_equal_function = Module["_is_equal_function"] = Module["asm"]["iaa"]).apply(
+      return (_is_equal_function = Module["_is_equal_function"] = Module["asm"]["oaa"]).apply(
         null,
         arguments,
       );
     });
     var _is_not_equal_function = (Module["_is_not_equal_function"] = function () {
       return (_is_not_equal_function = Module["_is_not_equal_function"] =
-        Module["asm"]["jaa"]).apply(null, arguments);
+        Module["asm"]["paa"]).apply(null, arguments);
     });
     var _zend_atol = (Module["_zend_atol"] = function () {
-      return (_zend_atol = Module["_zend_atol"] = Module["asm"]["kaa"]).apply(null, arguments);
+      return (_zend_atol = Module["_zend_atol"] = Module["asm"]["qaa"]).apply(null, arguments);
     });
     var _zend_atoi = (Module["_zend_atoi"] = function () {
-      return (_zend_atoi = Module["_zend_atoi"] = Module["asm"]["laa"]).apply(null, arguments);
+      return (_zend_atoi = Module["_zend_atoi"] = Module["asm"]["raa"]).apply(null, arguments);
     });
     var _convert_scalar_to_number = (Module["_convert_scalar_to_number"] = function () {
       return (_convert_scalar_to_number = Module["_convert_scalar_to_number"] =
-        Module["asm"]["maa"]).apply(null, arguments);
+        Module["asm"]["saa"]).apply(null, arguments);
     });
     var _zval_try_get_long = (Module["_zval_try_get_long"] = function () {
-      return (_zval_try_get_long = Module["_zval_try_get_long"] = Module["asm"]["naa"]).apply(
+      return (_zval_try_get_long = Module["_zval_try_get_long"] = Module["asm"]["taa"]).apply(
         null,
         arguments,
       );
     });
     var _zend_oob_string_to_long_error = (Module["_zend_oob_string_to_long_error"] = function () {
       return (_zend_oob_string_to_long_error = Module["_zend_oob_string_to_long_error"] =
-        Module["asm"]["oaa"]).apply(null, arguments);
+        Module["asm"]["uaa"]).apply(null, arguments);
     });
     var _string_compare_function_ex = (Module["_string_compare_function_ex"] = function () {
       return (_string_compare_function_ex = Module["_string_compare_function_ex"] =
-        Module["asm"]["paa"]).apply(null, arguments);
+        Module["asm"]["vaa"]).apply(null, arguments);
     });
     var _zend_compare_arrays = (Module["_zend_compare_arrays"] = function () {
-      return (_zend_compare_arrays = Module["_zend_compare_arrays"] = Module["asm"]["qaa"]).apply(
+      return (_zend_compare_arrays = Module["_zend_compare_arrays"] = Module["asm"]["waa"]).apply(
         null,
         arguments,
       );
     });
     var ___ctype_get_mb_cur_max = (Module["___ctype_get_mb_cur_max"] = function () {
       return (___ctype_get_mb_cur_max = Module["___ctype_get_mb_cur_max"] =
-        Module["asm"]["raa"]).apply(null, arguments);
+        Module["asm"]["xaa"]).apply(null, arguments);
     });
     var _zend_str_toupper_copy = (Module["_zend_str_toupper_copy"] = function () {
       return (_zend_str_toupper_copy = Module["_zend_str_toupper_copy"] =
-        Module["asm"]["saa"]).apply(null, arguments);
+        Module["asm"]["yaa"]).apply(null, arguments);
     });
     var _zend_str_toupper_dup = (Module["_zend_str_toupper_dup"] = function () {
-      return (_zend_str_toupper_dup = Module["_zend_str_toupper_dup"] = Module["asm"]["taa"]).apply(
+      return (_zend_str_toupper_dup = Module["_zend_str_toupper_dup"] = Module["asm"]["zaa"]).apply(
         null,
         arguments,
       );
     });
     var _zend_str_toupper = (Module["_zend_str_toupper"] = function () {
-      return (_zend_str_toupper = Module["_zend_str_toupper"] = Module["asm"]["uaa"]).apply(
+      return (_zend_str_toupper = Module["_zend_str_toupper"] = Module["asm"]["Aaa"]).apply(
         null,
         arguments,
       );
     });
     var _zend_str_toupper_dup_ex = (Module["_zend_str_toupper_dup_ex"] = function () {
       return (_zend_str_toupper_dup_ex = Module["_zend_str_toupper_dup_ex"] =
-        Module["asm"]["vaa"]).apply(null, arguments);
+        Module["asm"]["Baa"]).apply(null, arguments);
     });
     var _zend_binary_zval_strcmp = (Module["_zend_binary_zval_strcmp"] = function () {
       return (_zend_binary_zval_strcmp = Module["_zend_binary_zval_strcmp"] =
-        Module["asm"]["waa"]).apply(null, arguments);
+        Module["asm"]["Caa"]).apply(null, arguments);
     });
     var _zend_binary_zval_strncmp = (Module["_zend_binary_zval_strncmp"] = function () {
       return (_zend_binary_zval_strncmp = Module["_zend_binary_zval_strncmp"] =
-        Module["asm"]["xaa"]).apply(null, arguments);
+        Module["asm"]["Daa"]).apply(null, arguments);
     });
     var _zend_compare_objects = (Module["_zend_compare_objects"] = function () {
-      return (_zend_compare_objects = Module["_zend_compare_objects"] = Module["asm"]["yaa"]).apply(
+      return (_zend_compare_objects = Module["_zend_compare_objects"] = Module["asm"]["Eaa"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ulong_to_str = (Module["_zend_ulong_to_str"] = function () {
-      return (_zend_ulong_to_str = Module["_zend_ulong_to_str"] = Module["asm"]["zaa"]).apply(
+      return (_zend_ulong_to_str = Module["_zend_ulong_to_str"] = Module["asm"]["Faa"]).apply(
         null,
         arguments,
       );
     });
     var _zend_u64_to_str = (Module["_zend_u64_to_str"] = function () {
-      return (_zend_u64_to_str = Module["_zend_u64_to_str"] = Module["asm"]["Aaa"]).apply(
+      return (_zend_u64_to_str = Module["_zend_u64_to_str"] = Module["asm"]["Gaa"]).apply(
         null,
         arguments,
       );
     });
     var _zend_i64_to_str = (Module["_zend_i64_to_str"] = function () {
-      return (_zend_i64_to_str = Module["_zend_i64_to_str"] = Module["asm"]["Baa"]).apply(
+      return (_zend_i64_to_str = Module["_zend_i64_to_str"] = Module["asm"]["Haa"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ptr_stack_init_ex = (Module["_zend_ptr_stack_init_ex"] = function () {
       return (_zend_ptr_stack_init_ex = Module["_zend_ptr_stack_init_ex"] =
-        Module["asm"]["Caa"]).apply(null, arguments);
+        Module["asm"]["Iaa"]).apply(null, arguments);
     });
     var _zend_ptr_stack_n_push = (Module["_zend_ptr_stack_n_push"] = function () {
       return (_zend_ptr_stack_n_push = Module["_zend_ptr_stack_n_push"] =
-        Module["asm"]["Daa"]).apply(null, arguments);
+        Module["asm"]["Jaa"]).apply(null, arguments);
     });
     var _zend_ptr_stack_n_pop = (Module["_zend_ptr_stack_n_pop"] = function () {
-      return (_zend_ptr_stack_n_pop = Module["_zend_ptr_stack_n_pop"] = Module["asm"]["Eaa"]).apply(
+      return (_zend_ptr_stack_n_pop = Module["_zend_ptr_stack_n_pop"] = Module["asm"]["Kaa"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ptr_stack_apply = (Module["_zend_ptr_stack_apply"] = function () {
-      return (_zend_ptr_stack_apply = Module["_zend_ptr_stack_apply"] = Module["asm"]["Faa"]).apply(
+      return (_zend_ptr_stack_apply = Module["_zend_ptr_stack_apply"] = Module["asm"]["Laa"]).apply(
         null,
         arguments,
       );
     });
     var _zend_ptr_stack_num_elements = (Module["_zend_ptr_stack_num_elements"] = function () {
       return (_zend_ptr_stack_num_elements = Module["_zend_ptr_stack_num_elements"] =
-        Module["asm"]["Gaa"]).apply(null, arguments);
+        Module["asm"]["Maa"]).apply(null, arguments);
     });
     var _sigprocmask = (Module["_sigprocmask"] = function () {
-      return (_sigprocmask = Module["_sigprocmask"] = Module["asm"]["Haa"]).apply(null, arguments);
+      return (_sigprocmask = Module["_sigprocmask"] = Module["asm"]["Naa"]).apply(null, arguments);
     });
     var _zend_sigaction = (Module["_zend_sigaction"] = function () {
-      return (_zend_sigaction = Module["_zend_sigaction"] = Module["asm"]["Iaa"]).apply(
+      return (_zend_sigaction = Module["_zend_sigaction"] = Module["asm"]["Oaa"]).apply(
         null,
         arguments,
       );
     });
     var _sigaction = (Module["_sigaction"] = function () {
-      return (_sigaction = Module["_sigaction"] = Module["asm"]["Jaa"]).apply(null, arguments);
+      return (_sigaction = Module["_sigaction"] = Module["asm"]["Paa"]).apply(null, arguments);
     });
     var _sigemptyset = (Module["_sigemptyset"] = function () {
-      return (_sigemptyset = Module["_sigemptyset"] = Module["asm"]["Kaa"]).apply(null, arguments);
+      return (_sigemptyset = Module["_sigemptyset"] = Module["asm"]["Qaa"]).apply(null, arguments);
     });
     var _sigaddset = (Module["_sigaddset"] = function () {
-      return (_sigaddset = Module["_sigaddset"] = Module["asm"]["Laa"]).apply(null, arguments);
+      return (_sigaddset = Module["_sigaddset"] = Module["asm"]["Raa"]).apply(null, arguments);
     });
     var _zend_signal_startup = (Module["_zend_signal_startup"] = function () {
-      return (_zend_signal_startup = Module["_zend_signal_startup"] = Module["asm"]["Maa"]).apply(
+      return (_zend_signal_startup = Module["_zend_signal_startup"] = Module["asm"]["Saa"]).apply(
         null,
         arguments,
       );
     });
     var _sigfillset = (Module["_sigfillset"] = function () {
-      return (_sigfillset = Module["_sigfillset"] = Module["asm"]["Naa"]).apply(null, arguments);
+      return (_sigfillset = Module["_sigfillset"] = Module["asm"]["Taa"]).apply(null, arguments);
     });
     var _sigdelset = (Module["_sigdelset"] = function () {
-      return (_sigdelset = Module["_sigdelset"] = Module["asm"]["Oaa"]).apply(null, arguments);
+      return (_sigdelset = Module["_sigdelset"] = Module["asm"]["Uaa"]).apply(null, arguments);
     });
     var _smart_str_append_escaped_truncated = (Module["_smart_str_append_escaped_truncated"] =
       function () {
         return (_smart_str_append_escaped_truncated = Module[
           "_smart_str_append_escaped_truncated"
         ] =
-          Module["asm"]["Paa"]).apply(null, arguments);
+          Module["asm"]["Vaa"]).apply(null, arguments);
       });
     var _smart_str_append_scalar = (Module["_smart_str_append_scalar"] = function () {
       return (_smart_str_append_scalar = Module["_smart_str_append_scalar"] =
-        Module["asm"]["Qaa"]).apply(null, arguments);
+        Module["asm"]["Waa"]).apply(null, arguments);
     });
     var _zend_insert_sort = (Module["_zend_insert_sort"] = function () {
-      return (_zend_insert_sort = Module["_zend_insert_sort"] = Module["asm"]["Raa"]).apply(
+      return (_zend_insert_sort = Module["_zend_insert_sort"] = Module["asm"]["Xaa"]).apply(
         null,
         arguments,
       );
     });
     var _zend_stack_apply = (Module["_zend_stack_apply"] = function () {
-      return (_zend_stack_apply = Module["_zend_stack_apply"] = Module["asm"]["Saa"]).apply(
+      return (_zend_stack_apply = Module["_zend_stack_apply"] = Module["asm"]["Yaa"]).apply(
         null,
         arguments,
       );
     });
     var _zend_interned_strings_init = (Module["_zend_interned_strings_init"] = function () {
       return (_zend_interned_strings_init = Module["_zend_interned_strings_init"] =
-        Module["asm"]["Taa"]).apply(null, arguments);
+        Module["asm"]["Zaa"]).apply(null, arguments);
     });
     var _zend_interned_string_find_permanent = (Module["_zend_interned_string_find_permanent"] =
       function () {
         return (_zend_interned_string_find_permanent = Module[
           "_zend_interned_string_find_permanent"
         ] =
-          Module["asm"]["Uaa"]).apply(null, arguments);
+          Module["asm"]["_aa"]).apply(null, arguments);
       });
     var _zend_shutdown_strtod = (Module["_zend_shutdown_strtod"] = function () {
-      return (_zend_shutdown_strtod = Module["_zend_shutdown_strtod"] = Module["asm"]["Vaa"]).apply(
+      return (_zend_shutdown_strtod = Module["_zend_shutdown_strtod"] = Module["asm"]["$aa"]).apply(
         null,
         arguments,
       );
     });
     var _virtual_cwd_startup = (Module["_virtual_cwd_startup"] = function () {
-      return (_virtual_cwd_startup = Module["_virtual_cwd_startup"] = Module["asm"]["Waa"]).apply(
+      return (_virtual_cwd_startup = Module["_virtual_cwd_startup"] = Module["asm"]["aba"]).apply(
         null,
         arguments,
       );
     });
     var _virtual_cwd_shutdown = (Module["_virtual_cwd_shutdown"] = function () {
-      return (_virtual_cwd_shutdown = Module["_virtual_cwd_shutdown"] = Module["asm"]["Xaa"]).apply(
+      return (_virtual_cwd_shutdown = Module["_virtual_cwd_shutdown"] = Module["asm"]["bba"]).apply(
         null,
         arguments,
       );
     });
     var _virtual_getcwd_ex = (Module["_virtual_getcwd_ex"] = function () {
-      return (_virtual_getcwd_ex = Module["_virtual_getcwd_ex"] = Module["asm"]["Yaa"]).apply(
+      return (_virtual_getcwd_ex = Module["_virtual_getcwd_ex"] = Module["asm"]["cba"]).apply(
         null,
         arguments,
       );
     });
     var _virtual_getcwd = (Module["_virtual_getcwd"] = function () {
-      return (_virtual_getcwd = Module["_virtual_getcwd"] = Module["asm"]["Zaa"]).apply(
+      return (_virtual_getcwd = Module["_virtual_getcwd"] = Module["asm"]["dba"]).apply(
         null,
         arguments,
       );
     });
     var _realpath_cache_lookup = (Module["_realpath_cache_lookup"] = function () {
       return (_realpath_cache_lookup = Module["_realpath_cache_lookup"] =
-        Module["asm"]["_aa"]).apply(null, arguments);
+        Module["asm"]["eba"]).apply(null, arguments);
     });
     var _virtual_chdir = (Module["_virtual_chdir"] = function () {
-      return (_virtual_chdir = Module["_virtual_chdir"] = Module["asm"]["$aa"]).apply(
+      return (_virtual_chdir = Module["_virtual_chdir"] = Module["asm"]["fba"]).apply(
         null,
         arguments,
       );
     });
     var _virtual_realpath = (Module["_virtual_realpath"] = function () {
-      return (_virtual_realpath = Module["_virtual_realpath"] = Module["asm"]["aba"]).apply(
+      return (_virtual_realpath = Module["_virtual_realpath"] = Module["asm"]["gba"]).apply(
         null,
         arguments,
       );
     });
     var _virtual_filepath_ex = (Module["_virtual_filepath_ex"] = function () {
-      return (_virtual_filepath_ex = Module["_virtual_filepath_ex"] = Module["asm"]["bba"]).apply(
+      return (_virtual_filepath_ex = Module["_virtual_filepath_ex"] = Module["asm"]["hba"]).apply(
         null,
         arguments,
       );
     });
     var _virtual_filepath = (Module["_virtual_filepath"] = function () {
-      return (_virtual_filepath = Module["_virtual_filepath"] = Module["asm"]["cba"]).apply(
+      return (_virtual_filepath = Module["_virtual_filepath"] = Module["asm"]["iba"]).apply(
         null,
         arguments,
       );
     });
     var _virtual_fopen = (Module["_virtual_fopen"] = function () {
-      return (_virtual_fopen = Module["_virtual_fopen"] = Module["asm"]["dba"]).apply(
+      return (_virtual_fopen = Module["_virtual_fopen"] = Module["asm"]["jba"]).apply(
         null,
         arguments,
       );
     });
     var _virtual_access = (Module["_virtual_access"] = function () {
-      return (_virtual_access = Module["_virtual_access"] = Module["asm"]["eba"]).apply(
+      return (_virtual_access = Module["_virtual_access"] = Module["asm"]["kba"]).apply(
         null,
         arguments,
       );
     });
     var _virtual_utime = (Module["_virtual_utime"] = function () {
-      return (_virtual_utime = Module["_virtual_utime"] = Module["asm"]["fba"]).apply(
+      return (_virtual_utime = Module["_virtual_utime"] = Module["asm"]["lba"]).apply(
         null,
         arguments,
       );
     });
     var _virtual_chmod = (Module["_virtual_chmod"] = function () {
-      return (_virtual_chmod = Module["_virtual_chmod"] = Module["asm"]["gba"]).apply(
+      return (_virtual_chmod = Module["_virtual_chmod"] = Module["asm"]["mba"]).apply(
         null,
         arguments,
       );
     });
     var _virtual_chown = (Module["_virtual_chown"] = function () {
-      return (_virtual_chown = Module["_virtual_chown"] = Module["asm"]["hba"]).apply(
+      return (_virtual_chown = Module["_virtual_chown"] = Module["asm"]["nba"]).apply(
         null,
         arguments,
       );
     });
     var _virtual_open = (Module["_virtual_open"] = function () {
-      return (_virtual_open = Module["_virtual_open"] = Module["asm"]["iba"]).apply(
+      return (_virtual_open = Module["_virtual_open"] = Module["asm"]["oba"]).apply(
         null,
         arguments,
       );
     });
     var _virtual_creat = (Module["_virtual_creat"] = function () {
-      return (_virtual_creat = Module["_virtual_creat"] = Module["asm"]["jba"]).apply(
+      return (_virtual_creat = Module["_virtual_creat"] = Module["asm"]["pba"]).apply(
         null,
         arguments,
       );
     });
     var _creat = (Module["_creat"] = function () {
-      return (_creat = Module["_creat"] = Module["asm"]["kba"]).apply(null, arguments);
+      return (_creat = Module["_creat"] = Module["asm"]["qba"]).apply(null, arguments);
     });
     var _virtual_rename = (Module["_virtual_rename"] = function () {
-      return (_virtual_rename = Module["_virtual_rename"] = Module["asm"]["lba"]).apply(
+      return (_virtual_rename = Module["_virtual_rename"] = Module["asm"]["rba"]).apply(
         null,
         arguments,
       );
     });
     var _virtual_stat = (Module["_virtual_stat"] = function () {
-      return (_virtual_stat = Module["_virtual_stat"] = Module["asm"]["mba"]).apply(
+      return (_virtual_stat = Module["_virtual_stat"] = Module["asm"]["sba"]).apply(
         null,
         arguments,
       );
     });
     var _virtual_lstat = (Module["_virtual_lstat"] = function () {
-      return (_virtual_lstat = Module["_virtual_lstat"] = Module["asm"]["nba"]).apply(
+      return (_virtual_lstat = Module["_virtual_lstat"] = Module["asm"]["tba"]).apply(
         null,
         arguments,
       );
     });
     var _virtual_unlink = (Module["_virtual_unlink"] = function () {
-      return (_virtual_unlink = Module["_virtual_unlink"] = Module["asm"]["oba"]).apply(
+      return (_virtual_unlink = Module["_virtual_unlink"] = Module["asm"]["uba"]).apply(
         null,
         arguments,
       );
     });
     var _virtual_mkdir = (Module["_virtual_mkdir"] = function () {
-      return (_virtual_mkdir = Module["_virtual_mkdir"] = Module["asm"]["pba"]).apply(
+      return (_virtual_mkdir = Module["_virtual_mkdir"] = Module["asm"]["vba"]).apply(
         null,
         arguments,
       );
     });
     var _virtual_rmdir = (Module["_virtual_rmdir"] = function () {
-      return (_virtual_rmdir = Module["_virtual_rmdir"] = Module["asm"]["qba"]).apply(
+      return (_virtual_rmdir = Module["_virtual_rmdir"] = Module["asm"]["wba"]).apply(
         null,
         arguments,
       );
     });
     var _virtual_opendir = (Module["_virtual_opendir"] = function () {
-      return (_virtual_opendir = Module["_virtual_opendir"] = Module["asm"]["rba"]).apply(
+      return (_virtual_opendir = Module["_virtual_opendir"] = Module["asm"]["xba"]).apply(
         null,
         arguments,
       );
     });
     var _virtual_popen = (Module["_virtual_popen"] = function () {
-      return (_virtual_popen = Module["_virtual_popen"] = Module["asm"]["sba"]).apply(
+      return (_virtual_popen = Module["_virtual_popen"] = Module["asm"]["yba"]).apply(
         null,
         arguments,
       );
     });
     var _zend_get_opcode_id = (Module["_zend_get_opcode_id"] = function () {
-      return (_zend_get_opcode_id = Module["_zend_get_opcode_id"] = Module["asm"]["tba"]).apply(
+      return (_zend_get_opcode_id = Module["_zend_get_opcode_id"] = Module["asm"]["zba"]).apply(
         null,
         arguments,
       );
     });
     var _zend_weakrefs_hash_add = (Module["_zend_weakrefs_hash_add"] = function () {
       return (_zend_weakrefs_hash_add = Module["_zend_weakrefs_hash_add"] =
-        Module["asm"]["uba"]).apply(null, arguments);
+        Module["asm"]["Aba"]).apply(null, arguments);
     });
     var _zend_weakrefs_hash_del = (Module["_zend_weakrefs_hash_del"] = function () {
       return (_zend_weakrefs_hash_del = Module["_zend_weakrefs_hash_del"] =
-        Module["asm"]["vba"]).apply(null, arguments);
+        Module["asm"]["Bba"]).apply(null, arguments);
     });
     var _zend_weakrefs_hash_clean = (Module["_zend_weakrefs_hash_clean"] = function () {
       return (_zend_weakrefs_hash_clean = Module["_zend_weakrefs_hash_clean"] =
-        Module["asm"]["wba"]).apply(null, arguments);
+        Module["asm"]["Cba"]).apply(null, arguments);
     });
     var _zend_spprintf_unchecked = (Module["_zend_spprintf_unchecked"] = function () {
       return (_zend_spprintf_unchecked = Module["_zend_spprintf_unchecked"] =
-        Module["asm"]["xba"]).apply(null, arguments);
+        Module["asm"]["Dba"]).apply(null, arguments);
     });
     var _zend_make_printable_zval = (Module["_zend_make_printable_zval"] = function () {
       return (_zend_make_printable_zval = Module["_zend_make_printable_zval"] =
-        Module["asm"]["yba"]).apply(null, arguments);
+        Module["asm"]["Eba"]).apply(null, arguments);
     });
     var _zend_print_zval = (Module["_zend_print_zval"] = function () {
-      return (_zend_print_zval = Module["_zend_print_zval"] = Module["asm"]["zba"]).apply(
+      return (_zend_print_zval = Module["_zend_print_zval"] = Module["asm"]["Fba"]).apply(
         null,
         arguments,
       );
     });
     var _zend_print_flat_zval_r = (Module["_zend_print_flat_zval_r"] = function () {
       return (_zend_print_flat_zval_r = Module["_zend_print_flat_zval_r"] =
-        Module["asm"]["Aba"]).apply(null, arguments);
+        Module["asm"]["Gba"]).apply(null, arguments);
     });
     var _zend_output_debug_string = (Module["_zend_output_debug_string"] = function () {
       return (_zend_output_debug_string = Module["_zend_output_debug_string"] =
-        Module["asm"]["Bba"]).apply(null, arguments);
+        Module["asm"]["Hba"]).apply(null, arguments);
     });
     var _strncat = (Module["_strncat"] = function () {
-      return (_strncat = Module["_strncat"] = Module["asm"]["Cba"]).apply(null, arguments);
+      return (_strncat = Module["_strncat"] = Module["asm"]["Iba"]).apply(null, arguments);
     });
     var _zend_strerror_noreturn = (Module["_zend_strerror_noreturn"] = function () {
       return (_zend_strerror_noreturn = Module["_zend_strerror_noreturn"] =
-        Module["asm"]["Dba"]).apply(null, arguments);
+        Module["asm"]["Jba"]).apply(null, arguments);
     });
     var _main = (Module["_main"] = function () {
-      return (_main = Module["_main"] = Module["asm"]["Eba"]).apply(null, arguments);
+      return (_main = Module["_main"] = Module["asm"]["Kba"]).apply(null, arguments);
     });
     var _signal = (Module["_signal"] = function () {
-      return (_signal = Module["_signal"] = Module["asm"]["Fba"]).apply(null, arguments);
+      return (_signal = Module["_signal"] = Module["asm"]["Lba"]).apply(null, arguments);
     });
     var _setsid = (Module["_setsid"] = function () {
-      return (_setsid = Module["_setsid"] = Module["asm"]["Gba"]).apply(null, arguments);
+      return (_setsid = Module["_setsid"] = Module["asm"]["Mba"]).apply(null, arguments);
     });
     var _getpgrp = (Module["_getpgrp"] = function () {
-      return (_getpgrp = Module["_getpgrp"] = Module["asm"]["Hba"]).apply(null, arguments);
+      return (_getpgrp = Module["_getpgrp"] = Module["asm"]["Nba"]).apply(null, arguments);
     });
     var _perror = (Module["_perror"] = function () {
-      return (_perror = Module["_perror"] = Module["asm"]["Iba"]).apply(null, arguments);
+      return (_perror = Module["_perror"] = Module["asm"]["Oba"]).apply(null, arguments);
     });
     var _wait = (Module["_wait"] = function () {
-      return (_wait = Module["_wait"] = Module["asm"]["Jba"]).apply(null, arguments);
+      return (_wait = Module["_wait"] = Module["asm"]["Pba"]).apply(null, arguments);
     });
     var _wasm_sapi_cgi_init = (Module["_wasm_sapi_cgi_init"] = function () {
-      return (_wasm_sapi_cgi_init = Module["_wasm_sapi_cgi_init"] = Module["asm"]["Kba"]).apply(
+      return (_wasm_sapi_cgi_init = Module["_wasm_sapi_cgi_init"] = Module["asm"]["Qba"]).apply(
         null,
         arguments,
       );
     });
     var _wasm_sapi_cgi_getenv = (Module["_wasm_sapi_cgi_getenv"] = function () {
-      return (_wasm_sapi_cgi_getenv = Module["_wasm_sapi_cgi_getenv"] = Module["asm"]["Lba"]).apply(
+      return (_wasm_sapi_cgi_getenv = Module["_wasm_sapi_cgi_getenv"] = Module["asm"]["Rba"]).apply(
         null,
         arguments,
       );
     });
     var _wasm_sapi_cgi_putenv = (Module["_wasm_sapi_cgi_putenv"] = function () {
-      return (_wasm_sapi_cgi_putenv = Module["_wasm_sapi_cgi_putenv"] = Module["asm"]["Mba"]).apply(
+      return (_wasm_sapi_cgi_putenv = Module["_wasm_sapi_cgi_putenv"] = Module["asm"]["Sba"]).apply(
         null,
         arguments,
       );
     });
     var _setenv = (Module["_setenv"] = function () {
-      return (_setenv = Module["_setenv"] = Module["asm"]["Nba"]).apply(null, arguments);
+      return (_setenv = Module["_setenv"] = Module["asm"]["Tba"]).apply(null, arguments);
     });
     var _emscripten_builtin_memcpy = (Module["_emscripten_builtin_memcpy"] = function () {
       return (_emscripten_builtin_memcpy = Module["_emscripten_builtin_memcpy"] =
-        Module["asm"]["Oba"]).apply(null, arguments);
+        Module["asm"]["Uba"]).apply(null, arguments);
     });
     var _memcpy = function () {
-      return (_memcpy = Module["asm"]["Pba"]).apply(null, arguments);
+      return (_memcpy = Module["asm"]["Vba"]).apply(null, arguments);
     };
     var _memmove = (Module["_memmove"] = function () {
-      return (_memmove = Module["_memmove"] = Module["asm"]["Qba"]).apply(null, arguments);
+      return (_memmove = Module["_memmove"] = Module["asm"]["Wba"]).apply(null, arguments);
     });
     var ___memset = (Module["___memset"] = function () {
-      return (___memset = Module["___memset"] = Module["asm"]["Rba"]).apply(null, arguments);
+      return (___memset = Module["___memset"] = Module["asm"]["Xba"]).apply(null, arguments);
     });
     var _emscripten_builtin_memset = (Module["_emscripten_builtin_memset"] = function () {
       return (_emscripten_builtin_memset = Module["_emscripten_builtin_memset"] =
-        Module["asm"]["Sba"]).apply(null, arguments);
+        Module["asm"]["Yba"]).apply(null, arguments);
     });
     var _memset = (Module["_memset"] = function () {
-      return (_memset = Module["_memset"] = Module["asm"]["Tba"]).apply(null, arguments);
+      return (_memset = Module["_memset"] = Module["asm"]["Zba"]).apply(null, arguments);
     });
     var _log2 = (Module["_log2"] = function () {
-      return (_log2 = Module["_log2"] = Module["asm"]["Uba"]).apply(null, arguments);
+      return (_log2 = Module["_log2"] = Module["asm"]["_ba"]).apply(null, arguments);
     });
     var _log = (Module["_log"] = function () {
-      return (_log = Module["_log"] = Module["asm"]["Vba"]).apply(null, arguments);
+      return (_log = Module["_log"] = Module["asm"]["$ba"]).apply(null, arguments);
     });
     var _pow = (Module["_pow"] = function () {
-      return (_pow = Module["_pow"] = Module["asm"]["Wba"]).apply(null, arguments);
+      return (_pow = Module["_pow"] = Module["asm"]["aca"]).apply(null, arguments);
     });
     var _waitid = (Module["_waitid"] = function () {
-      return (_waitid = Module["_waitid"] = Module["asm"]["Xba"]).apply(null, arguments);
+      return (_waitid = Module["_waitid"] = Module["asm"]["bca"]).apply(null, arguments);
     });
     var _times = (Module["_times"] = function () {
-      return (_times = Module["_times"] = Module["asm"]["Yba"]).apply(null, arguments);
+      return (_times = Module["_times"] = Module["asm"]["cca"]).apply(null, arguments);
     });
     var _getdate = (Module["_getdate"] = function () {
-      return (_getdate = Module["_getdate"] = Module["asm"]["Zba"]).apply(null, arguments);
+      return (_getdate = Module["_getdate"] = Module["asm"]["dca"]).apply(null, arguments);
     });
     var _stime = (Module["_stime"] = function () {
-      return (_stime = Module["_stime"] = Module["asm"]["_ba"]).apply(null, arguments);
+      return (_stime = Module["_stime"] = Module["asm"]["eca"]).apply(null, arguments);
     });
     var _clock_getcpuclockid = (Module["_clock_getcpuclockid"] = function () {
-      return (_clock_getcpuclockid = Module["_clock_getcpuclockid"] = Module["asm"]["$ba"]).apply(
+      return (_clock_getcpuclockid = Module["_clock_getcpuclockid"] = Module["asm"]["fca"]).apply(
         null,
         arguments,
       );
     });
     var _setpwent = (Module["_setpwent"] = function () {
-      return (_setpwent = Module["_setpwent"] = Module["asm"]["aca"]).apply(null, arguments);
+      return (_setpwent = Module["_setpwent"] = Module["asm"]["gca"]).apply(null, arguments);
     });
     var _endpwent = (Module["_endpwent"] = function () {
-      return (_endpwent = Module["_endpwent"] = Module["asm"]["bca"]).apply(null, arguments);
+      return (_endpwent = Module["_endpwent"] = Module["asm"]["hca"]).apply(null, arguments);
     });
     var _getpwent = (Module["_getpwent"] = function () {
-      return (_getpwent = Module["_getpwent"] = Module["asm"]["cca"]).apply(null, arguments);
+      return (_getpwent = Module["_getpwent"] = Module["asm"]["ica"]).apply(null, arguments);
     });
     var _getgrgid = (Module["_getgrgid"] = function () {
-      return (_getgrgid = Module["_getgrgid"] = Module["asm"]["dca"]).apply(null, arguments);
+      return (_getgrgid = Module["_getgrgid"] = Module["asm"]["jca"]).apply(null, arguments);
     });
     var _getgrnam_r = (Module["_getgrnam_r"] = function () {
-      return (_getgrnam_r = Module["_getgrnam_r"] = Module["asm"]["eca"]).apply(null, arguments);
+      return (_getgrnam_r = Module["_getgrnam_r"] = Module["asm"]["kca"]).apply(null, arguments);
     });
     var _getgrgid_r = (Module["_getgrgid_r"] = function () {
-      return (_getgrgid_r = Module["_getgrgid_r"] = Module["asm"]["fca"]).apply(null, arguments);
+      return (_getgrgid_r = Module["_getgrgid_r"] = Module["asm"]["lca"]).apply(null, arguments);
     });
     var _getgrent = (Module["_getgrent"] = function () {
-      return (_getgrent = Module["_getgrent"] = Module["asm"]["gca"]).apply(null, arguments);
+      return (_getgrent = Module["_getgrent"] = Module["asm"]["mca"]).apply(null, arguments);
     });
     var _endgrent = (Module["_endgrent"] = function () {
-      return (_endgrent = Module["_endgrent"] = Module["asm"]["hca"]).apply(null, arguments);
+      return (_endgrent = Module["_endgrent"] = Module["asm"]["nca"]).apply(null, arguments);
     });
     var _setgrent = (Module["_setgrent"] = function () {
-      return (_setgrent = Module["_setgrent"] = Module["asm"]["ica"]).apply(null, arguments);
+      return (_setgrent = Module["_setgrent"] = Module["asm"]["oca"]).apply(null, arguments);
     });
     var _execve = (Module["_execve"] = function () {
-      return (_execve = Module["_execve"] = Module["asm"]["jca"]).apply(null, arguments);
+      return (_execve = Module["_execve"] = Module["asm"]["pca"]).apply(null, arguments);
     });
     var _vfork = (Module["_vfork"] = function () {
-      return (_vfork = Module["_vfork"] = Module["asm"]["kca"]).apply(null, arguments);
+      return (_vfork = Module["_vfork"] = Module["asm"]["qca"]).apply(null, arguments);
     });
     var _setgroups = (Module["_setgroups"] = function () {
-      return (_setgroups = Module["_setgroups"] = Module["asm"]["lca"]).apply(null, arguments);
+      return (_setgroups = Module["_setgroups"] = Module["asm"]["rca"]).apply(null, arguments);
     });
     var _sigaltstack = (Module["_sigaltstack"] = function () {
-      return (_sigaltstack = Module["_sigaltstack"] = Module["asm"]["mca"]).apply(null, arguments);
+      return (_sigaltstack = Module["_sigaltstack"] = Module["asm"]["sca"]).apply(null, arguments);
     });
     var ___dlsym = (Module["___dlsym"] = function () {
-      return (___dlsym = Module["___dlsym"] = Module["asm"]["nca"]).apply(null, arguments);
+      return (___dlsym = Module["___dlsym"] = Module["asm"]["tca"]).apply(null, arguments);
     });
     var ___syscall_uname = (Module["___syscall_uname"] = function () {
-      return (___syscall_uname = Module["___syscall_uname"] = Module["asm"]["oca"]).apply(
+      return (___syscall_uname = Module["___syscall_uname"] = Module["asm"]["uca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_setpgid = (Module["___syscall_setpgid"] = function () {
-      return (___syscall_setpgid = Module["___syscall_setpgid"] = Module["asm"]["pca"]).apply(
+      return (___syscall_setpgid = Module["___syscall_setpgid"] = Module["asm"]["vca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_sync = (Module["___syscall_sync"] = function () {
-      return (___syscall_sync = Module["___syscall_sync"] = Module["asm"]["qca"]).apply(
+      return (___syscall_sync = Module["___syscall_sync"] = Module["asm"]["wca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_getsid = (Module["___syscall_getsid"] = function () {
-      return (___syscall_getsid = Module["___syscall_getsid"] = Module["asm"]["rca"]).apply(
+      return (___syscall_getsid = Module["___syscall_getsid"] = Module["asm"]["xca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_getpgid = (Module["___syscall_getpgid"] = function () {
-      return (___syscall_getpgid = Module["___syscall_getpgid"] = Module["asm"]["sca"]).apply(
+      return (___syscall_getpgid = Module["___syscall_getpgid"] = Module["asm"]["yca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_getpid = (Module["___syscall_getpid"] = function () {
-      return (___syscall_getpid = Module["___syscall_getpid"] = Module["asm"]["tca"]).apply(
+      return (___syscall_getpid = Module["___syscall_getpid"] = Module["asm"]["zca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_getppid = (Module["___syscall_getppid"] = function () {
-      return (___syscall_getppid = Module["___syscall_getppid"] = Module["asm"]["uca"]).apply(
+      return (___syscall_getppid = Module["___syscall_getppid"] = Module["asm"]["Aca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_linkat = (Module["___syscall_linkat"] = function () {
-      return (___syscall_linkat = Module["___syscall_linkat"] = Module["asm"]["vca"]).apply(
+      return (___syscall_linkat = Module["___syscall_linkat"] = Module["asm"]["Bca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_getgroups32 = (Module["___syscall_getgroups32"] = function () {
       return (___syscall_getgroups32 = Module["___syscall_getgroups32"] =
-        Module["asm"]["wca"]).apply(null, arguments);
+        Module["asm"]["Cca"]).apply(null, arguments);
     });
     var ___syscall_setsid = (Module["___syscall_setsid"] = function () {
-      return (___syscall_setsid = Module["___syscall_setsid"] = Module["asm"]["xca"]).apply(
+      return (___syscall_setsid = Module["___syscall_setsid"] = Module["asm"]["Dca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_umask = (Module["___syscall_umask"] = function () {
-      return (___syscall_umask = Module["___syscall_umask"] = Module["asm"]["yca"]).apply(
+      return (___syscall_umask = Module["___syscall_umask"] = Module["asm"]["Eca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_setrlimit = (Module["___syscall_setrlimit"] = function () {
-      return (___syscall_setrlimit = Module["___syscall_setrlimit"] = Module["asm"]["zca"]).apply(
+      return (___syscall_setrlimit = Module["___syscall_setrlimit"] = Module["asm"]["Fca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_getrusage = (Module["___syscall_getrusage"] = function () {
-      return (___syscall_getrusage = Module["___syscall_getrusage"] = Module["asm"]["Aca"]).apply(
+      return (___syscall_getrusage = Module["___syscall_getrusage"] = Module["asm"]["Gca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_getpriority = (Module["___syscall_getpriority"] = function () {
       return (___syscall_getpriority = Module["___syscall_getpriority"] =
-        Module["asm"]["Bca"]).apply(null, arguments);
+        Module["asm"]["Hca"]).apply(null, arguments);
     });
     var ___syscall_setpriority = (Module["___syscall_setpriority"] = function () {
       return (___syscall_setpriority = Module["___syscall_setpriority"] =
-        Module["asm"]["Cca"]).apply(null, arguments);
+        Module["asm"]["Ica"]).apply(null, arguments);
     });
     var ___syscall_setdomainname = (Module["___syscall_setdomainname"] = function () {
       return (___syscall_setdomainname = Module["___syscall_setdomainname"] =
-        Module["asm"]["Dca"]).apply(null, arguments);
+        Module["asm"]["Jca"]).apply(null, arguments);
     });
     var ___syscall_getuid32 = (Module["___syscall_getuid32"] = function () {
-      return (___syscall_getuid32 = Module["___syscall_getuid32"] = Module["asm"]["Eca"]).apply(
+      return (___syscall_getuid32 = Module["___syscall_getuid32"] = Module["asm"]["Kca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_getgid32 = (Module["___syscall_getgid32"] = function () {
-      return (___syscall_getgid32 = Module["___syscall_getgid32"] = Module["asm"]["Fca"]).apply(
+      return (___syscall_getgid32 = Module["___syscall_getgid32"] = Module["asm"]["Lca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_geteuid32 = (Module["___syscall_geteuid32"] = function () {
-      return (___syscall_geteuid32 = Module["___syscall_geteuid32"] = Module["asm"]["Gca"]).apply(
+      return (___syscall_geteuid32 = Module["___syscall_geteuid32"] = Module["asm"]["Mca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_getegid32 = (Module["___syscall_getegid32"] = function () {
-      return (___syscall_getegid32 = Module["___syscall_getegid32"] = Module["asm"]["Hca"]).apply(
+      return (___syscall_getegid32 = Module["___syscall_getegid32"] = Module["asm"]["Nca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_getresuid32 = (Module["___syscall_getresuid32"] = function () {
       return (___syscall_getresuid32 = Module["___syscall_getresuid32"] =
-        Module["asm"]["Ica"]).apply(null, arguments);
+        Module["asm"]["Oca"]).apply(null, arguments);
     });
     var ___syscall_getresgid32 = (Module["___syscall_getresgid32"] = function () {
       return (___syscall_getresgid32 = Module["___syscall_getresgid32"] =
-        Module["asm"]["Jca"]).apply(null, arguments);
+        Module["asm"]["Pca"]).apply(null, arguments);
     });
     var ___syscall_pause = (Module["___syscall_pause"] = function () {
-      return (___syscall_pause = Module["___syscall_pause"] = Module["asm"]["Kca"]).apply(
+      return (___syscall_pause = Module["___syscall_pause"] = Module["asm"]["Qca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_madvise = (Module["___syscall_madvise"] = function () {
-      return (___syscall_madvise = Module["___syscall_madvise"] = Module["asm"]["Lca"]).apply(
+      return (___syscall_madvise = Module["___syscall_madvise"] = Module["asm"]["Rca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_mlock = (Module["___syscall_mlock"] = function () {
-      return (___syscall_mlock = Module["___syscall_mlock"] = Module["asm"]["Mca"]).apply(
+      return (___syscall_mlock = Module["___syscall_mlock"] = Module["asm"]["Sca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_munlock = (Module["___syscall_munlock"] = function () {
-      return (___syscall_munlock = Module["___syscall_munlock"] = Module["asm"]["Nca"]).apply(
+      return (___syscall_munlock = Module["___syscall_munlock"] = Module["asm"]["Tca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_mprotect = (Module["___syscall_mprotect"] = function () {
-      return (___syscall_mprotect = Module["___syscall_mprotect"] = Module["asm"]["Oca"]).apply(
+      return (___syscall_mprotect = Module["___syscall_mprotect"] = Module["asm"]["Uca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_mremap = (Module["___syscall_mremap"] = function () {
-      return (___syscall_mremap = Module["___syscall_mremap"] = Module["asm"]["Pca"]).apply(
+      return (___syscall_mremap = Module["___syscall_mremap"] = Module["asm"]["Vca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_mlockall = (Module["___syscall_mlockall"] = function () {
-      return (___syscall_mlockall = Module["___syscall_mlockall"] = Module["asm"]["Qca"]).apply(
+      return (___syscall_mlockall = Module["___syscall_mlockall"] = Module["asm"]["Wca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_munlockall = (Module["___syscall_munlockall"] = function () {
-      return (___syscall_munlockall = Module["___syscall_munlockall"] = Module["asm"]["Rca"]).apply(
+      return (___syscall_munlockall = Module["___syscall_munlockall"] = Module["asm"]["Xca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_prlimit64 = (Module["___syscall_prlimit64"] = function () {
-      return (___syscall_prlimit64 = Module["___syscall_prlimit64"] = Module["asm"]["Sca"]).apply(
+      return (___syscall_prlimit64 = Module["___syscall_prlimit64"] = Module["asm"]["Yca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_ugetrlimit = (Module["___syscall_ugetrlimit"] = function () {
-      return (___syscall_ugetrlimit = Module["___syscall_ugetrlimit"] = Module["asm"]["Tca"]).apply(
+      return (___syscall_ugetrlimit = Module["___syscall_ugetrlimit"] = Module["asm"]["Zca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_setsockopt = (Module["___syscall_setsockopt"] = function () {
-      return (___syscall_setsockopt = Module["___syscall_setsockopt"] = Module["asm"]["Uca"]).apply(
+      return (___syscall_setsockopt = Module["___syscall_setsockopt"] = Module["asm"]["_ca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_acct = (Module["___syscall_acct"] = function () {
-      return (___syscall_acct = Module["___syscall_acct"] = Module["asm"]["Vca"]).apply(
+      return (___syscall_acct = Module["___syscall_acct"] = Module["asm"]["$ca"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_mincore = (Module["___syscall_mincore"] = function () {
-      return (___syscall_mincore = Module["___syscall_mincore"] = Module["asm"]["Wca"]).apply(
+      return (___syscall_mincore = Module["___syscall_mincore"] = Module["asm"]["ada"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_pipe2 = (Module["___syscall_pipe2"] = function () {
-      return (___syscall_pipe2 = Module["___syscall_pipe2"] = Module["asm"]["Xca"]).apply(
+      return (___syscall_pipe2 = Module["___syscall_pipe2"] = Module["asm"]["bda"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_pselect6 = (Module["___syscall_pselect6"] = function () {
-      return (___syscall_pselect6 = Module["___syscall_pselect6"] = Module["asm"]["Yca"]).apply(
+      return (___syscall_pselect6 = Module["___syscall_pselect6"] = Module["asm"]["cda"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_recvmmsg = (Module["___syscall_recvmmsg"] = function () {
-      return (___syscall_recvmmsg = Module["___syscall_recvmmsg"] = Module["asm"]["Zca"]).apply(
+      return (___syscall_recvmmsg = Module["___syscall_recvmmsg"] = Module["asm"]["dda"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_sendmmsg = (Module["___syscall_sendmmsg"] = function () {
-      return (___syscall_sendmmsg = Module["___syscall_sendmmsg"] = Module["asm"]["_ca"]).apply(
+      return (___syscall_sendmmsg = Module["___syscall_sendmmsg"] = Module["asm"]["eda"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_shutdown = (Module["___syscall_shutdown"] = function () {
-      return (___syscall_shutdown = Module["___syscall_shutdown"] = Module["asm"]["$ca"]).apply(
+      return (___syscall_shutdown = Module["___syscall_shutdown"] = Module["asm"]["fda"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_socketpair = (Module["___syscall_socketpair"] = function () {
-      return (___syscall_socketpair = Module["___syscall_socketpair"] = Module["asm"]["ada"]).apply(
+      return (___syscall_socketpair = Module["___syscall_socketpair"] = Module["asm"]["gda"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_wait4 = (Module["___syscall_wait4"] = function () {
-      return (___syscall_wait4 = Module["___syscall_wait4"] = Module["asm"]["bda"]).apply(
+      return (___syscall_wait4 = Module["___syscall_wait4"] = Module["asm"]["hda"]).apply(
         null,
         arguments,
       );
     });
     var ___get_tp = (Module["___get_tp"] = function () {
-      return (___get_tp = Module["___get_tp"] = Module["asm"]["cda"]).apply(null, arguments);
+      return (___get_tp = Module["___get_tp"] = Module["asm"]["ida"]).apply(null, arguments);
     });
     var ___emscripten_environ_constructor = (Module["___emscripten_environ_constructor"] =
       function () {
         return (___emscripten_environ_constructor = Module["___emscripten_environ_constructor"] =
-          Module["asm"]["dda"]).apply(null, arguments);
+          Module["asm"]["jda"]).apply(null, arguments);
       });
     var _emscripten_builtin_malloc = (Module["_emscripten_builtin_malloc"] = function () {
       return (_emscripten_builtin_malloc = Module["_emscripten_builtin_malloc"] =
-        Module["asm"]["eda"]).apply(null, arguments);
+        Module["asm"]["kda"]).apply(null, arguments);
     });
     var ___fmodeflags = (Module["___fmodeflags"] = function () {
-      return (___fmodeflags = Module["___fmodeflags"] = Module["asm"]["gda"]).apply(
+      return (___fmodeflags = Module["___fmodeflags"] = Module["asm"]["mda"]).apply(
         null,
         arguments,
       );
     });
     var ___mo_lookup = (Module["___mo_lookup"] = function () {
-      return (___mo_lookup = Module["___mo_lookup"] = Module["asm"]["hda"]).apply(null, arguments);
+      return (___mo_lookup = Module["___mo_lookup"] = Module["asm"]["nda"]).apply(null, arguments);
     });
     var ___overflow = (Module["___overflow"] = function () {
-      return (___overflow = Module["___overflow"] = Module["asm"]["ida"]).apply(null, arguments);
+      return (___overflow = Module["___overflow"] = Module["asm"]["oda"]).apply(null, arguments);
     });
     var ___randname = (Module["___randname"] = function () {
-      return (___randname = Module["___randname"] = Module["asm"]["jda"]).apply(null, arguments);
+      return (___randname = Module["___randname"] = Module["asm"]["pda"]).apply(null, arguments);
     });
     var ___wasi_syscall_ret = (Module["___wasi_syscall_ret"] = function () {
-      return (___wasi_syscall_ret = Module["___wasi_syscall_ret"] = Module["asm"]["kda"]).apply(
+      return (___wasi_syscall_ret = Module["___wasi_syscall_ret"] = Module["asm"]["qda"]).apply(
         null,
         arguments,
       );
     });
     var ___uflow = (Module["___uflow"] = function () {
-      return (___uflow = Module["___uflow"] = Module["asm"]["lda"]).apply(null, arguments);
+      return (___uflow = Module["___uflow"] = Module["asm"]["rda"]).apply(null, arguments);
     });
     var __Exit = (Module["__Exit"] = function () {
-      return (__Exit = Module["__Exit"] = Module["asm"]["mda"]).apply(null, arguments);
+      return (__Exit = Module["__Exit"] = Module["asm"]["sda"]).apply(null, arguments);
     });
     var _sqrt = (Module["_sqrt"] = function () {
-      return (_sqrt = Module["_sqrt"] = Module["asm"]["nda"]).apply(null, arguments);
+      return (_sqrt = Module["_sqrt"] = Module["asm"]["tda"]).apply(null, arguments);
     });
     var _alphasort64 = (Module["_alphasort64"] = function () {
-      return (_alphasort64 = Module["_alphasort64"] = Module["asm"]["oda"]).apply(null, arguments);
+      return (_alphasort64 = Module["_alphasort64"] = Module["asm"]["uda"]).apply(null, arguments);
     });
     var ___nl_langinfo_l = (Module["___nl_langinfo_l"] = function () {
-      return (___nl_langinfo_l = Module["___nl_langinfo_l"] = Module["asm"]["pda"]).apply(
+      return (___nl_langinfo_l = Module["___nl_langinfo_l"] = Module["asm"]["vda"]).apply(
         null,
         arguments,
       );
     });
     var _fabs = (Module["_fabs"] = function () {
-      return (_fabs = Module["_fabs"] = Module["asm"]["qda"]).apply(null, arguments);
+      return (_fabs = Module["_fabs"] = Module["asm"]["wda"]).apply(null, arguments);
     });
     var ___funcs_on_exit = function () {
-      return (___funcs_on_exit = Module["asm"]["rda"]).apply(null, arguments);
+      return (___funcs_on_exit = Module["asm"]["xda"]).apply(null, arguments);
     };
     var ____cxa_finalize = (Module["____cxa_finalize"] = function () {
-      return (____cxa_finalize = Module["____cxa_finalize"] = Module["asm"]["sda"]).apply(
+      return (____cxa_finalize = Module["____cxa_finalize"] = Module["asm"]["yda"]).apply(
         null,
         arguments,
       );
     });
     var ____cxa_atexit = (Module["____cxa_atexit"] = function () {
-      return (____cxa_atexit = Module["____cxa_atexit"] = Module["asm"]["tda"]).apply(
+      return (____cxa_atexit = Module["____cxa_atexit"] = Module["asm"]["zda"]).apply(
         null,
         arguments,
       );
     });
     var ___atexit = (Module["___atexit"] = function () {
-      return (___atexit = Module["___atexit"] = Module["asm"]["uda"]).apply(null, arguments);
+      return (___atexit = Module["___atexit"] = Module["asm"]["Ada"]).apply(null, arguments);
     });
     var _atexit = (Module["_atexit"] = function () {
-      return (_atexit = Module["_atexit"] = Module["asm"]["vda"]).apply(null, arguments);
+      return (_atexit = Module["_atexit"] = Module["asm"]["Bda"]).apply(null, arguments);
     });
     var ___cxa_atexit = (Module["___cxa_atexit"] = function () {
-      return (___cxa_atexit = Module["___cxa_atexit"] = Module["asm"]["wda"]).apply(
+      return (___cxa_atexit = Module["___cxa_atexit"] = Module["asm"]["Cda"]).apply(
         null,
         arguments,
       );
     });
     var ___cxa_finalize = (Module["___cxa_finalize"] = function () {
-      return (___cxa_finalize = Module["___cxa_finalize"] = Module["asm"]["xda"]).apply(
+      return (___cxa_finalize = Module["___cxa_finalize"] = Module["asm"]["Dda"]).apply(
         null,
         arguments,
       );
     });
     var _cbrt = (Module["_cbrt"] = function () {
-      return (_cbrt = Module["_cbrt"] = Module["asm"]["yda"]).apply(null, arguments);
+      return (_cbrt = Module["_cbrt"] = Module["asm"]["Eda"]).apply(null, arguments);
     });
     var _cbrtf = (Module["_cbrtf"] = function () {
-      return (_cbrtf = Module["_cbrtf"] = Module["asm"]["zda"]).apply(null, arguments);
+      return (_cbrtf = Module["_cbrtf"] = Module["asm"]["Fda"]).apply(null, arguments);
     });
     var _cbrtl = (Module["_cbrtl"] = function () {
-      return (_cbrtl = Module["_cbrtl"] = Module["asm"]["Ada"]).apply(null, arguments);
+      return (_cbrtl = Module["_cbrtl"] = Module["asm"]["Gda"]).apply(null, arguments);
     });
     var _ceil = (Module["_ceil"] = function () {
-      return (_ceil = Module["_ceil"] = Module["asm"]["Bda"]).apply(null, arguments);
+      return (_ceil = Module["_ceil"] = Module["asm"]["Hda"]).apply(null, arguments);
     });
     var _ceilf = (Module["_ceilf"] = function () {
-      return (_ceilf = Module["_ceilf"] = Module["asm"]["Cda"]).apply(null, arguments);
+      return (_ceilf = Module["_ceilf"] = Module["asm"]["Ida"]).apply(null, arguments);
     });
     var _ceill = (Module["_ceill"] = function () {
-      return (_ceill = Module["_ceill"] = Module["asm"]["Dda"]).apply(null, arguments);
+      return (_ceill = Module["_ceill"] = Module["asm"]["Jda"]).apply(null, arguments);
     });
     var _clock_nanosleep = (Module["_clock_nanosleep"] = function () {
-      return (_clock_nanosleep = Module["_clock_nanosleep"] = Module["asm"]["Eda"]).apply(
+      return (_clock_nanosleep = Module["_clock_nanosleep"] = Module["asm"]["Kda"]).apply(
         null,
         arguments,
       );
     });
     var _copysign = (Module["_copysign"] = function () {
-      return (_copysign = Module["_copysign"] = Module["asm"]["Fda"]).apply(null, arguments);
+      return (_copysign = Module["_copysign"] = Module["asm"]["Lda"]).apply(null, arguments);
     });
     var _copysignf = (Module["_copysignf"] = function () {
-      return (_copysignf = Module["_copysignf"] = Module["asm"]["Gda"]).apply(null, arguments);
+      return (_copysignf = Module["_copysignf"] = Module["asm"]["Mda"]).apply(null, arguments);
     });
     var _copysignl = (Module["_copysignl"] = function () {
-      return (_copysignl = Module["_copysignl"] = Module["asm"]["Hda"]).apply(null, arguments);
+      return (_copysignl = Module["_copysignl"] = Module["asm"]["Nda"]).apply(null, arguments);
     });
     var _cos = (Module["_cos"] = function () {
-      return (_cos = Module["_cos"] = Module["asm"]["Ida"]).apply(null, arguments);
+      return (_cos = Module["_cos"] = Module["asm"]["Oda"]).apply(null, arguments);
     });
     var _cosf = (Module["_cosf"] = function () {
-      return (_cosf = Module["_cosf"] = Module["asm"]["Jda"]).apply(null, arguments);
+      return (_cosf = Module["_cosf"] = Module["asm"]["Pda"]).apply(null, arguments);
     });
     var _exp = (Module["_exp"] = function () {
-      return (_exp = Module["_exp"] = Module["asm"]["Kda"]).apply(null, arguments);
+      return (_exp = Module["_exp"] = Module["asm"]["Qda"]).apply(null, arguments);
     });
     var _cosl = (Module["_cosl"] = function () {
-      return (_cosl = Module["_cosl"] = Module["asm"]["Lda"]).apply(null, arguments);
+      return (_cosl = Module["_cosl"] = Module["asm"]["Rda"]).apply(null, arguments);
     });
     var _creat64 = (Module["_creat64"] = function () {
-      return (_creat64 = Module["_creat64"] = Module["asm"]["Mda"]).apply(null, arguments);
+      return (_creat64 = Module["_creat64"] = Module["asm"]["Sda"]).apply(null, arguments);
     });
     var ___lock = (Module["___lock"] = function () {
-      return (___lock = Module["___lock"] = Module["asm"]["Nda"]).apply(null, arguments);
+      return (___lock = Module["___lock"] = Module["asm"]["Tda"]).apply(null, arguments);
     });
     var ___unlock = (Module["___unlock"] = function () {
-      return (___unlock = Module["___unlock"] = Module["asm"]["Oda"]).apply(null, arguments);
+      return (___unlock = Module["___unlock"] = Module["asm"]["Uda"]).apply(null, arguments);
     });
     var ___libc_free = (Module["___libc_free"] = function () {
-      return (___libc_free = Module["___libc_free"] = Module["asm"]["Pda"]).apply(null, arguments);
+      return (___libc_free = Module["___libc_free"] = Module["asm"]["Vda"]).apply(null, arguments);
     });
     var _vsnprintf = (Module["_vsnprintf"] = function () {
-      return (_vsnprintf = Module["_vsnprintf"] = Module["asm"]["Qda"]).apply(null, arguments);
+      return (_vsnprintf = Module["_vsnprintf"] = Module["asm"]["Wda"]).apply(null, arguments);
     });
     var ___libc_malloc = (Module["___libc_malloc"] = function () {
-      return (___libc_malloc = Module["___libc_malloc"] = Module["asm"]["Rda"]).apply(
+      return (___libc_malloc = Module["___libc_malloc"] = Module["asm"]["Xda"]).apply(
         null,
         arguments,
       );
     });
     var _dprintf = (Module["_dprintf"] = function () {
-      return (_dprintf = Module["_dprintf"] = Module["asm"]["Sda"]).apply(null, arguments);
+      return (_dprintf = Module["_dprintf"] = Module["asm"]["Yda"]).apply(null, arguments);
     });
     var _emscripten_get_heap_size = (Module["_emscripten_get_heap_size"] = function () {
       return (_emscripten_get_heap_size = Module["_emscripten_get_heap_size"] =
-        Module["asm"]["Tda"]).apply(null, arguments);
+        Module["asm"]["Zda"]).apply(null, arguments);
     });
     var ___syscall_munmap = (Module["___syscall_munmap"] = function () {
-      return (___syscall_munmap = Module["___syscall_munmap"] = Module["asm"]["Uda"]).apply(
+      return (___syscall_munmap = Module["___syscall_munmap"] = Module["asm"]["_da"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_msync = (Module["___syscall_msync"] = function () {
-      return (___syscall_msync = Module["___syscall_msync"] = Module["asm"]["Vda"]).apply(
+      return (___syscall_msync = Module["___syscall_msync"] = Module["asm"]["$da"]).apply(
         null,
         arguments,
       );
     });
     var ___syscall_mmap2 = (Module["___syscall_mmap2"] = function () {
-      return (___syscall_mmap2 = Module["___syscall_mmap2"] = Module["asm"]["Wda"]).apply(
+      return (___syscall_mmap2 = Module["___syscall_mmap2"] = Module["asm"]["aea"]).apply(
         null,
         arguments,
       );
     });
     var ___clock = (Module["___clock"] = function () {
-      return (___clock = Module["___clock"] = Module["asm"]["Xda"]).apply(null, arguments);
+      return (___clock = Module["___clock"] = Module["asm"]["bea"]).apply(null, arguments);
     });
     var ___time = (Module["___time"] = function () {
-      return (___time = Module["___time"] = Module["asm"]["Yda"]).apply(null, arguments);
+      return (___time = Module["___time"] = Module["asm"]["cea"]).apply(null, arguments);
     });
     var ___clock_getres = (Module["___clock_getres"] = function () {
-      return (___clock_getres = Module["___clock_getres"] = Module["asm"]["Zda"]).apply(
+      return (___clock_getres = Module["___clock_getres"] = Module["asm"]["dea"]).apply(
         null,
         arguments,
       );
     });
     var ___gettimeofday = (Module["___gettimeofday"] = function () {
-      return (___gettimeofday = Module["___gettimeofday"] = Module["asm"]["_da"]).apply(
+      return (___gettimeofday = Module["___gettimeofday"] = Module["asm"]["eea"]).apply(
         null,
         arguments,
       );
     });
     var _dysize = (Module["_dysize"] = function () {
-      return (_dysize = Module["_dysize"] = Module["asm"]["$da"]).apply(null, arguments);
+      return (_dysize = Module["_dysize"] = Module["asm"]["fea"]).apply(null, arguments);
     });
     var _clock = (Module["_clock"] = function () {
-      return (_clock = Module["_clock"] = Module["asm"]["aea"]).apply(null, arguments);
+      return (_clock = Module["_clock"] = Module["asm"]["gea"]).apply(null, arguments);
     });
     var _clock_getres = (Module["_clock_getres"] = function () {
-      return (_clock_getres = Module["_clock_getres"] = Module["asm"]["bea"]).apply(
+      return (_clock_getres = Module["_clock_getres"] = Module["asm"]["hea"]).apply(
         null,
         arguments,
       );
     });
     var _exp2l = (Module["_exp2l"] = function () {
-      return (_exp2l = Module["_exp2l"] = Module["asm"]["cea"]).apply(null, arguments);
+      return (_exp2l = Module["_exp2l"] = Module["asm"]["iea"]).apply(null, arguments);
     });
     var _expf = (Module["_expf"] = function () {
-      return (_expf = Module["_expf"] = Module["asm"]["dea"]).apply(null, arguments);
+      return (_expf = Module["_expf"] = Module["asm"]["jea"]).apply(null, arguments);
     });
     var _expl = (Module["_expl"] = function () {
-      return (_expl = Module["_expl"] = Module["asm"]["eea"]).apply(null, arguments);
+      return (_expl = Module["_expl"] = Module["asm"]["kea"]).apply(null, arguments);
     });
     var _fabsl = (Module["_fabsl"] = function () {
-      return (_fabsl = Module["_fabsl"] = Module["asm"]["fea"]).apply(null, arguments);
+      return (_fabsl = Module["_fabsl"] = Module["asm"]["lea"]).apply(null, arguments);
     });
     var ___wasi_fd_is_valid = (Module["___wasi_fd_is_valid"] = function () {
-      return (___wasi_fd_is_valid = Module["___wasi_fd_is_valid"] = Module["asm"]["gea"]).apply(
+      return (___wasi_fd_is_valid = Module["___wasi_fd_is_valid"] = Module["asm"]["mea"]).apply(
         null,
         arguments,
       );
     });
     var _feclearexcept = (Module["_feclearexcept"] = function () {
-      return (_feclearexcept = Module["_feclearexcept"] = Module["asm"]["hea"]).apply(
+      return (_feclearexcept = Module["_feclearexcept"] = Module["asm"]["nea"]).apply(
         null,
         arguments,
       );
     });
     var _feraiseexcept = (Module["_feraiseexcept"] = function () {
-      return (_feraiseexcept = Module["_feraiseexcept"] = Module["asm"]["iea"]).apply(
+      return (_feraiseexcept = Module["_feraiseexcept"] = Module["asm"]["oea"]).apply(
         null,
         arguments,
       );
     });
     var _fetestexcept = (Module["_fetestexcept"] = function () {
-      return (_fetestexcept = Module["_fetestexcept"] = Module["asm"]["jea"]).apply(
+      return (_fetestexcept = Module["_fetestexcept"] = Module["asm"]["pea"]).apply(
         null,
         arguments,
       );
     });
     var _fegetround = (Module["_fegetround"] = function () {
-      return (_fegetround = Module["_fegetround"] = Module["asm"]["kea"]).apply(null, arguments);
+      return (_fegetround = Module["_fegetround"] = Module["asm"]["qea"]).apply(null, arguments);
     });
     var ___fesetround = (Module["___fesetround"] = function () {
-      return (___fesetround = Module["___fesetround"] = Module["asm"]["lea"]).apply(
+      return (___fesetround = Module["___fesetround"] = Module["asm"]["rea"]).apply(
         null,
         arguments,
       );
     });
     var _fegetenv = (Module["_fegetenv"] = function () {
-      return (_fegetenv = Module["_fegetenv"] = Module["asm"]["mea"]).apply(null, arguments);
+      return (_fegetenv = Module["_fegetenv"] = Module["asm"]["sea"]).apply(null, arguments);
     });
     var _fesetenv = (Module["_fesetenv"] = function () {
-      return (_fesetenv = Module["_fesetenv"] = Module["asm"]["nea"]).apply(null, arguments);
+      return (_fesetenv = Module["_fesetenv"] = Module["asm"]["tea"]).apply(null, arguments);
     });
     var _feof_unlocked = (Module["_feof_unlocked"] = function () {
-      return (_feof_unlocked = Module["_feof_unlocked"] = Module["asm"]["oea"]).apply(
+      return (_feof_unlocked = Module["_feof_unlocked"] = Module["asm"]["uea"]).apply(
         null,
         arguments,
       );
     });
     var __IO_feof_unlocked = (Module["__IO_feof_unlocked"] = function () {
-      return (__IO_feof_unlocked = Module["__IO_feof_unlocked"] = Module["asm"]["pea"]).apply(
+      return (__IO_feof_unlocked = Module["__IO_feof_unlocked"] = Module["asm"]["vea"]).apply(
         null,
         arguments,
       );
     });
     var _fesetround = (Module["_fesetround"] = function () {
-      return (_fesetround = Module["_fesetround"] = Module["asm"]["qea"]).apply(null, arguments);
+      return (_fesetround = Module["_fesetround"] = Module["asm"]["wea"]).apply(null, arguments);
     });
     var _fflush_unlocked = (Module["_fflush_unlocked"] = function () {
-      return (_fflush_unlocked = Module["_fflush_unlocked"] = Module["asm"]["rea"]).apply(
+      return (_fflush_unlocked = Module["_fflush_unlocked"] = Module["asm"]["xea"]).apply(
         null,
         arguments,
       );
     });
     var _emscripten_futex_wake = (Module["_emscripten_futex_wake"] = function () {
       return (_emscripten_futex_wake = Module["_emscripten_futex_wake"] =
-        Module["asm"]["sea"]).apply(null, arguments);
+        Module["asm"]["yea"]).apply(null, arguments);
     });
     var _fgets_unlocked = (Module["_fgets_unlocked"] = function () {
-      return (_fgets_unlocked = Module["_fgets_unlocked"] = Module["asm"]["tea"]).apply(
+      return (_fgets_unlocked = Module["_fgets_unlocked"] = Module["asm"]["zea"]).apply(
         null,
         arguments,
       );
     });
     var _fileno_unlocked = (Module["_fileno_unlocked"] = function () {
-      return (_fileno_unlocked = Module["_fileno_unlocked"] = Module["asm"]["uea"]).apply(
+      return (_fileno_unlocked = Module["_fileno_unlocked"] = Module["asm"]["Aea"]).apply(
         null,
         arguments,
       );
     });
     var _floor = (Module["_floor"] = function () {
-      return (_floor = Module["_floor"] = Module["asm"]["vea"]).apply(null, arguments);
+      return (_floor = Module["_floor"] = Module["asm"]["Bea"]).apply(null, arguments);
     });
     var _floorf = (Module["_floorf"] = function () {
-      return (_floorf = Module["_floorf"] = Module["asm"]["wea"]).apply(null, arguments);
+      return (_floorf = Module["_floorf"] = Module["asm"]["Cea"]).apply(null, arguments);
     });
     var _floorl = (Module["_floorl"] = function () {
-      return (_floorl = Module["_floorl"] = Module["asm"]["xea"]).apply(null, arguments);
+      return (_floorl = Module["_floorl"] = Module["asm"]["Dea"]).apply(null, arguments);
     });
     var _fma = (Module["_fma"] = function () {
-      return (_fma = Module["_fma"] = Module["asm"]["yea"]).apply(null, arguments);
+      return (_fma = Module["_fma"] = Module["asm"]["Eea"]).apply(null, arguments);
     });
     var _fmaf = (Module["_fmaf"] = function () {
-      return (_fmaf = Module["_fmaf"] = Module["asm"]["zea"]).apply(null, arguments);
+      return (_fmaf = Module["_fmaf"] = Module["asm"]["Fea"]).apply(null, arguments);
     });
     var _fmal = (Module["_fmal"] = function () {
-      return (_fmal = Module["_fmal"] = Module["asm"]["Aea"]).apply(null, arguments);
+      return (_fmal = Module["_fmal"] = Module["asm"]["Gea"]).apply(null, arguments);
     });
     var _fmod = (Module["_fmod"] = function () {
-      return (_fmod = Module["_fmod"] = Module["asm"]["Bea"]).apply(null, arguments);
+      return (_fmod = Module["_fmod"] = Module["asm"]["Hea"]).apply(null, arguments);
     });
     var _fmodl = (Module["_fmodl"] = function () {
-      return (_fmodl = Module["_fmodl"] = Module["asm"]["Cea"]).apply(null, arguments);
+      return (_fmodl = Module["_fmodl"] = Module["asm"]["Iea"]).apply(null, arguments);
     });
     var _mbtowc = (Module["_mbtowc"] = function () {
-      return (_mbtowc = Module["_mbtowc"] = Module["asm"]["Dea"]).apply(null, arguments);
+      return (_mbtowc = Module["_mbtowc"] = Module["asm"]["Jea"]).apply(null, arguments);
     });
     var _towupper = (Module["_towupper"] = function () {
-      return (_towupper = Module["_towupper"] = Module["asm"]["Eea"]).apply(null, arguments);
+      return (_towupper = Module["_towupper"] = Module["asm"]["Kea"]).apply(null, arguments);
     });
     var _towlower = (Module["_towlower"] = function () {
-      return (_towlower = Module["_towlower"] = Module["asm"]["Fea"]).apply(null, arguments);
+      return (_towlower = Module["_towlower"] = Module["asm"]["Lea"]).apply(null, arguments);
     });
     var _iswctype = (Module["_iswctype"] = function () {
-      return (_iswctype = Module["_iswctype"] = Module["asm"]["Gea"]).apply(null, arguments);
+      return (_iswctype = Module["_iswctype"] = Module["asm"]["Mea"]).apply(null, arguments);
     });
     var _wctype = (Module["_wctype"] = function () {
-      return (_wctype = Module["_wctype"] = Module["asm"]["Hea"]).apply(null, arguments);
+      return (_wctype = Module["_wctype"] = Module["asm"]["Nea"]).apply(null, arguments);
     });
     var _fopen64 = (Module["_fopen64"] = function () {
-      return (_fopen64 = Module["_fopen64"] = Module["asm"]["Iea"]).apply(null, arguments);
+      return (_fopen64 = Module["_fopen64"] = Module["asm"]["Oea"]).apply(null, arguments);
     });
     var _fiprintf = (Module["_fiprintf"] = function () {
-      return (_fiprintf = Module["_fiprintf"] = Module["asm"]["Jea"]).apply(null, arguments);
+      return (_fiprintf = Module["_fiprintf"] = Module["asm"]["Pea"]).apply(null, arguments);
     });
     var _vfiprintf = (Module["_vfiprintf"] = function () {
-      return (_vfiprintf = Module["_vfiprintf"] = Module["asm"]["Kea"]).apply(null, arguments);
+      return (_vfiprintf = Module["_vfiprintf"] = Module["asm"]["Qea"]).apply(null, arguments);
     });
     var ___small_fprintf = (Module["___small_fprintf"] = function () {
-      return (___small_fprintf = Module["___small_fprintf"] = Module["asm"]["Lea"]).apply(
+      return (___small_fprintf = Module["___small_fprintf"] = Module["asm"]["Rea"]).apply(
         null,
         arguments,
       );
     });
     var ___small_vfprintf = (Module["___small_vfprintf"] = function () {
-      return (___small_vfprintf = Module["___small_vfprintf"] = Module["asm"]["Mea"]).apply(
+      return (___small_vfprintf = Module["___small_vfprintf"] = Module["asm"]["Sea"]).apply(
         null,
         arguments,
       );
     });
     var _fputc = (Module["_fputc"] = function () {
-      return (_fputc = Module["_fputc"] = Module["asm"]["Nea"]).apply(null, arguments);
+      return (_fputc = Module["_fputc"] = Module["asm"]["Tea"]).apply(null, arguments);
     });
     var _fread_unlocked = (Module["_fread_unlocked"] = function () {
-      return (_fread_unlocked = Module["_fread_unlocked"] = Module["asm"]["Oea"]).apply(
+      return (_fread_unlocked = Module["_fread_unlocked"] = Module["asm"]["Uea"]).apply(
         null,
         arguments,
       );
     });
     var _frexp = (Module["_frexp"] = function () {
-      return (_frexp = Module["_frexp"] = Module["asm"]["Pea"]).apply(null, arguments);
+      return (_frexp = Module["_frexp"] = Module["asm"]["Vea"]).apply(null, arguments);
     });
     var _frexpf = (Module["_frexpf"] = function () {
-      return (_frexpf = Module["_frexpf"] = Module["asm"]["Qea"]).apply(null, arguments);
+      return (_frexpf = Module["_frexpf"] = Module["asm"]["Wea"]).apply(null, arguments);
     });
     var _frexpl = (Module["_frexpl"] = function () {
-      return (_frexpl = Module["_frexpl"] = Module["asm"]["Rea"]).apply(null, arguments);
+      return (_frexpl = Module["_frexpl"] = Module["asm"]["Xea"]).apply(null, arguments);
     });
     var _fseeko = (Module["_fseeko"] = function () {
-      return (_fseeko = Module["_fseeko"] = Module["asm"]["Sea"]).apply(null, arguments);
+      return (_fseeko = Module["_fseeko"] = Module["asm"]["Yea"]).apply(null, arguments);
     });
     var _fseeko64 = (Module["_fseeko64"] = function () {
-      return (_fseeko64 = Module["_fseeko64"] = Module["asm"]["Tea"]).apply(null, arguments);
+      return (_fseeko64 = Module["_fseeko64"] = Module["asm"]["Zea"]).apply(null, arguments);
     });
     var _fstatat = (Module["_fstatat"] = function () {
-      return (_fstatat = Module["_fstatat"] = Module["asm"]["Uea"]).apply(null, arguments);
+      return (_fstatat = Module["_fstatat"] = Module["asm"]["_ea"]).apply(null, arguments);
     });
     var _fstat64 = (Module["_fstat64"] = function () {
-      return (_fstat64 = Module["_fstat64"] = Module["asm"]["Vea"]).apply(null, arguments);
+      return (_fstat64 = Module["_fstat64"] = Module["asm"]["$ea"]).apply(null, arguments);
     });
     var _fstatat64 = (Module["_fstatat64"] = function () {
-      return (_fstatat64 = Module["_fstatat64"] = Module["asm"]["Wea"]).apply(null, arguments);
+      return (_fstatat64 = Module["_fstatat64"] = Module["asm"]["afa"]).apply(null, arguments);
     });
     var _ftello = (Module["_ftello"] = function () {
-      return (_ftello = Module["_ftello"] = Module["asm"]["Xea"]).apply(null, arguments);
+      return (_ftello = Module["_ftello"] = Module["asm"]["bfa"]).apply(null, arguments);
     });
     var _ftello64 = (Module["_ftello64"] = function () {
-      return (_ftello64 = Module["_ftello64"] = Module["asm"]["Yea"]).apply(null, arguments);
+      return (_ftello64 = Module["_ftello64"] = Module["asm"]["cfa"]).apply(null, arguments);
     });
     var _ftruncate64 = (Module["_ftruncate64"] = function () {
-      return (_ftruncate64 = Module["_ftruncate64"] = Module["asm"]["Zea"]).apply(null, arguments);
+      return (_ftruncate64 = Module["_ftruncate64"] = Module["asm"]["dfa"]).apply(null, arguments);
     });
     var _fwrite_unlocked = (Module["_fwrite_unlocked"] = function () {
-      return (_fwrite_unlocked = Module["_fwrite_unlocked"] = Module["asm"]["_ea"]).apply(
+      return (_fwrite_unlocked = Module["_fwrite_unlocked"] = Module["asm"]["efa"]).apply(
         null,
         arguments,
       );
     });
     var __IO_getc = (Module["__IO_getc"] = function () {
-      return (__IO_getc = Module["__IO_getc"] = Module["asm"]["$ea"]).apply(null, arguments);
+      return (__IO_getc = Module["__IO_getc"] = Module["asm"]["ffa"]).apply(null, arguments);
     });
     var _getpriority = (Module["_getpriority"] = function () {
-      return (_getpriority = Module["_getpriority"] = Module["asm"]["afa"]).apply(null, arguments);
+      return (_getpriority = Module["_getpriority"] = Module["asm"]["gfa"]).apply(null, arguments);
     });
     var _getservbyname_r = (Module["_getservbyname_r"] = function () {
-      return (_getservbyname_r = Module["_getservbyname_r"] = Module["asm"]["bfa"]).apply(
+      return (_getservbyname_r = Module["_getservbyname_r"] = Module["asm"]["hfa"]).apply(
         null,
         arguments,
       );
     });
     var _getservbyport_r = (Module["_getservbyport_r"] = function () {
-      return (_getservbyport_r = Module["_getservbyport_r"] = Module["asm"]["cfa"]).apply(
+      return (_getservbyport_r = Module["_getservbyport_r"] = Module["asm"]["ifa"]).apply(
         null,
         arguments,
       );
     });
     var _ilogbl = (Module["_ilogbl"] = function () {
-      return (_ilogbl = Module["_ilogbl"] = Module["asm"]["dfa"]).apply(null, arguments);
+      return (_ilogbl = Module["_ilogbl"] = Module["asm"]["jfa"]).apply(null, arguments);
     });
     var _strspn = (Module["_strspn"] = function () {
-      return (_strspn = Module["_strspn"] = Module["asm"]["efa"]).apply(null, arguments);
+      return (_strspn = Module["_strspn"] = Module["asm"]["kfa"]).apply(null, arguments);
     });
     var ___intscan = (Module["___intscan"] = function () {
-      return (___intscan = Module["___intscan"] = Module["asm"]["ffa"]).apply(null, arguments);
+      return (___intscan = Module["___intscan"] = Module["asm"]["lfa"]).apply(null, arguments);
     });
     var _ioctl = (Module["_ioctl"] = function () {
-      return (_ioctl = Module["_ioctl"] = Module["asm"]["gfa"]).apply(null, arguments);
+      return (_ioctl = Module["_ioctl"] = Module["asm"]["mfa"]).apply(null, arguments);
     });
     var ___isalnum_l = (Module["___isalnum_l"] = function () {
-      return (___isalnum_l = Module["___isalnum_l"] = Module["asm"]["hfa"]).apply(null, arguments);
+      return (___isalnum_l = Module["___isalnum_l"] = Module["asm"]["nfa"]).apply(null, arguments);
     });
     var _isalnum_l = (Module["_isalnum_l"] = function () {
-      return (_isalnum_l = Module["_isalnum_l"] = Module["asm"]["ifa"]).apply(null, arguments);
+      return (_isalnum_l = Module["_isalnum_l"] = Module["asm"]["ofa"]).apply(null, arguments);
     });
     var ___isalpha_l = (Module["___isalpha_l"] = function () {
-      return (___isalpha_l = Module["___isalpha_l"] = Module["asm"]["jfa"]).apply(null, arguments);
+      return (___isalpha_l = Module["___isalpha_l"] = Module["asm"]["pfa"]).apply(null, arguments);
     });
     var _isalpha_l = (Module["_isalpha_l"] = function () {
-      return (_isalpha_l = Module["_isalpha_l"] = Module["asm"]["kfa"]).apply(null, arguments);
+      return (_isalpha_l = Module["_isalpha_l"] = Module["asm"]["qfa"]).apply(null, arguments);
     });
     var ___isblank_l = (Module["___isblank_l"] = function () {
-      return (___isblank_l = Module["___isblank_l"] = Module["asm"]["lfa"]).apply(null, arguments);
+      return (___isblank_l = Module["___isblank_l"] = Module["asm"]["rfa"]).apply(null, arguments);
     });
     var _isblank_l = (Module["_isblank_l"] = function () {
-      return (_isblank_l = Module["_isblank_l"] = Module["asm"]["mfa"]).apply(null, arguments);
+      return (_isblank_l = Module["_isblank_l"] = Module["asm"]["sfa"]).apply(null, arguments);
     });
     var ___iscntrl_l = (Module["___iscntrl_l"] = function () {
-      return (___iscntrl_l = Module["___iscntrl_l"] = Module["asm"]["nfa"]).apply(null, arguments);
+      return (___iscntrl_l = Module["___iscntrl_l"] = Module["asm"]["tfa"]).apply(null, arguments);
     });
     var _iscntrl_l = (Module["_iscntrl_l"] = function () {
-      return (_iscntrl_l = Module["_iscntrl_l"] = Module["asm"]["ofa"]).apply(null, arguments);
+      return (_iscntrl_l = Module["_iscntrl_l"] = Module["asm"]["ufa"]).apply(null, arguments);
     });
     var ___isdigit_l = (Module["___isdigit_l"] = function () {
-      return (___isdigit_l = Module["___isdigit_l"] = Module["asm"]["pfa"]).apply(null, arguments);
+      return (___isdigit_l = Module["___isdigit_l"] = Module["asm"]["vfa"]).apply(null, arguments);
     });
     var _isdigit_l = (Module["_isdigit_l"] = function () {
-      return (_isdigit_l = Module["_isdigit_l"] = Module["asm"]["qfa"]).apply(null, arguments);
+      return (_isdigit_l = Module["_isdigit_l"] = Module["asm"]["wfa"]).apply(null, arguments);
     });
     var ___isgraph_l = (Module["___isgraph_l"] = function () {
-      return (___isgraph_l = Module["___isgraph_l"] = Module["asm"]["rfa"]).apply(null, arguments);
+      return (___isgraph_l = Module["___isgraph_l"] = Module["asm"]["xfa"]).apply(null, arguments);
     });
     var _isgraph_l = (Module["_isgraph_l"] = function () {
-      return (_isgraph_l = Module["_isgraph_l"] = Module["asm"]["sfa"]).apply(null, arguments);
+      return (_isgraph_l = Module["_isgraph_l"] = Module["asm"]["yfa"]).apply(null, arguments);
     });
     var ___islower_l = (Module["___islower_l"] = function () {
-      return (___islower_l = Module["___islower_l"] = Module["asm"]["tfa"]).apply(null, arguments);
+      return (___islower_l = Module["___islower_l"] = Module["asm"]["zfa"]).apply(null, arguments);
     });
     var _islower_l = (Module["_islower_l"] = function () {
-      return (_islower_l = Module["_islower_l"] = Module["asm"]["ufa"]).apply(null, arguments);
+      return (_islower_l = Module["_islower_l"] = Module["asm"]["Afa"]).apply(null, arguments);
     });
     var ___isprint_l = (Module["___isprint_l"] = function () {
-      return (___isprint_l = Module["___isprint_l"] = Module["asm"]["vfa"]).apply(null, arguments);
+      return (___isprint_l = Module["___isprint_l"] = Module["asm"]["Bfa"]).apply(null, arguments);
     });
     var _isprint_l = (Module["_isprint_l"] = function () {
-      return (_isprint_l = Module["_isprint_l"] = Module["asm"]["wfa"]).apply(null, arguments);
+      return (_isprint_l = Module["_isprint_l"] = Module["asm"]["Cfa"]).apply(null, arguments);
     });
     var ___ispunct_l = (Module["___ispunct_l"] = function () {
-      return (___ispunct_l = Module["___ispunct_l"] = Module["asm"]["xfa"]).apply(null, arguments);
+      return (___ispunct_l = Module["___ispunct_l"] = Module["asm"]["Dfa"]).apply(null, arguments);
     });
     var _ispunct_l = (Module["_ispunct_l"] = function () {
-      return (_ispunct_l = Module["_ispunct_l"] = Module["asm"]["yfa"]).apply(null, arguments);
+      return (_ispunct_l = Module["_ispunct_l"] = Module["asm"]["Efa"]).apply(null, arguments);
     });
     var ___isspace_l = (Module["___isspace_l"] = function () {
-      return (___isspace_l = Module["___isspace_l"] = Module["asm"]["zfa"]).apply(null, arguments);
+      return (___isspace_l = Module["___isspace_l"] = Module["asm"]["Ffa"]).apply(null, arguments);
     });
     var _isspace_l = (Module["_isspace_l"] = function () {
-      return (_isspace_l = Module["_isspace_l"] = Module["asm"]["Afa"]).apply(null, arguments);
+      return (_isspace_l = Module["_isspace_l"] = Module["asm"]["Gfa"]).apply(null, arguments);
     });
     var ___isupper_l = (Module["___isupper_l"] = function () {
-      return (___isupper_l = Module["___isupper_l"] = Module["asm"]["Bfa"]).apply(null, arguments);
+      return (___isupper_l = Module["___isupper_l"] = Module["asm"]["Hfa"]).apply(null, arguments);
     });
     var _isupper_l = (Module["_isupper_l"] = function () {
-      return (_isupper_l = Module["_isupper_l"] = Module["asm"]["Cfa"]).apply(null, arguments);
+      return (_isupper_l = Module["_isupper_l"] = Module["asm"]["Ifa"]).apply(null, arguments);
     });
     var _iswalnum = (Module["_iswalnum"] = function () {
-      return (_iswalnum = Module["_iswalnum"] = Module["asm"]["Dfa"]).apply(null, arguments);
+      return (_iswalnum = Module["_iswalnum"] = Module["asm"]["Jfa"]).apply(null, arguments);
     });
     var ___iswalnum_l = (Module["___iswalnum_l"] = function () {
-      return (___iswalnum_l = Module["___iswalnum_l"] = Module["asm"]["Efa"]).apply(
+      return (___iswalnum_l = Module["___iswalnum_l"] = Module["asm"]["Kfa"]).apply(
         null,
         arguments,
       );
     });
     var _iswalnum_l = (Module["_iswalnum_l"] = function () {
-      return (_iswalnum_l = Module["_iswalnum_l"] = Module["asm"]["Ffa"]).apply(null, arguments);
+      return (_iswalnum_l = Module["_iswalnum_l"] = Module["asm"]["Lfa"]).apply(null, arguments);
     });
     var _iswalpha = (Module["_iswalpha"] = function () {
-      return (_iswalpha = Module["_iswalpha"] = Module["asm"]["Gfa"]).apply(null, arguments);
+      return (_iswalpha = Module["_iswalpha"] = Module["asm"]["Mfa"]).apply(null, arguments);
     });
     var ___iswalpha_l = (Module["___iswalpha_l"] = function () {
-      return (___iswalpha_l = Module["___iswalpha_l"] = Module["asm"]["Hfa"]).apply(
+      return (___iswalpha_l = Module["___iswalpha_l"] = Module["asm"]["Nfa"]).apply(
         null,
         arguments,
       );
     });
     var _iswalpha_l = (Module["_iswalpha_l"] = function () {
-      return (_iswalpha_l = Module["_iswalpha_l"] = Module["asm"]["Ifa"]).apply(null, arguments);
+      return (_iswalpha_l = Module["_iswalpha_l"] = Module["asm"]["Ofa"]).apply(null, arguments);
     });
     var _iswblank = (Module["_iswblank"] = function () {
-      return (_iswblank = Module["_iswblank"] = Module["asm"]["Jfa"]).apply(null, arguments);
+      return (_iswblank = Module["_iswblank"] = Module["asm"]["Pfa"]).apply(null, arguments);
     });
     var ___iswblank_l = (Module["___iswblank_l"] = function () {
-      return (___iswblank_l = Module["___iswblank_l"] = Module["asm"]["Kfa"]).apply(
+      return (___iswblank_l = Module["___iswblank_l"] = Module["asm"]["Qfa"]).apply(
         null,
         arguments,
       );
     });
     var _iswblank_l = (Module["_iswblank_l"] = function () {
-      return (_iswblank_l = Module["_iswblank_l"] = Module["asm"]["Lfa"]).apply(null, arguments);
+      return (_iswblank_l = Module["_iswblank_l"] = Module["asm"]["Rfa"]).apply(null, arguments);
     });
     var _iswcntrl = (Module["_iswcntrl"] = function () {
-      return (_iswcntrl = Module["_iswcntrl"] = Module["asm"]["Mfa"]).apply(null, arguments);
+      return (_iswcntrl = Module["_iswcntrl"] = Module["asm"]["Sfa"]).apply(null, arguments);
     });
     var ___iswcntrl_l = (Module["___iswcntrl_l"] = function () {
-      return (___iswcntrl_l = Module["___iswcntrl_l"] = Module["asm"]["Nfa"]).apply(
+      return (___iswcntrl_l = Module["___iswcntrl_l"] = Module["asm"]["Tfa"]).apply(
         null,
         arguments,
       );
     });
     var _iswcntrl_l = (Module["_iswcntrl_l"] = function () {
-      return (_iswcntrl_l = Module["_iswcntrl_l"] = Module["asm"]["Ofa"]).apply(null, arguments);
+      return (_iswcntrl_l = Module["_iswcntrl_l"] = Module["asm"]["Ufa"]).apply(null, arguments);
     });
     var _iswdigit = (Module["_iswdigit"] = function () {
-      return (_iswdigit = Module["_iswdigit"] = Module["asm"]["Pfa"]).apply(null, arguments);
+      return (_iswdigit = Module["_iswdigit"] = Module["asm"]["Vfa"]).apply(null, arguments);
     });
     var _iswgraph = (Module["_iswgraph"] = function () {
-      return (_iswgraph = Module["_iswgraph"] = Module["asm"]["Qfa"]).apply(null, arguments);
+      return (_iswgraph = Module["_iswgraph"] = Module["asm"]["Wfa"]).apply(null, arguments);
     });
     var _iswlower = (Module["_iswlower"] = function () {
-      return (_iswlower = Module["_iswlower"] = Module["asm"]["Rfa"]).apply(null, arguments);
+      return (_iswlower = Module["_iswlower"] = Module["asm"]["Xfa"]).apply(null, arguments);
     });
     var _iswprint = (Module["_iswprint"] = function () {
-      return (_iswprint = Module["_iswprint"] = Module["asm"]["Sfa"]).apply(null, arguments);
+      return (_iswprint = Module["_iswprint"] = Module["asm"]["Yfa"]).apply(null, arguments);
     });
     var _iswpunct = (Module["_iswpunct"] = function () {
-      return (_iswpunct = Module["_iswpunct"] = Module["asm"]["Tfa"]).apply(null, arguments);
+      return (_iswpunct = Module["_iswpunct"] = Module["asm"]["Zfa"]).apply(null, arguments);
     });
     var _iswspace = (Module["_iswspace"] = function () {
-      return (_iswspace = Module["_iswspace"] = Module["asm"]["Ufa"]).apply(null, arguments);
+      return (_iswspace = Module["_iswspace"] = Module["asm"]["_fa"]).apply(null, arguments);
     });
     var _iswupper = (Module["_iswupper"] = function () {
-      return (_iswupper = Module["_iswupper"] = Module["asm"]["Vfa"]).apply(null, arguments);
+      return (_iswupper = Module["_iswupper"] = Module["asm"]["$fa"]).apply(null, arguments);
     });
     var _iswxdigit = (Module["_iswxdigit"] = function () {
-      return (_iswxdigit = Module["_iswxdigit"] = Module["asm"]["Wfa"]).apply(null, arguments);
+      return (_iswxdigit = Module["_iswxdigit"] = Module["asm"]["aga"]).apply(null, arguments);
     });
     var ___iswctype_l = (Module["___iswctype_l"] = function () {
-      return (___iswctype_l = Module["___iswctype_l"] = Module["asm"]["Xfa"]).apply(
+      return (___iswctype_l = Module["___iswctype_l"] = Module["asm"]["bga"]).apply(
         null,
         arguments,
       );
     });
     var ___wctype_l = (Module["___wctype_l"] = function () {
-      return (___wctype_l = Module["___wctype_l"] = Module["asm"]["Yfa"]).apply(null, arguments);
+      return (___wctype_l = Module["___wctype_l"] = Module["asm"]["cga"]).apply(null, arguments);
     });
     var _iswctype_l = (Module["_iswctype_l"] = function () {
-      return (_iswctype_l = Module["_iswctype_l"] = Module["asm"]["Zfa"]).apply(null, arguments);
+      return (_iswctype_l = Module["_iswctype_l"] = Module["asm"]["dga"]).apply(null, arguments);
     });
     var _wctype_l = (Module["_wctype_l"] = function () {
-      return (_wctype_l = Module["_wctype_l"] = Module["asm"]["_fa"]).apply(null, arguments);
+      return (_wctype_l = Module["_wctype_l"] = Module["asm"]["ega"]).apply(null, arguments);
     });
     var ___iswdigit_l = (Module["___iswdigit_l"] = function () {
-      return (___iswdigit_l = Module["___iswdigit_l"] = Module["asm"]["$fa"]).apply(
+      return (___iswdigit_l = Module["___iswdigit_l"] = Module["asm"]["fga"]).apply(
         null,
         arguments,
       );
     });
     var _iswdigit_l = (Module["_iswdigit_l"] = function () {
-      return (_iswdigit_l = Module["_iswdigit_l"] = Module["asm"]["aga"]).apply(null, arguments);
+      return (_iswdigit_l = Module["_iswdigit_l"] = Module["asm"]["gga"]).apply(null, arguments);
     });
     var ___iswgraph_l = (Module["___iswgraph_l"] = function () {
-      return (___iswgraph_l = Module["___iswgraph_l"] = Module["asm"]["bga"]).apply(
+      return (___iswgraph_l = Module["___iswgraph_l"] = Module["asm"]["hga"]).apply(
         null,
         arguments,
       );
     });
     var _iswgraph_l = (Module["_iswgraph_l"] = function () {
-      return (_iswgraph_l = Module["_iswgraph_l"] = Module["asm"]["cga"]).apply(null, arguments);
+      return (_iswgraph_l = Module["_iswgraph_l"] = Module["asm"]["iga"]).apply(null, arguments);
     });
     var ___iswlower_l = (Module["___iswlower_l"] = function () {
-      return (___iswlower_l = Module["___iswlower_l"] = Module["asm"]["dga"]).apply(
+      return (___iswlower_l = Module["___iswlower_l"] = Module["asm"]["jga"]).apply(
         null,
         arguments,
       );
     });
     var _iswlower_l = (Module["_iswlower_l"] = function () {
-      return (_iswlower_l = Module["_iswlower_l"] = Module["asm"]["ega"]).apply(null, arguments);
+      return (_iswlower_l = Module["_iswlower_l"] = Module["asm"]["kga"]).apply(null, arguments);
     });
     var ___iswprint_l = (Module["___iswprint_l"] = function () {
-      return (___iswprint_l = Module["___iswprint_l"] = Module["asm"]["fga"]).apply(
+      return (___iswprint_l = Module["___iswprint_l"] = Module["asm"]["lga"]).apply(
         null,
         arguments,
       );
     });
     var _iswprint_l = (Module["_iswprint_l"] = function () {
-      return (_iswprint_l = Module["_iswprint_l"] = Module["asm"]["gga"]).apply(null, arguments);
+      return (_iswprint_l = Module["_iswprint_l"] = Module["asm"]["mga"]).apply(null, arguments);
     });
     var ___iswpunct_l = (Module["___iswpunct_l"] = function () {
-      return (___iswpunct_l = Module["___iswpunct_l"] = Module["asm"]["hga"]).apply(
+      return (___iswpunct_l = Module["___iswpunct_l"] = Module["asm"]["nga"]).apply(
         null,
         arguments,
       );
     });
     var _iswpunct_l = (Module["_iswpunct_l"] = function () {
-      return (_iswpunct_l = Module["_iswpunct_l"] = Module["asm"]["iga"]).apply(null, arguments);
+      return (_iswpunct_l = Module["_iswpunct_l"] = Module["asm"]["oga"]).apply(null, arguments);
     });
     var _wcschr = (Module["_wcschr"] = function () {
-      return (_wcschr = Module["_wcschr"] = Module["asm"]["jga"]).apply(null, arguments);
+      return (_wcschr = Module["_wcschr"] = Module["asm"]["pga"]).apply(null, arguments);
     });
     var ___iswspace_l = (Module["___iswspace_l"] = function () {
-      return (___iswspace_l = Module["___iswspace_l"] = Module["asm"]["kga"]).apply(
+      return (___iswspace_l = Module["___iswspace_l"] = Module["asm"]["qga"]).apply(
         null,
         arguments,
       );
     });
     var _iswspace_l = (Module["_iswspace_l"] = function () {
-      return (_iswspace_l = Module["_iswspace_l"] = Module["asm"]["lga"]).apply(null, arguments);
+      return (_iswspace_l = Module["_iswspace_l"] = Module["asm"]["rga"]).apply(null, arguments);
     });
     var ___iswupper_l = (Module["___iswupper_l"] = function () {
-      return (___iswupper_l = Module["___iswupper_l"] = Module["asm"]["mga"]).apply(
+      return (___iswupper_l = Module["___iswupper_l"] = Module["asm"]["sga"]).apply(
         null,
         arguments,
       );
     });
     var _iswupper_l = (Module["_iswupper_l"] = function () {
-      return (_iswupper_l = Module["_iswupper_l"] = Module["asm"]["nga"]).apply(null, arguments);
+      return (_iswupper_l = Module["_iswupper_l"] = Module["asm"]["tga"]).apply(null, arguments);
     });
     var ___iswxdigit_l = (Module["___iswxdigit_l"] = function () {
-      return (___iswxdigit_l = Module["___iswxdigit_l"] = Module["asm"]["oga"]).apply(
+      return (___iswxdigit_l = Module["___iswxdigit_l"] = Module["asm"]["uga"]).apply(
         null,
         arguments,
       );
     });
     var _iswxdigit_l = (Module["_iswxdigit_l"] = function () {
-      return (_iswxdigit_l = Module["_iswxdigit_l"] = Module["asm"]["pga"]).apply(null, arguments);
+      return (_iswxdigit_l = Module["_iswxdigit_l"] = Module["asm"]["vga"]).apply(null, arguments);
     });
     var ___isxdigit_l = (Module["___isxdigit_l"] = function () {
-      return (___isxdigit_l = Module["___isxdigit_l"] = Module["asm"]["qga"]).apply(
+      return (___isxdigit_l = Module["___isxdigit_l"] = Module["asm"]["wga"]).apply(
         null,
         arguments,
       );
     });
     var _isxdigit_l = (Module["_isxdigit_l"] = function () {
-      return (_isxdigit_l = Module["_isxdigit_l"] = Module["asm"]["rga"]).apply(null, arguments);
+      return (_isxdigit_l = Module["_isxdigit_l"] = Module["asm"]["xga"]).apply(null, arguments);
     });
     var _raise = (Module["_raise"] = function () {
-      return (_raise = Module["_raise"] = Module["asm"]["sga"]).apply(null, arguments);
+      return (_raise = Module["_raise"] = Module["asm"]["yga"]).apply(null, arguments);
     });
     var ___nl_langinfo = (Module["___nl_langinfo"] = function () {
-      return (___nl_langinfo = Module["___nl_langinfo"] = Module["asm"]["tga"]).apply(
+      return (___nl_langinfo = Module["___nl_langinfo"] = Module["asm"]["zga"]).apply(
         null,
         arguments,
       );
     });
     var _nl_langinfo_l = (Module["_nl_langinfo_l"] = function () {
-      return (_nl_langinfo_l = Module["_nl_langinfo_l"] = Module["asm"]["uga"]).apply(
+      return (_nl_langinfo_l = Module["_nl_langinfo_l"] = Module["asm"]["Aga"]).apply(
         null,
         arguments,
       );
@@ -25093,27 +25125,27 @@ var PHP = (() => {
     var _emscripten_has_threading_support = (Module["_emscripten_has_threading_support"] =
       function () {
         return (_emscripten_has_threading_support = Module["_emscripten_has_threading_support"] =
-          Module["asm"]["vga"]).apply(null, arguments);
+          Module["asm"]["Bga"]).apply(null, arguments);
       });
     var _emscripten_num_logical_cores = (Module["_emscripten_num_logical_cores"] = function () {
       return (_emscripten_num_logical_cores = Module["_emscripten_num_logical_cores"] =
-        Module["asm"]["wga"]).apply(null, arguments);
+        Module["asm"]["Cga"]).apply(null, arguments);
     });
     var _emscripten_force_num_logical_cores = (Module["_emscripten_force_num_logical_cores"] =
       function () {
         return (_emscripten_force_num_logical_cores = Module[
           "_emscripten_force_num_logical_cores"
         ] =
-          Module["asm"]["xga"]).apply(null, arguments);
+          Module["asm"]["Dga"]).apply(null, arguments);
       });
     var _emscripten_futex_wait = (Module["_emscripten_futex_wait"] = function () {
       return (_emscripten_futex_wait = Module["_emscripten_futex_wait"] =
-        Module["asm"]["yga"]).apply(null, arguments);
+        Module["asm"]["Ega"]).apply(null, arguments);
     });
     var _emscripten_is_main_runtime_thread = (Module["_emscripten_is_main_runtime_thread"] =
       function () {
         return (_emscripten_is_main_runtime_thread = Module["_emscripten_is_main_runtime_thread"] =
-          Module["asm"]["zga"]).apply(null, arguments);
+          Module["asm"]["Fga"]).apply(null, arguments);
       });
     var _emscripten_main_thread_process_queued_calls = (Module[
       "_emscripten_main_thread_process_queued_calls"
@@ -25121,7 +25153,7 @@ var PHP = (() => {
       return (_emscripten_main_thread_process_queued_calls = Module[
         "_emscripten_main_thread_process_queued_calls"
       ] =
-        Module["asm"]["Aga"]).apply(null, arguments);
+        Module["asm"]["Gga"]).apply(null, arguments);
     });
     var _emscripten_current_thread_process_queued_calls = (Module[
       "_emscripten_current_thread_process_queued_calls"
@@ -25129,294 +25161,294 @@ var PHP = (() => {
       return (_emscripten_current_thread_process_queued_calls = Module[
         "_emscripten_current_thread_process_queued_calls"
       ] =
-        Module["asm"]["Bga"]).apply(null, arguments);
+        Module["asm"]["Hga"]).apply(null, arguments);
     });
     var __emscripten_yield = (Module["__emscripten_yield"] = function () {
-      return (__emscripten_yield = Module["__emscripten_yield"] = Module["asm"]["Cga"]).apply(
+      return (__emscripten_yield = Module["__emscripten_yield"] = Module["asm"]["Iga"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_mutex_init = (Module["_pthread_mutex_init"] = function () {
-      return (_pthread_mutex_init = Module["_pthread_mutex_init"] = Module["asm"]["Dga"]).apply(
+      return (_pthread_mutex_init = Module["_pthread_mutex_init"] = Module["asm"]["Jga"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_mutex_destroy = (Module["_pthread_mutex_destroy"] = function () {
       return (_pthread_mutex_destroy = Module["_pthread_mutex_destroy"] =
-        Module["asm"]["Ega"]).apply(null, arguments);
+        Module["asm"]["Kga"]).apply(null, arguments);
     });
     var _pthread_mutex_consistent = (Module["_pthread_mutex_consistent"] = function () {
       return (_pthread_mutex_consistent = Module["_pthread_mutex_consistent"] =
-        Module["asm"]["Fga"]).apply(null, arguments);
+        Module["asm"]["Lga"]).apply(null, arguments);
     });
     var _pthread_barrier_init = (Module["_pthread_barrier_init"] = function () {
-      return (_pthread_barrier_init = Module["_pthread_barrier_init"] = Module["asm"]["Gga"]).apply(
+      return (_pthread_barrier_init = Module["_pthread_barrier_init"] = Module["asm"]["Mga"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_barrier_destroy = (Module["_pthread_barrier_destroy"] = function () {
       return (_pthread_barrier_destroy = Module["_pthread_barrier_destroy"] =
-        Module["asm"]["Hga"]).apply(null, arguments);
+        Module["asm"]["Nga"]).apply(null, arguments);
     });
     var _pthread_barrier_wait = (Module["_pthread_barrier_wait"] = function () {
-      return (_pthread_barrier_wait = Module["_pthread_barrier_wait"] = Module["asm"]["Iga"]).apply(
+      return (_pthread_barrier_wait = Module["_pthread_barrier_wait"] = Module["asm"]["Oga"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_getspecific = (Module["_pthread_getspecific"] = function () {
-      return (_pthread_getspecific = Module["_pthread_getspecific"] = Module["asm"]["Jga"]).apply(
+      return (_pthread_getspecific = Module["_pthread_getspecific"] = Module["asm"]["Pga"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_setspecific = (Module["_pthread_setspecific"] = function () {
-      return (_pthread_setspecific = Module["_pthread_setspecific"] = Module["asm"]["Kga"]).apply(
+      return (_pthread_setspecific = Module["_pthread_setspecific"] = Module["asm"]["Qga"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_cond_wait = (Module["_pthread_cond_wait"] = function () {
-      return (_pthread_cond_wait = Module["_pthread_cond_wait"] = Module["asm"]["Lga"]).apply(
+      return (_pthread_cond_wait = Module["_pthread_cond_wait"] = Module["asm"]["Rga"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_cond_signal = (Module["_pthread_cond_signal"] = function () {
-      return (_pthread_cond_signal = Module["_pthread_cond_signal"] = Module["asm"]["Mga"]).apply(
+      return (_pthread_cond_signal = Module["_pthread_cond_signal"] = Module["asm"]["Sga"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_cond_broadcast = (Module["_pthread_cond_broadcast"] = function () {
       return (_pthread_cond_broadcast = Module["_pthread_cond_broadcast"] =
-        Module["asm"]["Nga"]).apply(null, arguments);
+        Module["asm"]["Tga"]).apply(null, arguments);
     });
     var _pthread_cond_init = (Module["_pthread_cond_init"] = function () {
-      return (_pthread_cond_init = Module["_pthread_cond_init"] = Module["asm"]["Oga"]).apply(
+      return (_pthread_cond_init = Module["_pthread_cond_init"] = Module["asm"]["Uga"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_cond_destroy = (Module["_pthread_cond_destroy"] = function () {
-      return (_pthread_cond_destroy = Module["_pthread_cond_destroy"] = Module["asm"]["Pga"]).apply(
+      return (_pthread_cond_destroy = Module["_pthread_cond_destroy"] = Module["asm"]["Vga"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_atfork = (Module["_pthread_atfork"] = function () {
-      return (_pthread_atfork = Module["_pthread_atfork"] = Module["asm"]["Qga"]).apply(
+      return (_pthread_atfork = Module["_pthread_atfork"] = Module["asm"]["Wga"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_cancel = (Module["_pthread_cancel"] = function () {
-      return (_pthread_cancel = Module["_pthread_cancel"] = Module["asm"]["Rga"]).apply(
+      return (_pthread_cancel = Module["_pthread_cancel"] = Module["asm"]["Xga"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_testcancel = (Module["_pthread_testcancel"] = function () {
-      return (_pthread_testcancel = Module["_pthread_testcancel"] = Module["asm"]["Sga"]).apply(
+      return (_pthread_testcancel = Module["_pthread_testcancel"] = Module["asm"]["Yga"]).apply(
         null,
         arguments,
       );
     });
     var ___pthread_detach = (Module["___pthread_detach"] = function () {
-      return (___pthread_detach = Module["___pthread_detach"] = Module["asm"]["Tga"]).apply(
+      return (___pthread_detach = Module["___pthread_detach"] = Module["asm"]["Zga"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_equal = (Module["_pthread_equal"] = function () {
-      return (_pthread_equal = Module["_pthread_equal"] = Module["asm"]["Uga"]).apply(
+      return (_pthread_equal = Module["_pthread_equal"] = Module["asm"]["_ga"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_mutexattr_init = (Module["_pthread_mutexattr_init"] = function () {
       return (_pthread_mutexattr_init = Module["_pthread_mutexattr_init"] =
-        Module["asm"]["Vga"]).apply(null, arguments);
+        Module["asm"]["$ga"]).apply(null, arguments);
     });
     var _pthread_mutexattr_setprotocol = (Module["_pthread_mutexattr_setprotocol"] = function () {
       return (_pthread_mutexattr_setprotocol = Module["_pthread_mutexattr_setprotocol"] =
-        Module["asm"]["Wga"]).apply(null, arguments);
+        Module["asm"]["aha"]).apply(null, arguments);
     });
     var _pthread_mutexattr_settype = (Module["_pthread_mutexattr_settype"] = function () {
       return (_pthread_mutexattr_settype = Module["_pthread_mutexattr_settype"] =
-        Module["asm"]["Xga"]).apply(null, arguments);
+        Module["asm"]["bha"]).apply(null, arguments);
     });
     var _pthread_mutexattr_destroy = (Module["_pthread_mutexattr_destroy"] = function () {
       return (_pthread_mutexattr_destroy = Module["_pthread_mutexattr_destroy"] =
-        Module["asm"]["Yga"]).apply(null, arguments);
+        Module["asm"]["cha"]).apply(null, arguments);
     });
     var _pthread_mutexattr_setpshared = (Module["_pthread_mutexattr_setpshared"] = function () {
       return (_pthread_mutexattr_setpshared = Module["_pthread_mutexattr_setpshared"] =
-        Module["asm"]["Zga"]).apply(null, arguments);
+        Module["asm"]["dha"]).apply(null, arguments);
     });
     var _pthread_condattr_init = (Module["_pthread_condattr_init"] = function () {
       return (_pthread_condattr_init = Module["_pthread_condattr_init"] =
-        Module["asm"]["_ga"]).apply(null, arguments);
+        Module["asm"]["eha"]).apply(null, arguments);
     });
     var _pthread_condattr_destroy = (Module["_pthread_condattr_destroy"] = function () {
       return (_pthread_condattr_destroy = Module["_pthread_condattr_destroy"] =
-        Module["asm"]["$ga"]).apply(null, arguments);
+        Module["asm"]["fha"]).apply(null, arguments);
     });
     var _pthread_condattr_setclock = (Module["_pthread_condattr_setclock"] = function () {
       return (_pthread_condattr_setclock = Module["_pthread_condattr_setclock"] =
-        Module["asm"]["aha"]).apply(null, arguments);
+        Module["asm"]["gha"]).apply(null, arguments);
     });
     var _pthread_condattr_setpshared = (Module["_pthread_condattr_setpshared"] = function () {
       return (_pthread_condattr_setpshared = Module["_pthread_condattr_setpshared"] =
-        Module["asm"]["bha"]).apply(null, arguments);
+        Module["asm"]["hha"]).apply(null, arguments);
     });
     var _pthread_getattr_np = (Module["_pthread_getattr_np"] = function () {
-      return (_pthread_getattr_np = Module["_pthread_getattr_np"] = Module["asm"]["cha"]).apply(
+      return (_pthread_getattr_np = Module["_pthread_getattr_np"] = Module["asm"]["iha"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_setcancelstate = (Module["_pthread_setcancelstate"] = function () {
       return (_pthread_setcancelstate = Module["_pthread_setcancelstate"] =
-        Module["asm"]["dha"]).apply(null, arguments);
+        Module["asm"]["jha"]).apply(null, arguments);
     });
     var _pthread_setcanceltype = (Module["_pthread_setcanceltype"] = function () {
       return (_pthread_setcanceltype = Module["_pthread_setcanceltype"] =
-        Module["asm"]["eha"]).apply(null, arguments);
+        Module["asm"]["kha"]).apply(null, arguments);
     });
     var _pthread_rwlock_init = (Module["_pthread_rwlock_init"] = function () {
-      return (_pthread_rwlock_init = Module["_pthread_rwlock_init"] = Module["asm"]["fha"]).apply(
+      return (_pthread_rwlock_init = Module["_pthread_rwlock_init"] = Module["asm"]["lha"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_rwlock_destroy = (Module["_pthread_rwlock_destroy"] = function () {
       return (_pthread_rwlock_destroy = Module["_pthread_rwlock_destroy"] =
-        Module["asm"]["gha"]).apply(null, arguments);
+        Module["asm"]["mha"]).apply(null, arguments);
     });
     var _pthread_rwlock_rdlock = (Module["_pthread_rwlock_rdlock"] = function () {
       return (_pthread_rwlock_rdlock = Module["_pthread_rwlock_rdlock"] =
-        Module["asm"]["hha"]).apply(null, arguments);
+        Module["asm"]["nha"]).apply(null, arguments);
     });
     var _pthread_rwlock_tryrdlock = (Module["_pthread_rwlock_tryrdlock"] = function () {
       return (_pthread_rwlock_tryrdlock = Module["_pthread_rwlock_tryrdlock"] =
-        Module["asm"]["iha"]).apply(null, arguments);
+        Module["asm"]["oha"]).apply(null, arguments);
     });
     var _pthread_rwlock_timedrdlock = (Module["_pthread_rwlock_timedrdlock"] = function () {
       return (_pthread_rwlock_timedrdlock = Module["_pthread_rwlock_timedrdlock"] =
-        Module["asm"]["jha"]).apply(null, arguments);
+        Module["asm"]["pha"]).apply(null, arguments);
     });
     var _pthread_rwlock_wrlock = (Module["_pthread_rwlock_wrlock"] = function () {
       return (_pthread_rwlock_wrlock = Module["_pthread_rwlock_wrlock"] =
-        Module["asm"]["kha"]).apply(null, arguments);
+        Module["asm"]["qha"]).apply(null, arguments);
     });
     var _pthread_rwlock_trywrlock = (Module["_pthread_rwlock_trywrlock"] = function () {
       return (_pthread_rwlock_trywrlock = Module["_pthread_rwlock_trywrlock"] =
-        Module["asm"]["lha"]).apply(null, arguments);
+        Module["asm"]["rha"]).apply(null, arguments);
     });
     var _pthread_rwlock_timedwrlock = (Module["_pthread_rwlock_timedwrlock"] = function () {
       return (_pthread_rwlock_timedwrlock = Module["_pthread_rwlock_timedwrlock"] =
-        Module["asm"]["mha"]).apply(null, arguments);
+        Module["asm"]["sha"]).apply(null, arguments);
     });
     var _pthread_rwlock_unlock = (Module["_pthread_rwlock_unlock"] = function () {
       return (_pthread_rwlock_unlock = Module["_pthread_rwlock_unlock"] =
-        Module["asm"]["nha"]).apply(null, arguments);
+        Module["asm"]["tha"]).apply(null, arguments);
     });
     var _pthread_rwlockattr_init = (Module["_pthread_rwlockattr_init"] = function () {
       return (_pthread_rwlockattr_init = Module["_pthread_rwlockattr_init"] =
-        Module["asm"]["oha"]).apply(null, arguments);
+        Module["asm"]["uha"]).apply(null, arguments);
     });
     var _pthread_rwlockattr_destroy = (Module["_pthread_rwlockattr_destroy"] = function () {
       return (_pthread_rwlockattr_destroy = Module["_pthread_rwlockattr_destroy"] =
-        Module["asm"]["pha"]).apply(null, arguments);
+        Module["asm"]["vha"]).apply(null, arguments);
     });
     var _pthread_rwlockattr_setpshared = (Module["_pthread_rwlockattr_setpshared"] = function () {
       return (_pthread_rwlockattr_setpshared = Module["_pthread_rwlockattr_setpshared"] =
-        Module["asm"]["qha"]).apply(null, arguments);
+        Module["asm"]["wha"]).apply(null, arguments);
     });
     var _pthread_spin_init = (Module["_pthread_spin_init"] = function () {
-      return (_pthread_spin_init = Module["_pthread_spin_init"] = Module["asm"]["rha"]).apply(
+      return (_pthread_spin_init = Module["_pthread_spin_init"] = Module["asm"]["xha"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_spin_destroy = (Module["_pthread_spin_destroy"] = function () {
-      return (_pthread_spin_destroy = Module["_pthread_spin_destroy"] = Module["asm"]["sha"]).apply(
+      return (_pthread_spin_destroy = Module["_pthread_spin_destroy"] = Module["asm"]["yha"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_spin_lock = (Module["_pthread_spin_lock"] = function () {
-      return (_pthread_spin_lock = Module["_pthread_spin_lock"] = Module["asm"]["tha"]).apply(
+      return (_pthread_spin_lock = Module["_pthread_spin_lock"] = Module["asm"]["zha"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_spin_trylock = (Module["_pthread_spin_trylock"] = function () {
-      return (_pthread_spin_trylock = Module["_pthread_spin_trylock"] = Module["asm"]["uha"]).apply(
+      return (_pthread_spin_trylock = Module["_pthread_spin_trylock"] = Module["asm"]["Aha"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_spin_unlock = (Module["_pthread_spin_unlock"] = function () {
-      return (_pthread_spin_unlock = Module["_pthread_spin_unlock"] = Module["asm"]["vha"]).apply(
+      return (_pthread_spin_unlock = Module["_pthread_spin_unlock"] = Module["asm"]["Bha"]).apply(
         null,
         arguments,
       );
     });
     var _sem_init = (Module["_sem_init"] = function () {
-      return (_sem_init = Module["_sem_init"] = Module["asm"]["wha"]).apply(null, arguments);
+      return (_sem_init = Module["_sem_init"] = Module["asm"]["Cha"]).apply(null, arguments);
     });
     var _sem_post = (Module["_sem_post"] = function () {
-      return (_sem_post = Module["_sem_post"] = Module["asm"]["xha"]).apply(null, arguments);
+      return (_sem_post = Module["_sem_post"] = Module["asm"]["Dha"]).apply(null, arguments);
     });
     var _sem_wait = (Module["_sem_wait"] = function () {
-      return (_sem_wait = Module["_sem_wait"] = Module["asm"]["yha"]).apply(null, arguments);
+      return (_sem_wait = Module["_sem_wait"] = Module["asm"]["Eha"]).apply(null, arguments);
     });
     var _sem_trywait = (Module["_sem_trywait"] = function () {
-      return (_sem_trywait = Module["_sem_trywait"] = Module["asm"]["zha"]).apply(null, arguments);
+      return (_sem_trywait = Module["_sem_trywait"] = Module["asm"]["Fha"]).apply(null, arguments);
     });
     var _sem_destroy = (Module["_sem_destroy"] = function () {
-      return (_sem_destroy = Module["_sem_destroy"] = Module["asm"]["Aha"]).apply(null, arguments);
+      return (_sem_destroy = Module["_sem_destroy"] = Module["asm"]["Gha"]).apply(null, arguments);
     });
     var _emscripten_thread_sleep = (Module["_emscripten_thread_sleep"] = function () {
       return (_emscripten_thread_sleep = Module["_emscripten_thread_sleep"] =
-        Module["asm"]["Bha"]).apply(null, arguments);
+        Module["asm"]["Hha"]).apply(null, arguments);
     });
     var __emscripten_check_timers = (Module["__emscripten_check_timers"] = function () {
       return (__emscripten_check_timers = Module["__emscripten_check_timers"] =
-        Module["asm"]["Cha"]).apply(null, arguments);
+        Module["asm"]["Iha"]).apply(null, arguments);
     });
     var _pthread_mutex_lock = (Module["_pthread_mutex_lock"] = function () {
-      return (_pthread_mutex_lock = Module["_pthread_mutex_lock"] = Module["asm"]["Dha"]).apply(
+      return (_pthread_mutex_lock = Module["_pthread_mutex_lock"] = Module["asm"]["Jha"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_mutex_unlock = (Module["_pthread_mutex_unlock"] = function () {
-      return (_pthread_mutex_unlock = Module["_pthread_mutex_unlock"] = Module["asm"]["Eha"]).apply(
+      return (_pthread_mutex_unlock = Module["_pthread_mutex_unlock"] = Module["asm"]["Kha"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_mutex_trylock = (Module["_pthread_mutex_trylock"] = function () {
       return (_pthread_mutex_trylock = Module["_pthread_mutex_trylock"] =
-        Module["asm"]["Fha"]).apply(null, arguments);
+        Module["asm"]["Lha"]).apply(null, arguments);
     });
     var _pthread_mutex_timedlock = (Module["_pthread_mutex_timedlock"] = function () {
       return (_pthread_mutex_timedlock = Module["_pthread_mutex_timedlock"] =
-        Module["asm"]["Gha"]).apply(null, arguments);
+        Module["asm"]["Mha"]).apply(null, arguments);
     });
     var _emscripten_builtin_pthread_create = (Module["_emscripten_builtin_pthread_create"] =
       function () {
         return (_emscripten_builtin_pthread_create = Module["_emscripten_builtin_pthread_create"] =
-          Module["asm"]["Hha"]).apply(null, arguments);
+          Module["asm"]["Nha"]).apply(null, arguments);
       });
     var _pthread_create = (Module["_pthread_create"] = function () {
-      return (_pthread_create = Module["_pthread_create"] = Module["asm"]["Iha"]).apply(
+      return (_pthread_create = Module["_pthread_create"] = Module["asm"]["Oha"]).apply(
         null,
         arguments,
       );
@@ -25424,38 +25456,38 @@ var PHP = (() => {
     var _emscripten_builtin_pthread_join = (Module["_emscripten_builtin_pthread_join"] =
       function () {
         return (_emscripten_builtin_pthread_join = Module["_emscripten_builtin_pthread_join"] =
-          Module["asm"]["Jha"]).apply(null, arguments);
+          Module["asm"]["Pha"]).apply(null, arguments);
       });
     var _pthread_join = (Module["_pthread_join"] = function () {
-      return (_pthread_join = Module["_pthread_join"] = Module["asm"]["Kha"]).apply(
+      return (_pthread_join = Module["_pthread_join"] = Module["asm"]["Qha"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_key_delete = (Module["_pthread_key_delete"] = function () {
-      return (_pthread_key_delete = Module["_pthread_key_delete"] = Module["asm"]["Lha"]).apply(
+      return (_pthread_key_delete = Module["_pthread_key_delete"] = Module["asm"]["Rha"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_key_create = (Module["_pthread_key_create"] = function () {
-      return (_pthread_key_create = Module["_pthread_key_create"] = Module["asm"]["Mha"]).apply(
+      return (_pthread_key_create = Module["_pthread_key_create"] = Module["asm"]["Sha"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_once = (Module["_pthread_once"] = function () {
-      return (_pthread_once = Module["_pthread_once"] = Module["asm"]["Nha"]).apply(
+      return (_pthread_once = Module["_pthread_once"] = Module["asm"]["Tha"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_cond_timedwait = (Module["_pthread_cond_timedwait"] = function () {
       return (_pthread_cond_timedwait = Module["_pthread_cond_timedwait"] =
-        Module["asm"]["Oha"]).apply(null, arguments);
+        Module["asm"]["Uha"]).apply(null, arguments);
     });
     var _pthread_exit = (Module["_pthread_exit"] = function () {
-      return (_pthread_exit = Module["_pthread_exit"] = Module["asm"]["Pha"]).apply(
+      return (_pthread_exit = Module["_pthread_exit"] = Module["asm"]["Vha"]).apply(
         null,
         arguments,
       );
@@ -25463,139 +25495,139 @@ var PHP = (() => {
     var _emscripten_builtin_pthread_detach = (Module["_emscripten_builtin_pthread_detach"] =
       function () {
         return (_emscripten_builtin_pthread_detach = Module["_emscripten_builtin_pthread_detach"] =
-          Module["asm"]["Qha"]).apply(null, arguments);
+          Module["asm"]["Wha"]).apply(null, arguments);
       });
     var _pthread_detach = (Module["_pthread_detach"] = function () {
-      return (_pthread_detach = Module["_pthread_detach"] = Module["asm"]["Rha"]).apply(
+      return (_pthread_detach = Module["_pthread_detach"] = Module["asm"]["Xha"]).apply(
         null,
         arguments,
       );
     });
     var _thrd_detach = (Module["_thrd_detach"] = function () {
-      return (_thrd_detach = Module["_thrd_detach"] = Module["asm"]["Sha"]).apply(null, arguments);
+      return (_thrd_detach = Module["_thrd_detach"] = Module["asm"]["Yha"]).apply(null, arguments);
     });
     var _llrint = (Module["_llrint"] = function () {
-      return (_llrint = Module["_llrint"] = Module["asm"]["Tha"]).apply(null, arguments);
+      return (_llrint = Module["_llrint"] = Module["asm"]["Zha"]).apply(null, arguments);
     });
     var _llrintf = (Module["_llrintf"] = function () {
-      return (_llrintf = Module["_llrintf"] = Module["asm"]["Uha"]).apply(null, arguments);
+      return (_llrintf = Module["_llrintf"] = Module["asm"]["_ha"]).apply(null, arguments);
     });
     var _llrintl = (Module["_llrintl"] = function () {
-      return (_llrintl = Module["_llrintl"] = Module["asm"]["Vha"]).apply(null, arguments);
+      return (_llrintl = Module["_llrintl"] = Module["asm"]["$ha"]).apply(null, arguments);
     });
     var _llround = (Module["_llround"] = function () {
-      return (_llround = Module["_llround"] = Module["asm"]["Wha"]).apply(null, arguments);
+      return (_llround = Module["_llround"] = Module["asm"]["aia"]).apply(null, arguments);
     });
     var _llroundf = (Module["_llroundf"] = function () {
-      return (_llroundf = Module["_llroundf"] = Module["asm"]["Xha"]).apply(null, arguments);
+      return (_llroundf = Module["_llroundf"] = Module["asm"]["bia"]).apply(null, arguments);
     });
     var _llroundl = (Module["_llroundl"] = function () {
-      return (_llroundl = Module["_llroundl"] = Module["asm"]["Yha"]).apply(null, arguments);
+      return (_llroundl = Module["_llroundl"] = Module["asm"]["cia"]).apply(null, arguments);
     });
     var _log10 = (Module["_log10"] = function () {
-      return (_log10 = Module["_log10"] = Module["asm"]["Zha"]).apply(null, arguments);
+      return (_log10 = Module["_log10"] = Module["asm"]["dia"]).apply(null, arguments);
     });
     var _log10l = (Module["_log10l"] = function () {
-      return (_log10l = Module["_log10l"] = Module["asm"]["_ha"]).apply(null, arguments);
+      return (_log10l = Module["_log10l"] = Module["asm"]["eia"]).apply(null, arguments);
     });
     var _log2l = (Module["_log2l"] = function () {
-      return (_log2l = Module["_log2l"] = Module["asm"]["$ha"]).apply(null, arguments);
+      return (_log2l = Module["_log2l"] = Module["asm"]["fia"]).apply(null, arguments);
     });
     var _logl = (Module["_logl"] = function () {
-      return (_logl = Module["_logl"] = Module["asm"]["aia"]).apply(null, arguments);
+      return (_logl = Module["_logl"] = Module["asm"]["gia"]).apply(null, arguments);
     });
     var _lrint = (Module["_lrint"] = function () {
-      return (_lrint = Module["_lrint"] = Module["asm"]["bia"]).apply(null, arguments);
+      return (_lrint = Module["_lrint"] = Module["asm"]["hia"]).apply(null, arguments);
     });
     var _lrintf = (Module["_lrintf"] = function () {
-      return (_lrintf = Module["_lrintf"] = Module["asm"]["cia"]).apply(null, arguments);
+      return (_lrintf = Module["_lrintf"] = Module["asm"]["iia"]).apply(null, arguments);
     });
     var _lrintl = (Module["_lrintl"] = function () {
-      return (_lrintl = Module["_lrintl"] = Module["asm"]["dia"]).apply(null, arguments);
+      return (_lrintl = Module["_lrintl"] = Module["asm"]["jia"]).apply(null, arguments);
     });
     var _lround = (Module["_lround"] = function () {
-      return (_lround = Module["_lround"] = Module["asm"]["eia"]).apply(null, arguments);
+      return (_lround = Module["_lround"] = Module["asm"]["kia"]).apply(null, arguments);
     });
     var _lroundf = (Module["_lroundf"] = function () {
-      return (_lroundf = Module["_lroundf"] = Module["asm"]["fia"]).apply(null, arguments);
+      return (_lroundf = Module["_lroundf"] = Module["asm"]["lia"]).apply(null, arguments);
     });
     var _lroundl = (Module["_lroundl"] = function () {
-      return (_lroundl = Module["_lroundl"] = Module["asm"]["gia"]).apply(null, arguments);
+      return (_lroundl = Module["_lroundl"] = Module["asm"]["mia"]).apply(null, arguments);
     });
     var _lseek64 = (Module["_lseek64"] = function () {
-      return (_lseek64 = Module["_lseek64"] = Module["asm"]["hia"]).apply(null, arguments);
+      return (_lseek64 = Module["_lseek64"] = Module["asm"]["nia"]).apply(null, arguments);
     });
     var _lstat64 = (Module["_lstat64"] = function () {
-      return (_lstat64 = Module["_lstat64"] = Module["asm"]["iia"]).apply(null, arguments);
+      return (_lstat64 = Module["_lstat64"] = Module["asm"]["oia"]).apply(null, arguments);
     });
     var _mbrtowc = (Module["_mbrtowc"] = function () {
-      return (_mbrtowc = Module["_mbrtowc"] = Module["asm"]["jia"]).apply(null, arguments);
+      return (_mbrtowc = Module["_mbrtowc"] = Module["asm"]["pia"]).apply(null, arguments);
     });
     var _mbsinit = (Module["_mbsinit"] = function () {
-      return (_mbsinit = Module["_mbsinit"] = Module["asm"]["kia"]).apply(null, arguments);
+      return (_mbsinit = Module["_mbsinit"] = Module["asm"]["qia"]).apply(null, arguments);
     });
     var _mkostemps = (Module["_mkostemps"] = function () {
-      return (_mkostemps = Module["_mkostemps"] = Module["asm"]["lia"]).apply(null, arguments);
+      return (_mkostemps = Module["_mkostemps"] = Module["asm"]["ria"]).apply(null, arguments);
     });
     var _mkostemps64 = (Module["_mkostemps64"] = function () {
-      return (_mkostemps64 = Module["_mkostemps64"] = Module["asm"]["mia"]).apply(null, arguments);
+      return (_mkostemps64 = Module["_mkostemps64"] = Module["asm"]["sia"]).apply(null, arguments);
     });
     var _mkstemp64 = (Module["_mkstemp64"] = function () {
-      return (_mkstemp64 = Module["_mkstemp64"] = Module["asm"]["nia"]).apply(null, arguments);
+      return (_mkstemp64 = Module["_mkstemp64"] = Module["asm"]["tia"]).apply(null, arguments);
     });
     var _timegm = (Module["_timegm"] = function () {
-      return (_timegm = Module["_timegm"] = Module["asm"]["oia"]).apply(null, arguments);
+      return (_timegm = Module["_timegm"] = Module["asm"]["uia"]).apply(null, arguments);
     });
     var _emscripten_builtin_free = (Module["_emscripten_builtin_free"] = function () {
       return (_emscripten_builtin_free = Module["_emscripten_builtin_free"] =
-        Module["asm"]["pia"]).apply(null, arguments);
+        Module["asm"]["via"]).apply(null, arguments);
     });
     var _emscripten_builtin_memalign = function () {
-      return (_emscripten_builtin_memalign = Module["asm"]["qia"]).apply(null, arguments);
+      return (_emscripten_builtin_memalign = Module["asm"]["wia"]).apply(null, arguments);
     };
     var _emscripten_builtin_mmap = (Module["_emscripten_builtin_mmap"] = function () {
       return (_emscripten_builtin_mmap = Module["_emscripten_builtin_mmap"] =
-        Module["asm"]["ria"]).apply(null, arguments);
+        Module["asm"]["xia"]).apply(null, arguments);
     });
     var _mmap64 = (Module["_mmap64"] = function () {
-      return (_mmap64 = Module["_mmap64"] = Module["asm"]["sia"]).apply(null, arguments);
+      return (_mmap64 = Module["_mmap64"] = Module["asm"]["yia"]).apply(null, arguments);
     });
     var _emscripten_builtin_munmap = (Module["_emscripten_builtin_munmap"] = function () {
       return (_emscripten_builtin_munmap = Module["_emscripten_builtin_munmap"] =
-        Module["asm"]["tia"]).apply(null, arguments);
+        Module["asm"]["zia"]).apply(null, arguments);
     });
     var _nearbyint = (Module["_nearbyint"] = function () {
-      return (_nearbyint = Module["_nearbyint"] = Module["asm"]["uia"]).apply(null, arguments);
+      return (_nearbyint = Module["_nearbyint"] = Module["asm"]["Aia"]).apply(null, arguments);
     });
     var _nearbyintf = (Module["_nearbyintf"] = function () {
-      return (_nearbyintf = Module["_nearbyintf"] = Module["asm"]["via"]).apply(null, arguments);
+      return (_nearbyintf = Module["_nearbyintf"] = Module["asm"]["Bia"]).apply(null, arguments);
     });
     var _nearbyintl = (Module["_nearbyintl"] = function () {
-      return (_nearbyintl = Module["_nearbyintl"] = Module["asm"]["wia"]).apply(null, arguments);
+      return (_nearbyintl = Module["_nearbyintl"] = Module["asm"]["Cia"]).apply(null, arguments);
     });
     var _nextafterl = (Module["_nextafterl"] = function () {
-      return (_nextafterl = Module["_nextafterl"] = Module["asm"]["xia"]).apply(null, arguments);
+      return (_nextafterl = Module["_nextafterl"] = Module["asm"]["Dia"]).apply(null, arguments);
     });
     var _setpriority = (Module["_setpriority"] = function () {
-      return (_setpriority = Module["_setpriority"] = Module["asm"]["yia"]).apply(null, arguments);
+      return (_setpriority = Module["_setpriority"] = Module["asm"]["Eia"]).apply(null, arguments);
     });
     var _open64 = (Module["_open64"] = function () {
-      return (_open64 = Module["_open64"] = Module["asm"]["zia"]).apply(null, arguments);
+      return (_open64 = Module["_open64"] = Module["asm"]["Fia"]).apply(null, arguments);
     });
     var _tcsetattr = (Module["_tcsetattr"] = function () {
-      return (_tcsetattr = Module["_tcsetattr"] = Module["asm"]["Aia"]).apply(null, arguments);
+      return (_tcsetattr = Module["_tcsetattr"] = Module["asm"]["Gia"]).apply(null, arguments);
     });
     var _powf = (Module["_powf"] = function () {
-      return (_powf = Module["_powf"] = Module["asm"]["Bia"]).apply(null, arguments);
+      return (_powf = Module["_powf"] = Module["asm"]["Hia"]).apply(null, arguments);
     });
     var _powl = (Module["_powl"] = function () {
-      return (_powl = Module["_powl"] = Module["asm"]["Cia"]).apply(null, arguments);
+      return (_powl = Module["_powl"] = Module["asm"]["Iia"]).apply(null, arguments);
     });
     var _iprintf = (Module["_iprintf"] = function () {
-      return (_iprintf = Module["_iprintf"] = Module["asm"]["Dia"]).apply(null, arguments);
+      return (_iprintf = Module["_iprintf"] = Module["asm"]["Jia"]).apply(null, arguments);
     });
     var ___small_printf = (Module["___small_printf"] = function () {
-      return (___small_printf = Module["___small_printf"] = Module["asm"]["Eia"]).apply(
+      return (___small_printf = Module["___small_printf"] = Module["asm"]["Kia"]).apply(
         null,
         arguments,
       );
@@ -25603,536 +25635,536 @@ var PHP = (() => {
     var _emscripten_main_runtime_thread_id = (Module["_emscripten_main_runtime_thread_id"] =
       function () {
         return (_emscripten_main_runtime_thread_id = Module["_emscripten_main_runtime_thread_id"] =
-          Module["asm"]["Fia"]).apply(null, arguments);
+          Module["asm"]["Lia"]).apply(null, arguments);
       });
     var ___sig_is_blocked = (Module["___sig_is_blocked"] = function () {
-      return (___sig_is_blocked = Module["___sig_is_blocked"] = Module["asm"]["Gia"]).apply(
+      return (___sig_is_blocked = Module["___sig_is_blocked"] = Module["asm"]["Mia"]).apply(
         null,
         arguments,
       );
     });
     var _pthread_sigmask = (Module["_pthread_sigmask"] = function () {
-      return (_pthread_sigmask = Module["_pthread_sigmask"] = Module["asm"]["Hia"]).apply(
+      return (_pthread_sigmask = Module["_pthread_sigmask"] = Module["asm"]["Nia"]).apply(
         null,
         arguments,
       );
     });
     var _sigpending = (Module["_sigpending"] = function () {
-      return (_sigpending = Module["_sigpending"] = Module["asm"]["Iia"]).apply(null, arguments);
+      return (_sigpending = Module["_sigpending"] = Module["asm"]["Oia"]).apply(null, arguments);
     });
     var __IO_putc = (Module["__IO_putc"] = function () {
-      return (__IO_putc = Module["__IO_putc"] = Module["asm"]["Jia"]).apply(null, arguments);
+      return (__IO_putc = Module["__IO_putc"] = Module["asm"]["Pia"]).apply(null, arguments);
     });
     var _qsort_r = (Module["_qsort_r"] = function () {
-      return (_qsort_r = Module["_qsort_r"] = Module["asm"]["Kia"]).apply(null, arguments);
+      return (_qsort_r = Module["_qsort_r"] = Module["asm"]["Qia"]).apply(null, arguments);
     });
     var _sigismember = (Module["_sigismember"] = function () {
-      return (_sigismember = Module["_sigismember"] = Module["asm"]["Lia"]).apply(null, arguments);
+      return (_sigismember = Module["_sigismember"] = Module["asm"]["Ria"]).apply(null, arguments);
     });
     var _sigorset = (Module["_sigorset"] = function () {
-      return (_sigorset = Module["_sigorset"] = Module["asm"]["Mia"]).apply(null, arguments);
+      return (_sigorset = Module["_sigorset"] = Module["asm"]["Sia"]).apply(null, arguments);
     });
     var _sigandset = (Module["_sigandset"] = function () {
-      return (_sigandset = Module["_sigandset"] = Module["asm"]["Nia"]).apply(null, arguments);
+      return (_sigandset = Module["_sigandset"] = Module["asm"]["Tia"]).apply(null, arguments);
     });
     var _readdir64 = (Module["_readdir64"] = function () {
-      return (_readdir64 = Module["_readdir64"] = Module["asm"]["Oia"]).apply(null, arguments);
+      return (_readdir64 = Module["_readdir64"] = Module["asm"]["Uia"]).apply(null, arguments);
     });
     var _rint = (Module["_rint"] = function () {
-      return (_rint = Module["_rint"] = Module["asm"]["Pia"]).apply(null, arguments);
+      return (_rint = Module["_rint"] = Module["asm"]["Via"]).apply(null, arguments);
     });
     var _rintf = (Module["_rintf"] = function () {
-      return (_rintf = Module["_rintf"] = Module["asm"]["Qia"]).apply(null, arguments);
+      return (_rintf = Module["_rintf"] = Module["asm"]["Wia"]).apply(null, arguments);
     });
     var _rintl = (Module["_rintl"] = function () {
-      return (_rintl = Module["_rintl"] = Module["asm"]["Ria"]).apply(null, arguments);
+      return (_rintl = Module["_rintl"] = Module["asm"]["Xia"]).apply(null, arguments);
     });
     var _round = (Module["_round"] = function () {
-      return (_round = Module["_round"] = Module["asm"]["Sia"]).apply(null, arguments);
+      return (_round = Module["_round"] = Module["asm"]["Yia"]).apply(null, arguments);
     });
     var _roundf = (Module["_roundf"] = function () {
-      return (_roundf = Module["_roundf"] = Module["asm"]["Tia"]).apply(null, arguments);
+      return (_roundf = Module["_roundf"] = Module["asm"]["Zia"]).apply(null, arguments);
     });
     var _roundl = (Module["_roundl"] = function () {
-      return (_roundl = Module["_roundl"] = Module["asm"]["Uia"]).apply(null, arguments);
+      return (_roundl = Module["_roundl"] = Module["asm"]["_ia"]).apply(null, arguments);
     });
     var _emscripten_get_sbrk_ptr = (Module["_emscripten_get_sbrk_ptr"] = function () {
       return (_emscripten_get_sbrk_ptr = Module["_emscripten_get_sbrk_ptr"] =
-        Module["asm"]["Via"]).apply(null, arguments);
+        Module["asm"]["$ia"]).apply(null, arguments);
     });
     var _sbrk = (Module["_sbrk"] = function () {
-      return (_sbrk = Module["_sbrk"] = Module["asm"]["Wia"]).apply(null, arguments);
+      return (_sbrk = Module["_sbrk"] = Module["asm"]["aja"]).apply(null, arguments);
     });
     var _brk = (Module["_brk"] = function () {
-      return (_brk = Module["_brk"] = Module["asm"]["Xia"]).apply(null, arguments);
+      return (_brk = Module["_brk"] = Module["asm"]["bja"]).apply(null, arguments);
     });
     var _scalbn = (Module["_scalbn"] = function () {
-      return (_scalbn = Module["_scalbn"] = Module["asm"]["Yia"]).apply(null, arguments);
+      return (_scalbn = Module["_scalbn"] = Module["asm"]["cja"]).apply(null, arguments);
     });
     var _scalbnl = (Module["_scalbnl"] = function () {
-      return (_scalbnl = Module["_scalbnl"] = Module["asm"]["Zia"]).apply(null, arguments);
+      return (_scalbnl = Module["_scalbnl"] = Module["asm"]["dja"]).apply(null, arguments);
     });
     var _scandir64 = (Module["_scandir64"] = function () {
-      return (_scandir64 = Module["_scandir64"] = Module["asm"]["_ia"]).apply(null, arguments);
+      return (_scandir64 = Module["_scandir64"] = Module["asm"]["eja"]).apply(null, arguments);
     });
     var ___getitimer = (Module["___getitimer"] = function () {
-      return (___getitimer = Module["___getitimer"] = Module["asm"]["$ia"]).apply(null, arguments);
+      return (___getitimer = Module["___getitimer"] = Module["asm"]["fja"]).apply(null, arguments);
     });
     var __emscripten_timeout = function () {
-      return (__emscripten_timeout = Module["asm"]["aja"]).apply(null, arguments);
+      return (__emscripten_timeout = Module["asm"]["gja"]).apply(null, arguments);
     };
     var _bsd_signal = (Module["_bsd_signal"] = function () {
-      return (_bsd_signal = Module["_bsd_signal"] = Module["asm"]["bja"]).apply(null, arguments);
+      return (_bsd_signal = Module["_bsd_signal"] = Module["asm"]["hja"]).apply(null, arguments);
     });
     var ___sysv_signal = (Module["___sysv_signal"] = function () {
-      return (___sysv_signal = Module["___sysv_signal"] = Module["asm"]["cja"]).apply(
+      return (___sysv_signal = Module["___sysv_signal"] = Module["asm"]["ija"]).apply(
         null,
         arguments,
       );
     });
     var _sin = (Module["_sin"] = function () {
-      return (_sin = Module["_sin"] = Module["asm"]["dja"]).apply(null, arguments);
+      return (_sin = Module["_sin"] = Module["asm"]["jja"]).apply(null, arguments);
     });
     var _sinf = (Module["_sinf"] = function () {
-      return (_sinf = Module["_sinf"] = Module["asm"]["eja"]).apply(null, arguments);
+      return (_sinf = Module["_sinf"] = Module["asm"]["kja"]).apply(null, arguments);
     });
     var _sinl = (Module["_sinl"] = function () {
-      return (_sinl = Module["_sinl"] = Module["asm"]["fja"]).apply(null, arguments);
+      return (_sinl = Module["_sinl"] = Module["asm"]["lja"]).apply(null, arguments);
     });
     var _vsprintf = (Module["_vsprintf"] = function () {
-      return (_vsprintf = Module["_vsprintf"] = Module["asm"]["gja"]).apply(null, arguments);
+      return (_vsprintf = Module["_vsprintf"] = Module["asm"]["mja"]).apply(null, arguments);
     });
     var _siprintf = (Module["_siprintf"] = function () {
-      return (_siprintf = Module["_siprintf"] = Module["asm"]["hja"]).apply(null, arguments);
+      return (_siprintf = Module["_siprintf"] = Module["asm"]["nja"]).apply(null, arguments);
     });
     var _vsiprintf = (Module["_vsiprintf"] = function () {
-      return (_vsiprintf = Module["_vsiprintf"] = Module["asm"]["ija"]).apply(null, arguments);
+      return (_vsiprintf = Module["_vsiprintf"] = Module["asm"]["oja"]).apply(null, arguments);
     });
     var ___small_sprintf = (Module["___small_sprintf"] = function () {
-      return (___small_sprintf = Module["___small_sprintf"] = Module["asm"]["jja"]).apply(
+      return (___small_sprintf = Module["___small_sprintf"] = Module["asm"]["pja"]).apply(
         null,
         arguments,
       );
     });
     var ___small_vsprintf = (Module["___small_vsprintf"] = function () {
-      return (___small_vsprintf = Module["___small_vsprintf"] = Module["asm"]["kja"]).apply(
+      return (___small_vsprintf = Module["___small_vsprintf"] = Module["asm"]["qja"]).apply(
         null,
         arguments,
       );
     });
     var _sqrtf = (Module["_sqrtf"] = function () {
-      return (_sqrtf = Module["_sqrtf"] = Module["asm"]["lja"]).apply(null, arguments);
+      return (_sqrtf = Module["_sqrtf"] = Module["asm"]["rja"]).apply(null, arguments);
     });
     var _sqrtl = (Module["_sqrtl"] = function () {
-      return (_sqrtl = Module["_sqrtl"] = Module["asm"]["mja"]).apply(null, arguments);
+      return (_sqrtl = Module["_sqrtl"] = Module["asm"]["sja"]).apply(null, arguments);
     });
     var _vsscanf = (Module["_vsscanf"] = function () {
-      return (_vsscanf = Module["_vsscanf"] = Module["asm"]["nja"]).apply(null, arguments);
+      return (_vsscanf = Module["_vsscanf"] = Module["asm"]["tja"]).apply(null, arguments);
     });
     var ___isoc99_sscanf = (Module["___isoc99_sscanf"] = function () {
-      return (___isoc99_sscanf = Module["___isoc99_sscanf"] = Module["asm"]["oja"]).apply(
+      return (___isoc99_sscanf = Module["___isoc99_sscanf"] = Module["asm"]["uja"]).apply(
         null,
         arguments,
       );
     });
     var _stat64 = (Module["_stat64"] = function () {
-      return (_stat64 = Module["_stat64"] = Module["asm"]["pja"]).apply(null, arguments);
+      return (_stat64 = Module["_stat64"] = Module["asm"]["vja"]).apply(null, arguments);
     });
     var _fstatvfs = (Module["_fstatvfs"] = function () {
-      return (_fstatvfs = Module["_fstatvfs"] = Module["asm"]["qja"]).apply(null, arguments);
+      return (_fstatvfs = Module["_fstatvfs"] = Module["asm"]["wja"]).apply(null, arguments);
     });
     var _statfs = (Module["_statfs"] = function () {
-      return (_statfs = Module["_statfs"] = Module["asm"]["rja"]).apply(null, arguments);
+      return (_statfs = Module["_statfs"] = Module["asm"]["xja"]).apply(null, arguments);
     });
     var _fstatfs = (Module["_fstatfs"] = function () {
-      return (_fstatfs = Module["_fstatfs"] = Module["asm"]["sja"]).apply(null, arguments);
+      return (_fstatfs = Module["_fstatfs"] = Module["asm"]["yja"]).apply(null, arguments);
     });
     var _statvfs64 = (Module["_statvfs64"] = function () {
-      return (_statvfs64 = Module["_statvfs64"] = Module["asm"]["tja"]).apply(null, arguments);
+      return (_statvfs64 = Module["_statvfs64"] = Module["asm"]["zja"]).apply(null, arguments);
     });
     var _statfs64 = (Module["_statfs64"] = function () {
-      return (_statfs64 = Module["_statfs64"] = Module["asm"]["uja"]).apply(null, arguments);
+      return (_statfs64 = Module["_statfs64"] = Module["asm"]["Aja"]).apply(null, arguments);
     });
     var _fstatvfs64 = (Module["_fstatvfs64"] = function () {
-      return (_fstatvfs64 = Module["_fstatvfs64"] = Module["asm"]["vja"]).apply(null, arguments);
+      return (_fstatvfs64 = Module["_fstatvfs64"] = Module["asm"]["Bja"]).apply(null, arguments);
     });
     var _fstatfs64 = (Module["_fstatfs64"] = function () {
-      return (_fstatfs64 = Module["_fstatfs64"] = Module["asm"]["wja"]).apply(null, arguments);
+      return (_fstatfs64 = Module["_fstatfs64"] = Module["asm"]["Cja"]).apply(null, arguments);
     });
     var _stpcpy = (Module["_stpcpy"] = function () {
-      return (_stpcpy = Module["_stpcpy"] = Module["asm"]["xja"]).apply(null, arguments);
+      return (_stpcpy = Module["_stpcpy"] = Module["asm"]["Dja"]).apply(null, arguments);
     });
     var _stpncpy = (Module["_stpncpy"] = function () {
-      return (_stpncpy = Module["_stpncpy"] = Module["asm"]["yja"]).apply(null, arguments);
+      return (_stpncpy = Module["_stpncpy"] = Module["asm"]["Eja"]).apply(null, arguments);
     });
     var ___strcasecmp_l = (Module["___strcasecmp_l"] = function () {
-      return (___strcasecmp_l = Module["___strcasecmp_l"] = Module["asm"]["zja"]).apply(
+      return (___strcasecmp_l = Module["___strcasecmp_l"] = Module["asm"]["Fja"]).apply(
         null,
         arguments,
       );
     });
     var _strcasecmp_l = (Module["_strcasecmp_l"] = function () {
-      return (_strcasecmp_l = Module["_strcasecmp_l"] = Module["asm"]["Aja"]).apply(
+      return (_strcasecmp_l = Module["_strcasecmp_l"] = Module["asm"]["Gja"]).apply(
         null,
         arguments,
       );
     });
     var _strchrnul = (Module["_strchrnul"] = function () {
-      return (_strchrnul = Module["_strchrnul"] = Module["asm"]["Bja"]).apply(null, arguments);
+      return (_strchrnul = Module["_strchrnul"] = Module["asm"]["Hja"]).apply(null, arguments);
     });
     var ___strcoll_l = (Module["___strcoll_l"] = function () {
-      return (___strcoll_l = Module["___strcoll_l"] = Module["asm"]["Cja"]).apply(null, arguments);
+      return (___strcoll_l = Module["___strcoll_l"] = Module["asm"]["Ija"]).apply(null, arguments);
     });
     var _strcoll_l = (Module["_strcoll_l"] = function () {
-      return (_strcoll_l = Module["_strcoll_l"] = Module["asm"]["Dja"]).apply(null, arguments);
+      return (_strcoll_l = Module["_strcoll_l"] = Module["asm"]["Jja"]).apply(null, arguments);
     });
     var ___strerror_l = (Module["___strerror_l"] = function () {
-      return (___strerror_l = Module["___strerror_l"] = Module["asm"]["Eja"]).apply(
+      return (___strerror_l = Module["___strerror_l"] = Module["asm"]["Kja"]).apply(
         null,
         arguments,
       );
     });
     var _strerror_l = (Module["_strerror_l"] = function () {
-      return (_strerror_l = Module["_strerror_l"] = Module["asm"]["Fja"]).apply(null, arguments);
+      return (_strerror_l = Module["_strerror_l"] = Module["asm"]["Lja"]).apply(null, arguments);
     });
     var ___xpg_strerror_r = (Module["___xpg_strerror_r"] = function () {
-      return (___xpg_strerror_r = Module["___xpg_strerror_r"] = Module["asm"]["Gja"]).apply(
+      return (___xpg_strerror_r = Module["___xpg_strerror_r"] = Module["asm"]["Mja"]).apply(
         null,
         arguments,
       );
     });
     var ___strncasecmp_l = (Module["___strncasecmp_l"] = function () {
-      return (___strncasecmp_l = Module["___strncasecmp_l"] = Module["asm"]["Hja"]).apply(
+      return (___strncasecmp_l = Module["___strncasecmp_l"] = Module["asm"]["Nja"]).apply(
         null,
         arguments,
       );
     });
     var _strncasecmp_l = (Module["_strncasecmp_l"] = function () {
-      return (_strncasecmp_l = Module["_strncasecmp_l"] = Module["asm"]["Ija"]).apply(
+      return (_strncasecmp_l = Module["_strncasecmp_l"] = Module["asm"]["Oja"]).apply(
         null,
         arguments,
       );
     });
     var _strtof = (Module["_strtof"] = function () {
-      return (_strtof = Module["_strtof"] = Module["asm"]["Jja"]).apply(null, arguments);
+      return (_strtof = Module["_strtof"] = Module["asm"]["Pja"]).apply(null, arguments);
     });
     var _strtold = (Module["_strtold"] = function () {
-      return (_strtold = Module["_strtold"] = Module["asm"]["Kja"]).apply(null, arguments);
+      return (_strtold = Module["_strtold"] = Module["asm"]["Qja"]).apply(null, arguments);
     });
     var ___eqtf2 = (Module["___eqtf2"] = function () {
-      return (___eqtf2 = Module["___eqtf2"] = Module["asm"]["Lja"]).apply(null, arguments);
+      return (___eqtf2 = Module["___eqtf2"] = Module["asm"]["Rja"]).apply(null, arguments);
     });
     var ___multf3 = (Module["___multf3"] = function () {
-      return (___multf3 = Module["___multf3"] = Module["asm"]["Mja"]).apply(null, arguments);
+      return (___multf3 = Module["___multf3"] = Module["asm"]["Sja"]).apply(null, arguments);
     });
     var ___divtf3 = (Module["___divtf3"] = function () {
-      return (___divtf3 = Module["___divtf3"] = Module["asm"]["Nja"]).apply(null, arguments);
+      return (___divtf3 = Module["___divtf3"] = Module["asm"]["Tja"]).apply(null, arguments);
     });
     var ___letf2 = (Module["___letf2"] = function () {
-      return (___letf2 = Module["___letf2"] = Module["asm"]["Oja"]).apply(null, arguments);
+      return (___letf2 = Module["___letf2"] = Module["asm"]["Uja"]).apply(null, arguments);
     });
     var ___netf2 = (Module["___netf2"] = function () {
-      return (___netf2 = Module["___netf2"] = Module["asm"]["Pja"]).apply(null, arguments);
+      return (___netf2 = Module["___netf2"] = Module["asm"]["Vja"]).apply(null, arguments);
     });
     var _strtoull = (Module["_strtoull"] = function () {
-      return (_strtoull = Module["_strtoull"] = Module["asm"]["Qja"]).apply(null, arguments);
+      return (_strtoull = Module["_strtoull"] = Module["asm"]["Wja"]).apply(null, arguments);
     });
     var _strtoimax = (Module["_strtoimax"] = function () {
-      return (_strtoimax = Module["_strtoimax"] = Module["asm"]["Rja"]).apply(null, arguments);
+      return (_strtoimax = Module["_strtoimax"] = Module["asm"]["Xja"]).apply(null, arguments);
     });
     var _strtoumax = (Module["_strtoumax"] = function () {
-      return (_strtoumax = Module["_strtoumax"] = Module["asm"]["Sja"]).apply(null, arguments);
+      return (_strtoumax = Module["_strtoumax"] = Module["asm"]["Yja"]).apply(null, arguments);
     });
     var ___strtol_internal = (Module["___strtol_internal"] = function () {
-      return (___strtol_internal = Module["___strtol_internal"] = Module["asm"]["Tja"]).apply(
+      return (___strtol_internal = Module["___strtol_internal"] = Module["asm"]["Zja"]).apply(
         null,
         arguments,
       );
     });
     var ___strtoul_internal = (Module["___strtoul_internal"] = function () {
-      return (___strtoul_internal = Module["___strtoul_internal"] = Module["asm"]["Uja"]).apply(
+      return (___strtoul_internal = Module["___strtoul_internal"] = Module["asm"]["_ja"]).apply(
         null,
         arguments,
       );
     });
     var ___strtoll_internal = (Module["___strtoll_internal"] = function () {
-      return (___strtoll_internal = Module["___strtoll_internal"] = Module["asm"]["Vja"]).apply(
+      return (___strtoll_internal = Module["___strtoll_internal"] = Module["asm"]["$ja"]).apply(
         null,
         arguments,
       );
     });
     var ___strtoull_internal = (Module["___strtoull_internal"] = function () {
-      return (___strtoull_internal = Module["___strtoull_internal"] = Module["asm"]["Wja"]).apply(
+      return (___strtoull_internal = Module["___strtoull_internal"] = Module["asm"]["aka"]).apply(
         null,
         arguments,
       );
     });
     var ___strtoimax_internal = (Module["___strtoimax_internal"] = function () {
-      return (___strtoimax_internal = Module["___strtoimax_internal"] = Module["asm"]["Xja"]).apply(
+      return (___strtoimax_internal = Module["___strtoimax_internal"] = Module["asm"]["bka"]).apply(
         null,
         arguments,
       );
     });
     var ___strtoumax_internal = (Module["___strtoumax_internal"] = function () {
-      return (___strtoumax_internal = Module["___strtoumax_internal"] = Module["asm"]["Yja"]).apply(
+      return (___strtoumax_internal = Module["___strtoumax_internal"] = Module["asm"]["cka"]).apply(
         null,
         arguments,
       );
     });
     var _setlogmask = (Module["_setlogmask"] = function () {
-      return (_setlogmask = Module["_setlogmask"] = Module["asm"]["Zja"]).apply(null, arguments);
+      return (_setlogmask = Module["_setlogmask"] = Module["asm"]["dka"]).apply(null, arguments);
     });
     var _vdprintf = (Module["_vdprintf"] = function () {
-      return (_vdprintf = Module["_vdprintf"] = Module["asm"]["_ja"]).apply(null, arguments);
+      return (_vdprintf = Module["_vdprintf"] = Module["asm"]["eka"]).apply(null, arguments);
     });
     var _vsyslog = (Module["_vsyslog"] = function () {
-      return (_vsyslog = Module["_vsyslog"] = Module["asm"]["$ja"]).apply(null, arguments);
+      return (_vsyslog = Module["_vsyslog"] = Module["asm"]["fka"]).apply(null, arguments);
     });
     var ___tolower_l = (Module["___tolower_l"] = function () {
-      return (___tolower_l = Module["___tolower_l"] = Module["asm"]["aka"]).apply(null, arguments);
+      return (___tolower_l = Module["___tolower_l"] = Module["asm"]["gka"]).apply(null, arguments);
     });
     var _tolower_l = (Module["_tolower_l"] = function () {
-      return (_tolower_l = Module["_tolower_l"] = Module["asm"]["bka"]).apply(null, arguments);
+      return (_tolower_l = Module["_tolower_l"] = Module["asm"]["hka"]).apply(null, arguments);
     });
     var ___toupper_l = (Module["___toupper_l"] = function () {
-      return (___toupper_l = Module["___toupper_l"] = Module["asm"]["cka"]).apply(null, arguments);
+      return (___toupper_l = Module["___toupper_l"] = Module["asm"]["ika"]).apply(null, arguments);
     });
     var _toupper_l = (Module["_toupper_l"] = function () {
-      return (_toupper_l = Module["_toupper_l"] = Module["asm"]["dka"]).apply(null, arguments);
+      return (_toupper_l = Module["_toupper_l"] = Module["asm"]["jka"]).apply(null, arguments);
     });
     var ___towupper_l = (Module["___towupper_l"] = function () {
-      return (___towupper_l = Module["___towupper_l"] = Module["asm"]["eka"]).apply(
+      return (___towupper_l = Module["___towupper_l"] = Module["asm"]["kka"]).apply(
         null,
         arguments,
       );
     });
     var ___towlower_l = (Module["___towlower_l"] = function () {
-      return (___towlower_l = Module["___towlower_l"] = Module["asm"]["fka"]).apply(
+      return (___towlower_l = Module["___towlower_l"] = Module["asm"]["lka"]).apply(
         null,
         arguments,
       );
     });
     var _towupper_l = (Module["_towupper_l"] = function () {
-      return (_towupper_l = Module["_towupper_l"] = Module["asm"]["gka"]).apply(null, arguments);
+      return (_towupper_l = Module["_towupper_l"] = Module["asm"]["mka"]).apply(null, arguments);
     });
     var _towlower_l = (Module["_towlower_l"] = function () {
-      return (_towlower_l = Module["_towlower_l"] = Module["asm"]["hka"]).apply(null, arguments);
+      return (_towlower_l = Module["_towlower_l"] = Module["asm"]["nka"]).apply(null, arguments);
     });
     var _trunc = (Module["_trunc"] = function () {
-      return (_trunc = Module["_trunc"] = Module["asm"]["ika"]).apply(null, arguments);
+      return (_trunc = Module["_trunc"] = Module["asm"]["oka"]).apply(null, arguments);
     });
     var _truncf = (Module["_truncf"] = function () {
-      return (_truncf = Module["_truncf"] = Module["asm"]["jka"]).apply(null, arguments);
+      return (_truncf = Module["_truncf"] = Module["asm"]["pka"]).apply(null, arguments);
     });
     var _truncl = (Module["_truncl"] = function () {
-      return (_truncl = Module["_truncl"] = Module["asm"]["kka"]).apply(null, arguments);
+      return (_truncl = Module["_truncl"] = Module["asm"]["qka"]).apply(null, arguments);
     });
     var _utimensat = (Module["_utimensat"] = function () {
-      return (_utimensat = Module["_utimensat"] = Module["asm"]["lka"]).apply(null, arguments);
+      return (_utimensat = Module["_utimensat"] = Module["asm"]["rka"]).apply(null, arguments);
     });
     var ___vfprintf_internal = (Module["___vfprintf_internal"] = function () {
-      return (___vfprintf_internal = Module["___vfprintf_internal"] = Module["asm"]["mka"]).apply(
+      return (___vfprintf_internal = Module["___vfprintf_internal"] = Module["asm"]["ska"]).apply(
         null,
         arguments,
       );
     });
     var _wctomb = (Module["_wctomb"] = function () {
-      return (_wctomb = Module["_wctomb"] = Module["asm"]["nka"]).apply(null, arguments);
+      return (_wctomb = Module["_wctomb"] = Module["asm"]["tka"]).apply(null, arguments);
     });
     var _vfscanf = (Module["_vfscanf"] = function () {
-      return (_vfscanf = Module["_vfscanf"] = Module["asm"]["oka"]).apply(null, arguments);
+      return (_vfscanf = Module["_vfscanf"] = Module["asm"]["uka"]).apply(null, arguments);
     });
     var ___isoc99_vfscanf = (Module["___isoc99_vfscanf"] = function () {
-      return (___isoc99_vfscanf = Module["___isoc99_vfscanf"] = Module["asm"]["pka"]).apply(
+      return (___isoc99_vfscanf = Module["___isoc99_vfscanf"] = Module["asm"]["vka"]).apply(
         null,
         arguments,
       );
     });
     var _vsniprintf = (Module["_vsniprintf"] = function () {
-      return (_vsniprintf = Module["_vsniprintf"] = Module["asm"]["qka"]).apply(null, arguments);
+      return (_vsniprintf = Module["_vsniprintf"] = Module["asm"]["wka"]).apply(null, arguments);
     });
     var ___small_vsnprintf = (Module["___small_vsnprintf"] = function () {
-      return (___small_vsnprintf = Module["___small_vsnprintf"] = Module["asm"]["rka"]).apply(
+      return (___small_vsnprintf = Module["___small_vsnprintf"] = Module["asm"]["xka"]).apply(
         null,
         arguments,
       );
     });
     var ___isoc99_vsscanf = (Module["___isoc99_vsscanf"] = function () {
-      return (___isoc99_vsscanf = Module["___isoc99_vsscanf"] = Module["asm"]["ska"]).apply(
+      return (___isoc99_vsscanf = Module["___isoc99_vsscanf"] = Module["asm"]["yka"]).apply(
         null,
         arguments,
       );
     });
     var _wcrtomb = (Module["_wcrtomb"] = function () {
-      return (_wcrtomb = Module["_wcrtomb"] = Module["asm"]["tka"]).apply(null, arguments);
+      return (_wcrtomb = Module["_wcrtomb"] = Module["asm"]["zka"]).apply(null, arguments);
     });
     var ___libc_calloc = (Module["___libc_calloc"] = function () {
-      return (___libc_calloc = Module["___libc_calloc"] = Module["asm"]["uka"]).apply(
+      return (___libc_calloc = Module["___libc_calloc"] = Module["asm"]["Aka"]).apply(
         null,
         arguments,
       );
     });
     var ___libc_realloc = (Module["___libc_realloc"] = function () {
-      return (___libc_realloc = Module["___libc_realloc"] = Module["asm"]["vka"]).apply(
+      return (___libc_realloc = Module["___libc_realloc"] = Module["asm"]["Bka"]).apply(
         null,
         arguments,
       );
     });
     var _realloc_in_place = (Module["_realloc_in_place"] = function () {
-      return (_realloc_in_place = Module["_realloc_in_place"] = Module["asm"]["wka"]).apply(
+      return (_realloc_in_place = Module["_realloc_in_place"] = Module["asm"]["Cka"]).apply(
         null,
         arguments,
       );
     });
     var _memalign = (Module["_memalign"] = function () {
-      return (_memalign = Module["_memalign"] = Module["asm"]["xka"]).apply(null, arguments);
+      return (_memalign = Module["_memalign"] = Module["asm"]["Dka"]).apply(null, arguments);
     });
     var _posix_memalign = (Module["_posix_memalign"] = function () {
-      return (_posix_memalign = Module["_posix_memalign"] = Module["asm"]["yka"]).apply(
+      return (_posix_memalign = Module["_posix_memalign"] = Module["asm"]["Eka"]).apply(
         null,
         arguments,
       );
     });
     var _valloc = (Module["_valloc"] = function () {
-      return (_valloc = Module["_valloc"] = Module["asm"]["zka"]).apply(null, arguments);
+      return (_valloc = Module["_valloc"] = Module["asm"]["Fka"]).apply(null, arguments);
     });
     var _pvalloc = (Module["_pvalloc"] = function () {
-      return (_pvalloc = Module["_pvalloc"] = Module["asm"]["Aka"]).apply(null, arguments);
+      return (_pvalloc = Module["_pvalloc"] = Module["asm"]["Gka"]).apply(null, arguments);
     });
     var _mallinfo = (Module["_mallinfo"] = function () {
-      return (_mallinfo = Module["_mallinfo"] = Module["asm"]["Bka"]).apply(null, arguments);
+      return (_mallinfo = Module["_mallinfo"] = Module["asm"]["Hka"]).apply(null, arguments);
     });
     var _mallopt = (Module["_mallopt"] = function () {
-      return (_mallopt = Module["_mallopt"] = Module["asm"]["Cka"]).apply(null, arguments);
+      return (_mallopt = Module["_mallopt"] = Module["asm"]["Ika"]).apply(null, arguments);
     });
     var _malloc_trim = (Module["_malloc_trim"] = function () {
-      return (_malloc_trim = Module["_malloc_trim"] = Module["asm"]["Dka"]).apply(null, arguments);
+      return (_malloc_trim = Module["_malloc_trim"] = Module["asm"]["Jka"]).apply(null, arguments);
     });
     var _malloc_usable_size = (Module["_malloc_usable_size"] = function () {
-      return (_malloc_usable_size = Module["_malloc_usable_size"] = Module["asm"]["Eka"]).apply(
+      return (_malloc_usable_size = Module["_malloc_usable_size"] = Module["asm"]["Kka"]).apply(
         null,
         arguments,
       );
     });
     var _malloc_footprint = (Module["_malloc_footprint"] = function () {
-      return (_malloc_footprint = Module["_malloc_footprint"] = Module["asm"]["Fka"]).apply(
+      return (_malloc_footprint = Module["_malloc_footprint"] = Module["asm"]["Lka"]).apply(
         null,
         arguments,
       );
     });
     var _malloc_max_footprint = (Module["_malloc_max_footprint"] = function () {
-      return (_malloc_max_footprint = Module["_malloc_max_footprint"] = Module["asm"]["Gka"]).apply(
+      return (_malloc_max_footprint = Module["_malloc_max_footprint"] = Module["asm"]["Mka"]).apply(
         null,
         arguments,
       );
     });
     var _malloc_footprint_limit = (Module["_malloc_footprint_limit"] = function () {
       return (_malloc_footprint_limit = Module["_malloc_footprint_limit"] =
-        Module["asm"]["Hka"]).apply(null, arguments);
+        Module["asm"]["Nka"]).apply(null, arguments);
     });
     var _malloc_set_footprint_limit = (Module["_malloc_set_footprint_limit"] = function () {
       return (_malloc_set_footprint_limit = Module["_malloc_set_footprint_limit"] =
-        Module["asm"]["Ika"]).apply(null, arguments);
+        Module["asm"]["Oka"]).apply(null, arguments);
     });
     var _independent_calloc = (Module["_independent_calloc"] = function () {
-      return (_independent_calloc = Module["_independent_calloc"] = Module["asm"]["Jka"]).apply(
+      return (_independent_calloc = Module["_independent_calloc"] = Module["asm"]["Pka"]).apply(
         null,
         arguments,
       );
     });
     var _independent_comalloc = (Module["_independent_comalloc"] = function () {
-      return (_independent_comalloc = Module["_independent_comalloc"] = Module["asm"]["Kka"]).apply(
+      return (_independent_comalloc = Module["_independent_comalloc"] = Module["asm"]["Qka"]).apply(
         null,
         arguments,
       );
     });
     var _bulk_free = (Module["_bulk_free"] = function () {
-      return (_bulk_free = Module["_bulk_free"] = Module["asm"]["Lka"]).apply(null, arguments);
+      return (_bulk_free = Module["_bulk_free"] = Module["asm"]["Rka"]).apply(null, arguments);
     });
     var ___addtf3 = (Module["___addtf3"] = function () {
-      return (___addtf3 = Module["___addtf3"] = Module["asm"]["Mka"]).apply(null, arguments);
+      return (___addtf3 = Module["___addtf3"] = Module["asm"]["Ska"]).apply(null, arguments);
     });
     var ___ashlti3 = (Module["___ashlti3"] = function () {
-      return (___ashlti3 = Module["___ashlti3"] = Module["asm"]["Nka"]).apply(null, arguments);
+      return (___ashlti3 = Module["___ashlti3"] = Module["asm"]["Tka"]).apply(null, arguments);
     });
     var ___getf2 = (Module["___getf2"] = function () {
-      return (___getf2 = Module["___getf2"] = Module["asm"]["Oka"]).apply(null, arguments);
+      return (___getf2 = Module["___getf2"] = Module["asm"]["Uka"]).apply(null, arguments);
     });
     var ___unordtf2 = (Module["___unordtf2"] = function () {
-      return (___unordtf2 = Module["___unordtf2"] = Module["asm"]["Pka"]).apply(null, arguments);
+      return (___unordtf2 = Module["___unordtf2"] = Module["asm"]["Vka"]).apply(null, arguments);
     });
     var ___lttf2 = (Module["___lttf2"] = function () {
-      return (___lttf2 = Module["___lttf2"] = Module["asm"]["Qka"]).apply(null, arguments);
+      return (___lttf2 = Module["___lttf2"] = Module["asm"]["Wka"]).apply(null, arguments);
     });
     var ___gttf2 = (Module["___gttf2"] = function () {
-      return (___gttf2 = Module["___gttf2"] = Module["asm"]["Rka"]).apply(null, arguments);
+      return (___gttf2 = Module["___gttf2"] = Module["asm"]["Xka"]).apply(null, arguments);
     });
     var ___multi3 = (Module["___multi3"] = function () {
-      return (___multi3 = Module["___multi3"] = Module["asm"]["Ska"]).apply(null, arguments);
+      return (___multi3 = Module["___multi3"] = Module["asm"]["Yka"]).apply(null, arguments);
     });
     var ___lshrti3 = (Module["___lshrti3"] = function () {
-      return (___lshrti3 = Module["___lshrti3"] = Module["asm"]["Tka"]).apply(null, arguments);
+      return (___lshrti3 = Module["___lshrti3"] = Module["asm"]["Zka"]).apply(null, arguments);
     });
     var _setThrew = function () {
-      return (_setThrew = Module["asm"]["Uka"]).apply(null, arguments);
+      return (_setThrew = Module["asm"]["_ka"]).apply(null, arguments);
     };
     var _saveSetjmp = (Module["_saveSetjmp"] = function () {
-      return (_saveSetjmp = Module["_saveSetjmp"] = Module["asm"]["Vka"]).apply(null, arguments);
+      return (_saveSetjmp = Module["_saveSetjmp"] = Module["asm"]["$ka"]).apply(null, arguments);
     });
     var _testSetjmp = (Module["_testSetjmp"] = function () {
-      return (_testSetjmp = Module["_testSetjmp"] = Module["asm"]["Wka"]).apply(null, arguments);
+      return (_testSetjmp = Module["_testSetjmp"] = Module["asm"]["ala"]).apply(null, arguments);
     });
     var _emscripten_longjmp = (Module["_emscripten_longjmp"] = function () {
-      return (_emscripten_longjmp = Module["_emscripten_longjmp"] = Module["asm"]["Xka"]).apply(
+      return (_emscripten_longjmp = Module["_emscripten_longjmp"] = Module["asm"]["bla"]).apply(
         null,
         arguments,
       );
     });
     var setTempRet0 = function () {
-      return (setTempRet0 = Module["asm"]["Yka"]).apply(null, arguments);
+      return (setTempRet0 = Module["asm"]["cla"]).apply(null, arguments);
     };
     var ___extenddftf2 = (Module["___extenddftf2"] = function () {
-      return (___extenddftf2 = Module["___extenddftf2"] = Module["asm"]["Zka"]).apply(
+      return (___extenddftf2 = Module["___extenddftf2"] = Module["asm"]["dla"]).apply(
         null,
         arguments,
       );
     });
     var ___extendsftf2 = (Module["___extendsftf2"] = function () {
-      return (___extendsftf2 = Module["___extendsftf2"] = Module["asm"]["_ka"]).apply(
+      return (___extendsftf2 = Module["___extendsftf2"] = Module["asm"]["ela"]).apply(
         null,
         arguments,
       );
     });
     var ___fixtfdi = (Module["___fixtfdi"] = function () {
-      return (___fixtfdi = Module["___fixtfdi"] = Module["asm"]["$ka"]).apply(null, arguments);
+      return (___fixtfdi = Module["___fixtfdi"] = Module["asm"]["fla"]).apply(null, arguments);
     });
     var ___fixtfsi = (Module["___fixtfsi"] = function () {
-      return (___fixtfsi = Module["___fixtfsi"] = Module["asm"]["ala"]).apply(null, arguments);
+      return (___fixtfsi = Module["___fixtfsi"] = Module["asm"]["gla"]).apply(null, arguments);
     });
     var ___floatsitf = (Module["___floatsitf"] = function () {
-      return (___floatsitf = Module["___floatsitf"] = Module["asm"]["bla"]).apply(null, arguments);
+      return (___floatsitf = Module["___floatsitf"] = Module["asm"]["hla"]).apply(null, arguments);
     });
     var ___floatunsitf = (Module["___floatunsitf"] = function () {
-      return (___floatunsitf = Module["___floatunsitf"] = Module["asm"]["cla"]).apply(
+      return (___floatunsitf = Module["___floatunsitf"] = Module["asm"]["ila"]).apply(
         null,
         arguments,
       );
     });
     var ___fe_getround = (Module["___fe_getround"] = function () {
-      return (___fe_getround = Module["___fe_getround"] = Module["asm"]["dla"]).apply(
+      return (___fe_getround = Module["___fe_getround"] = Module["asm"]["jla"]).apply(
         null,
         arguments,
       );
     });
     var ___fe_raise_inexact = (Module["___fe_raise_inexact"] = function () {
-      return (___fe_raise_inexact = Module["___fe_raise_inexact"] = Module["asm"]["ela"]).apply(
+      return (___fe_raise_inexact = Module["___fe_raise_inexact"] = Module["asm"]["kla"]).apply(
         null,
         arguments,
       );
     });
     var _emscripten_stack_init = (Module["_emscripten_stack_init"] = function () {
       return (_emscripten_stack_init = Module["_emscripten_stack_init"] =
-        Module["asm"]["fla"]).apply(null, arguments);
+        Module["asm"]["lla"]).apply(null, arguments);
     });
     var _emscripten_stack_set_limits = function () {
       return (_emscripten_stack_set_limits = Module["asm"]["emscripten_stack_set_limits"]).apply(
@@ -26142,7 +26174,7 @@ var PHP = (() => {
     };
     var _emscripten_stack_get_free = (Module["_emscripten_stack_get_free"] = function () {
       return (_emscripten_stack_get_free = Module["_emscripten_stack_get_free"] =
-        Module["asm"]["gla"]).apply(null, arguments);
+        Module["asm"]["mla"]).apply(null, arguments);
     });
     var _emscripten_stack_get_base = function () {
       return (_emscripten_stack_get_base = Module["asm"]["emscripten_stack_get_base"]).apply(
@@ -26157,150 +26189,150 @@ var PHP = (() => {
       );
     };
     var stackSave = function () {
-      return (stackSave = Module["asm"]["hla"]).apply(null, arguments);
+      return (stackSave = Module["asm"]["nla"]).apply(null, arguments);
     };
     var stackRestore = function () {
-      return (stackRestore = Module["asm"]["ila"]).apply(null, arguments);
+      return (stackRestore = Module["asm"]["ola"]).apply(null, arguments);
     };
     var stackAlloc = function () {
-      return (stackAlloc = Module["asm"]["jla"]).apply(null, arguments);
+      return (stackAlloc = Module["asm"]["pla"]).apply(null, arguments);
     };
     var _emscripten_stack_get_current = (Module["_emscripten_stack_get_current"] = function () {
       return (_emscripten_stack_get_current = Module["_emscripten_stack_get_current"] =
-        Module["asm"]["kla"]).apply(null, arguments);
+        Module["asm"]["qla"]).apply(null, arguments);
     });
     var ___subtf3 = (Module["___subtf3"] = function () {
-      return (___subtf3 = Module["___subtf3"] = Module["asm"]["lla"]).apply(null, arguments);
+      return (___subtf3 = Module["___subtf3"] = Module["asm"]["rla"]).apply(null, arguments);
     });
     var ___trunctfdf2 = (Module["___trunctfdf2"] = function () {
-      return (___trunctfdf2 = Module["___trunctfdf2"] = Module["asm"]["mla"]).apply(
+      return (___trunctfdf2 = Module["___trunctfdf2"] = Module["asm"]["sla"]).apply(
         null,
         arguments,
       );
     });
     var ___trunctfsf2 = (Module["___trunctfsf2"] = function () {
-      return (___trunctfsf2 = Module["___trunctfsf2"] = Module["asm"]["nla"]).apply(
+      return (___trunctfsf2 = Module["___trunctfsf2"] = Module["asm"]["tla"]).apply(
         null,
         arguments,
       );
     });
     var dynCall_vi = (Module["dynCall_vi"] = function () {
-      return (dynCall_vi = Module["dynCall_vi"] = Module["asm"]["ola"]).apply(null, arguments);
+      return (dynCall_vi = Module["dynCall_vi"] = Module["asm"]["ula"]).apply(null, arguments);
     });
     var dynCall_iii = (Module["dynCall_iii"] = function () {
-      return (dynCall_iii = Module["dynCall_iii"] = Module["asm"]["pla"]).apply(null, arguments);
+      return (dynCall_iii = Module["dynCall_iii"] = Module["asm"]["vla"]).apply(null, arguments);
     });
     var dynCall_ii = (Module["dynCall_ii"] = function () {
-      return (dynCall_ii = Module["dynCall_ii"] = Module["asm"]["qla"]).apply(null, arguments);
+      return (dynCall_ii = Module["dynCall_ii"] = Module["asm"]["wla"]).apply(null, arguments);
     });
     var dynCall_iiii = (Module["dynCall_iiii"] = function () {
-      return (dynCall_iiii = Module["dynCall_iiii"] = Module["asm"]["rla"]).apply(null, arguments);
+      return (dynCall_iiii = Module["dynCall_iiii"] = Module["asm"]["xla"]).apply(null, arguments);
     });
     var dynCall_iiiii = (Module["dynCall_iiiii"] = function () {
-      return (dynCall_iiiii = Module["dynCall_iiiii"] = Module["asm"]["sla"]).apply(
+      return (dynCall_iiiii = Module["dynCall_iiiii"] = Module["asm"]["yla"]).apply(
         null,
         arguments,
       );
     });
     var dynCall_iiiiii = (Module["dynCall_iiiiii"] = function () {
-      return (dynCall_iiiiii = Module["dynCall_iiiiii"] = Module["asm"]["tla"]).apply(
+      return (dynCall_iiiiii = Module["dynCall_iiiiii"] = Module["asm"]["zla"]).apply(
         null,
         arguments,
       );
     });
     var dynCall_viii = (Module["dynCall_viii"] = function () {
-      return (dynCall_viii = Module["dynCall_viii"] = Module["asm"]["ula"]).apply(null, arguments);
+      return (dynCall_viii = Module["dynCall_viii"] = Module["asm"]["Ala"]).apply(null, arguments);
     });
     var dynCall_vii = (Module["dynCall_vii"] = function () {
-      return (dynCall_vii = Module["dynCall_vii"] = Module["asm"]["vla"]).apply(null, arguments);
+      return (dynCall_vii = Module["dynCall_vii"] = Module["asm"]["Bla"]).apply(null, arguments);
     });
     var dynCall_jii = (Module["dynCall_jii"] = function () {
-      return (dynCall_jii = Module["dynCall_jii"] = Module["asm"]["wla"]).apply(null, arguments);
+      return (dynCall_jii = Module["dynCall_jii"] = Module["asm"]["Cla"]).apply(null, arguments);
     });
     var dynCall_i = (Module["dynCall_i"] = function () {
-      return (dynCall_i = Module["dynCall_i"] = Module["asm"]["xla"]).apply(null, arguments);
+      return (dynCall_i = Module["dynCall_i"] = Module["asm"]["Dla"]).apply(null, arguments);
     });
     var dynCall_v = (Module["dynCall_v"] = function () {
-      return (dynCall_v = Module["dynCall_v"] = Module["asm"]["yla"]).apply(null, arguments);
+      return (dynCall_v = Module["dynCall_v"] = Module["asm"]["Ela"]).apply(null, arguments);
     });
     var dynCall_viiii = (Module["dynCall_viiii"] = function () {
-      return (dynCall_viiii = Module["dynCall_viiii"] = Module["asm"]["zla"]).apply(
+      return (dynCall_viiii = Module["dynCall_viiii"] = Module["asm"]["Fla"]).apply(
         null,
         arguments,
       );
     });
     var dynCall_iiiiiii = (Module["dynCall_iiiiiii"] = function () {
-      return (dynCall_iiiiiii = Module["dynCall_iiiiiii"] = Module["asm"]["Ala"]).apply(
+      return (dynCall_iiiiiii = Module["dynCall_iiiiiii"] = Module["asm"]["Gla"]).apply(
         null,
         arguments,
       );
     });
     var dynCall_viiiii = (Module["dynCall_viiiii"] = function () {
-      return (dynCall_viiiii = Module["dynCall_viiiii"] = Module["asm"]["Bla"]).apply(
+      return (dynCall_viiiii = Module["dynCall_viiiii"] = Module["asm"]["Hla"]).apply(
         null,
         arguments,
       );
     });
     var dynCall_viiiiii = (Module["dynCall_viiiiii"] = function () {
-      return (dynCall_viiiiii = Module["dynCall_viiiiii"] = Module["asm"]["Cla"]).apply(
+      return (dynCall_viiiiii = Module["dynCall_viiiiii"] = Module["asm"]["Ila"]).apply(
         null,
         arguments,
       );
     });
     var dynCall_iiiiiiii = (Module["dynCall_iiiiiiii"] = function () {
-      return (dynCall_iiiiiiii = Module["dynCall_iiiiiiii"] = Module["asm"]["Dla"]).apply(
+      return (dynCall_iiiiiiii = Module["dynCall_iiiiiiii"] = Module["asm"]["Jla"]).apply(
         null,
         arguments,
       );
     });
     var dynCall_iiiiiiiiii = (Module["dynCall_iiiiiiiiii"] = function () {
-      return (dynCall_iiiiiiiiii = Module["dynCall_iiiiiiiiii"] = Module["asm"]["Ela"]).apply(
+      return (dynCall_iiiiiiiiii = Module["dynCall_iiiiiiiiii"] = Module["asm"]["Kla"]).apply(
         null,
         arguments,
       );
     });
     var _asyncify_start_unwind = function () {
-      return (_asyncify_start_unwind = Module["asm"]["Fla"]).apply(null, arguments);
+      return (_asyncify_start_unwind = Module["asm"]["Lla"]).apply(null, arguments);
     };
     var _asyncify_stop_unwind = function () {
-      return (_asyncify_stop_unwind = Module["asm"]["Gla"]).apply(null, arguments);
+      return (_asyncify_stop_unwind = Module["asm"]["Mla"]).apply(null, arguments);
     };
     var _asyncify_start_rewind = function () {
-      return (_asyncify_start_rewind = Module["asm"]["Hla"]).apply(null, arguments);
+      return (_asyncify_start_rewind = Module["asm"]["Nla"]).apply(null, arguments);
     };
     var _asyncify_stop_rewind = function () {
-      return (_asyncify_stop_rewind = Module["asm"]["Ila"]).apply(null, arguments);
+      return (_asyncify_stop_rewind = Module["asm"]["Ola"]).apply(null, arguments);
     };
-    var _executor_globals = (Module["_executor_globals"] = 3182336);
-    var _compiler_globals = (Module["_compiler_globals"] = 3184680);
-    var _zend_known_strings = (Module["_zend_known_strings"] = 3185616);
-    var _zend_empty_string = (Module["_zend_empty_string"] = 3180180);
-    var _std_object_handlers = (Module["_std_object_handlers"] = 2275436);
-    var _zend_ce_aggregate = (Module["_zend_ce_aggregate"] = 3180036);
-    var _zend_ce_error = (Module["_zend_ce_error"] = 3180508);
-    var _zend_ce_exception = (Module["_zend_ce_exception"] = 3173080);
-    var _zend_string_init_interned = (Module["_zend_string_init_interned"] = 3180468);
-    var _basic_globals = (Module["_basic_globals"] = 3098632);
-    var _pcre_globals = (Module["_pcre_globals"] = 3084328);
-    var _zend_one_char_string = (Module["_zend_one_char_string"] = 3174576);
-    var _php_hashcontext_ce = (Module["_php_hashcontext_ce"] = 3079300);
-    var _file_globals = (Module["_file_globals"] = 3170208);
-    var _zend_ce_value_error = (Module["_zend_ce_value_error"] = 3180520);
-    var _php_json_serializable_ce = (Module["_php_json_serializable_ce"] = 3089128);
-    var _core_globals = (Module["_core_globals"] = 3185056);
-    var _zend_empty_array = (Module["_zend_empty_array"] = 2276576);
-    var _json_globals = (Module["_json_globals"] = 3079408);
-    var _php_json_exception_ce = (Module["_php_json_exception_ce"] = 3079420);
-    var _lexbor_hash_insert_raw = (Module["_lexbor_hash_insert_raw"] = 3073728);
-    var _lexbor_hash_insert_lower = (Module["_lexbor_hash_insert_lower"] = 3073732);
-    var _lexbor_hash_insert_upper = (Module["_lexbor_hash_insert_upper"] = 2303448);
-    var _lexbor_hash_search_raw = (Module["_lexbor_hash_search_raw"] = 2303444);
-    var _lexbor_hash_search_lower = (Module["_lexbor_hash_search_lower"] = 3073736);
-    var _lexbor_hash_search_upper = (Module["_lexbor_hash_search_upper"] = 2302404);
-    var _lxb_encoding_multi_big5_map = (Module["_lxb_encoding_multi_big5_map"] = 2303456);
-    var _lxb_encoding_multi_jis0212_map = (Module["_lxb_encoding_multi_jis0212_map"] = 2573616);
-    var _lxb_encoding_multi_jis0208_map = (Module["_lxb_encoding_multi_jis0208_map"] = 2602464);
-    var _lxb_encoding_multi_euc_kr_map = (Module["_lxb_encoding_multi_euc_kr_map"] = 2382592);
+    var _executor_globals = (Module["_executor_globals"] = 3182368);
+    var _compiler_globals = (Module["_compiler_globals"] = 3184712);
+    var _zend_known_strings = (Module["_zend_known_strings"] = 3185648);
+    var _zend_empty_string = (Module["_zend_empty_string"] = 3180212);
+    var _std_object_handlers = (Module["_std_object_handlers"] = 2275468);
+    var _zend_ce_aggregate = (Module["_zend_ce_aggregate"] = 3180068);
+    var _zend_ce_error = (Module["_zend_ce_error"] = 3180540);
+    var _zend_ce_exception = (Module["_zend_ce_exception"] = 3173112);
+    var _zend_string_init_interned = (Module["_zend_string_init_interned"] = 3180500);
+    var _basic_globals = (Module["_basic_globals"] = 3098664);
+    var _pcre_globals = (Module["_pcre_globals"] = 3084360);
+    var _zend_one_char_string = (Module["_zend_one_char_string"] = 3174608);
+    var _php_hashcontext_ce = (Module["_php_hashcontext_ce"] = 3079332);
+    var _file_globals = (Module["_file_globals"] = 3170240);
+    var _zend_ce_value_error = (Module["_zend_ce_value_error"] = 3180552);
+    var _php_json_serializable_ce = (Module["_php_json_serializable_ce"] = 3089160);
+    var _core_globals = (Module["_core_globals"] = 3185088);
+    var _zend_empty_array = (Module["_zend_empty_array"] = 2276608);
+    var _json_globals = (Module["_json_globals"] = 3079440);
+    var _php_json_exception_ce = (Module["_php_json_exception_ce"] = 3079452);
+    var _lexbor_hash_insert_raw = (Module["_lexbor_hash_insert_raw"] = 3073760);
+    var _lexbor_hash_insert_lower = (Module["_lexbor_hash_insert_lower"] = 3073764);
+    var _lexbor_hash_insert_upper = (Module["_lexbor_hash_insert_upper"] = 2303480);
+    var _lexbor_hash_search_raw = (Module["_lexbor_hash_search_raw"] = 2303476);
+    var _lexbor_hash_search_lower = (Module["_lexbor_hash_search_lower"] = 3073768);
+    var _lexbor_hash_search_upper = (Module["_lexbor_hash_search_upper"] = 2302436);
+    var _lxb_encoding_multi_big5_map = (Module["_lxb_encoding_multi_big5_map"] = 2303488);
+    var _lxb_encoding_multi_jis0212_map = (Module["_lxb_encoding_multi_jis0212_map"] = 2573648);
+    var _lxb_encoding_multi_jis0208_map = (Module["_lxb_encoding_multi_jis0208_map"] = 2602496);
+    var _lxb_encoding_multi_euc_kr_map = (Module["_lxb_encoding_multi_euc_kr_map"] = 2382624);
     var _lxb_encoding_single_index_ibm866 = (Module["_lxb_encoding_single_index_ibm866"] = 849264);
     var _lxb_encoding_single_index_iso_8859_10 = (Module["_lxb_encoding_single_index_iso_8859_10"] =
       850800);
@@ -26328,7 +26360,7 @@ var PHP = (() => {
       867696);
     var _lxb_encoding_single_index_koi8_r = (Module["_lxb_encoding_single_index_koi8_r"] = 869232);
     var _lxb_encoding_single_index_koi8_u = (Module["_lxb_encoding_single_index_koi8_u"] = 870768);
-    var _lxb_encoding_multi_gb18030_map = (Module["_lxb_encoding_multi_gb18030_map"] = 2477600);
+    var _lxb_encoding_multi_gb18030_map = (Module["_lxb_encoding_multi_gb18030_map"] = 2477632);
     var _lxb_encoding_single_index_macintosh = (Module["_lxb_encoding_single_index_macintosh"] =
       872304);
     var _lxb_encoding_single_index_windows_1250 = (Module[
@@ -26367,7 +26399,7 @@ var PHP = (() => {
     var _lxb_encoding_single_hash_ibm866 = (Module["_lxb_encoding_single_hash_ibm866"] = 890736);
     var _lxb_encoding_multi_iso_2022_jp_katakana_map = (Module[
       "_lxb_encoding_multi_iso_2022_jp_katakana_map"
-    ] = 2573360);
+    ] = 2573392);
     var _lxb_encoding_single_hash_iso_8859_10 = (Module["_lxb_encoding_single_hash_iso_8859_10"] =
       894880);
     var _lxb_encoding_single_hash_iso_8859_13 = (Module["_lxb_encoding_single_hash_iso_8859_13"] =
@@ -26420,106 +26452,106 @@ var PHP = (() => {
       "_lxb_encoding_single_hash_x_mac_cyrillic"
     ] = 1007088);
     var _lxb_encoding_multi_big5_167_1106_map = (Module["_lxb_encoding_multi_big5_167_1106_map"] =
-      2646880);
+      2646912);
     var _lxb_encoding_multi_big5_8211_40882_map = (Module[
       "_lxb_encoding_multi_big5_8211_40882_map"
-    ] = 2648768);
+    ] = 2648800);
     var _lxb_encoding_multi_big5_64012_65518_map = (Module[
       "_lxb_encoding_multi_big5_64012_65518_map"
-    ] = 2714112);
+    ] = 2714144);
     var _lxb_encoding_multi_big5_131210_172369_map = (Module[
       "_lxb_encoding_multi_big5_131210_172369_map"
-    ] = 2717136);
+    ] = 2717168);
     var _lxb_encoding_multi_big5_194708_194727_map = (Module[
       "_lxb_encoding_multi_big5_194708_194727_map"
-    ] = 2799456);
+    ] = 2799488);
     var _lxb_encoding_multi_jis0208_167_1106_map = (Module[
       "_lxb_encoding_multi_jis0208_167_1106_map"
-    ] = 3014368);
+    ] = 3014400);
     var _lxb_encoding_multi_jis0208_8208_13262_map = (Module[
       "_lxb_encoding_multi_jis0208_8208_13262_map"
-    ] = 3016256);
+    ] = 3016288);
     var _lxb_encoding_multi_jis0208_19968_40865_map = (Module[
       "_lxb_encoding_multi_jis0208_19968_40865_map"
-    ] = 3026368);
+    ] = 3026400);
     var _lxb_encoding_multi_jis0208_63785_65510_map = (Module[
       "_lxb_encoding_multi_jis0208_63785_65510_map"
-    ] = 3068176);
+    ] = 3068208);
     var _lxb_encoding_multi_euc_kr_161_1106_map = (Module[
       "_lxb_encoding_multi_euc_kr_161_1106_map"
-    ] = 2799504);
+    ] = 2799536);
     var _lxb_encoding_multi_euc_kr_8213_13278_map = (Module[
       "_lxb_encoding_multi_euc_kr_8213_13278_map"
-    ] = 2801408);
+    ] = 2801440);
     var _lxb_encoding_multi_euc_kr_19968_55204_map = (Module[
       "_lxb_encoding_multi_euc_kr_19968_55204_map"
-    ] = 2811552);
+    ] = 2811584);
     var _lxb_encoding_multi_euc_kr_63744_65511_map = (Module[
       "_lxb_encoding_multi_euc_kr_63744_65511_map"
-    ] = 2882032);
+    ] = 2882064);
     var _lxb_encoding_multi_gb18030_164_1106_map = (Module[
       "_lxb_encoding_multi_gb18030_164_1106_map"
-    ] = 2885568);
+    ] = 2885600);
     var _lxb_encoding_multi_gb18030_7743_40892_map = (Module[
       "_lxb_encoding_multi_gb18030_7743_40892_map"
-    ] = 2887456);
+    ] = 2887488);
     var _lxb_encoding_multi_gb18030_57344_65510_map = (Module[
       "_lxb_encoding_multi_gb18030_57344_65510_map"
-    ] = 2953760);
+    ] = 2953792);
     var _lxb_encoding_res_shs_entities = (Module["_lxb_encoding_res_shs_entities"] = 845744);
     var _lxb_encoding_res_map = (Module["_lxb_encoding_res_map"] = 1921824);
     var _lxb_encoding_multi_iso_2022_jp_katakana_12289_12541_map = (Module[
       "_lxb_encoding_multi_iso_2022_jp_katakana_12289_12541_map"
-    ] = 2970096);
+    ] = 2970128);
     var _lxb_encoding_multi_jis0212_161_1120_map = (Module[
       "_lxb_encoding_multi_jis0212_161_1120_map"
-    ] = 2970608);
+    ] = 2970640);
     var _lxb_encoding_multi_jis0212_8470_8483_map = (Module[
       "_lxb_encoding_multi_jis0212_8470_8483_map"
-    ] = 2972528);
+    ] = 2972560);
     var _lxb_encoding_multi_jis0212_19970_40870_map = (Module[
       "_lxb_encoding_multi_jis0212_19970_40870_map"
-    ] = 2972560);
+    ] = 2972592);
     var _lxb_encoding_multi_jis0212_65374_65375_map = (Module[
       "_lxb_encoding_multi_jis0212_65374_65375_map"
-    ] = 3014360);
-    var _stderr = (Module["_stderr"] = 2286984);
-    var _module_registry = (Module["_module_registry"] = 3185620);
-    var _smm_shared_globals = (Module["_smm_shared_globals"] = 3083976);
-    var _zend_ce_closure = (Module["_zend_ce_closure"] = 3173856);
-    var _sapi_module = (Module["_sapi_module"] = 3185468);
-    var _sapi_globals = (Module["_sapi_globals"] = 3183632);
-    var _zend_resolve_path = (Module["_zend_resolve_path"] = 3180220);
+    ] = 3014392);
+    var _stderr = (Module["_stderr"] = 2287016);
+    var _module_registry = (Module["_module_registry"] = 3185652);
+    var _smm_shared_globals = (Module["_smm_shared_globals"] = 3084008);
+    var _zend_ce_closure = (Module["_zend_ce_closure"] = 3173888);
+    var _sapi_module = (Module["_sapi_module"] = 3185500);
+    var _sapi_globals = (Module["_sapi_globals"] = 3183664);
+    var _zend_resolve_path = (Module["_zend_resolve_path"] = 3180252);
     var _zend_observer_function_declared_observed = (Module[
       "_zend_observer_function_declared_observed"
-    ] = 3173840);
+    ] = 3173872);
     var _zend_observer_class_linked_observed = (Module["_zend_observer_class_linked_observed"] =
-      3173841);
-    var _zend_system_id = (Module["_zend_system_id"] = 3175760);
-    var _zend_enum_object_handlers = (Module["_zend_enum_object_handlers"] = 3170808);
-    var _zend_ce_iterator = (Module["_zend_ce_iterator"] = 3173108);
-    var _zend_map_ptr_static_last = (Module["_zend_map_ptr_static_last"] = 3180496);
-    var _zend_signal_globals = (Module["_zend_signal_globals"] = 3180528);
-    var _zend_post_shutdown_cb = (Module["_zend_post_shutdown_cb"] = 3180156);
-    var _zend_compile_file = (Module["_zend_compile_file"] = 3180228);
-    var _zend_inheritance_cache_get = (Module["_zend_inheritance_cache_get"] = 3173084);
-    var _zend_inheritance_cache_add = (Module["_zend_inheritance_cache_add"] = 3173088);
-    var _zend_accel_schedule_restart_hook = (Module["_zend_accel_schedule_restart_hook"] = 3180160);
-    var _zend_post_startup_cb = (Module["_zend_post_startup_cb"] = 3180152);
-    var _zend_extensions = (Module["_zend_extensions"] = 3185664);
-    var _zend_stream_open_function = (Module["_zend_stream_open_function"] = 3180196);
-    var _zend_map_ptr_static_size = (Module["_zend_map_ptr_static_size"] = 3180464);
-    var _stdout = (Module["_stdout"] = 2286992);
+      3173873);
+    var _zend_system_id = (Module["_zend_system_id"] = 3175792);
+    var _zend_enum_object_handlers = (Module["_zend_enum_object_handlers"] = 3170840);
+    var _zend_ce_iterator = (Module["_zend_ce_iterator"] = 3173140);
+    var _zend_map_ptr_static_last = (Module["_zend_map_ptr_static_last"] = 3180528);
+    var _zend_signal_globals = (Module["_zend_signal_globals"] = 3180560);
+    var _zend_post_shutdown_cb = (Module["_zend_post_shutdown_cb"] = 3180188);
+    var _zend_compile_file = (Module["_zend_compile_file"] = 3180260);
+    var _zend_inheritance_cache_get = (Module["_zend_inheritance_cache_get"] = 3173116);
+    var _zend_inheritance_cache_add = (Module["_zend_inheritance_cache_add"] = 3173120);
+    var _zend_accel_schedule_restart_hook = (Module["_zend_accel_schedule_restart_hook"] = 3180192);
+    var _zend_post_startup_cb = (Module["_zend_post_startup_cb"] = 3180184);
+    var _zend_extensions = (Module["_zend_extensions"] = 3185696);
+    var _zend_stream_open_function = (Module["_zend_stream_open_function"] = 3180228);
+    var _zend_map_ptr_static_size = (Module["_zend_map_ptr_static_size"] = 3180496);
+    var _stdout = (Module["_stdout"] = 2287024);
     var _zend_observer_fcall_op_array_extension = (Module[
       "_zend_observer_fcall_op_array_extension"
-    ] = 3173852);
-    var _zend_error_cb = (Module["_zend_error_cb"] = 3180188);
-    var _pdo_dbh_ce = (Module["_pdo_dbh_ce"] = 3084500);
-    var _pdo_module_entry = (Module["_pdo_module_entry"] = 3076016);
-    var _spl_ce_RuntimeException = (Module["_spl_ce_RuntimeException"] = 3089764);
-    var _zend_standard_class_def = (Module["_zend_standard_class_def"] = 3180148);
-    var _ps_globals = (Module["_ps_globals"] = 3088272);
-    var _random_ce_Random_RandomException = (Module["_random_ce_Random_RandomException"] = 3088012);
+    ] = 3173884);
+    var _zend_error_cb = (Module["_zend_error_cb"] = 3180220);
+    var _pdo_dbh_ce = (Module["_pdo_dbh_ce"] = 3084532);
+    var _pdo_module_entry = (Module["_pdo_module_entry"] = 3076048);
+    var _spl_ce_RuntimeException = (Module["_spl_ce_RuntimeException"] = 3089796);
+    var _zend_standard_class_def = (Module["_zend_standard_class_def"] = 3180180);
+    var _ps_globals = (Module["_ps_globals"] = 3088304);
+    var _random_ce_Random_RandomException = (Module["_random_ce_Random_RandomException"] = 3088044);
     var _php_random_algo_mt19937 = (Module["_php_random_algo_mt19937"] = 1933584);
     var _php_random_algo_pcgoneseq128xslrr64 = (Module["_php_random_algo_pcgoneseq128xslrr64"] =
       1948432);
@@ -26527,143 +26559,143 @@ var PHP = (() => {
     var _php_random_algo_user = (Module["_php_random_algo_user"] = 1933604);
     var _random_ce_Random_BrokenRandomEngineError = (Module[
       "_random_ce_Random_BrokenRandomEngineError"
-    ] = 3090008);
+    ] = 3090040);
     var _php_random_algo_xoshiro256starstar = (Module["_php_random_algo_xoshiro256starstar"] =
       1933624);
-    var _random_globals = (Module["_random_globals"] = 3084920);
-    var _random_ce_Random_Engine = (Module["_random_ce_Random_Engine"] = 3087996);
+    var _random_globals = (Module["_random_globals"] = 3084952);
+    var _random_ce_Random_Engine = (Module["_random_ce_Random_Engine"] = 3088028);
     var _random_ce_Random_CryptoSafeEngine = (Module["_random_ce_Random_CryptoSafeEngine"] =
-      3087456);
-    var _random_ce_Random_RandomError = (Module["_random_ce_Random_RandomError"] = 3087460);
-    var _random_ce_Random_Engine_Mt19937 = (Module["_random_ce_Random_Engine_Mt19937"] = 3087464);
+      3087488);
+    var _random_ce_Random_RandomError = (Module["_random_ce_Random_RandomError"] = 3087492);
+    var _random_ce_Random_Engine_Mt19937 = (Module["_random_ce_Random_Engine_Mt19937"] = 3087496);
     var _random_ce_Random_Engine_PcgOneseq128XslRr64 = (Module[
       "_random_ce_Random_Engine_PcgOneseq128XslRr64"
-    ] = 3087572);
+    ] = 3087604);
     var _random_ce_Random_Engine_Xoshiro256StarStar = (Module[
       "_random_ce_Random_Engine_Xoshiro256StarStar"
-    ] = 3087680);
-    var _random_ce_Random_Engine_Secure = (Module["_random_ce_Random_Engine_Secure"] = 3088e3);
-    var _random_ce_Random_Randomizer = (Module["_random_ce_Random_Randomizer"] = 3088004);
+    ] = 3087712);
+    var _random_ce_Random_Engine_Secure = (Module["_random_ce_Random_Engine_Secure"] = 3088032);
+    var _random_ce_Random_Randomizer = (Module["_random_ce_Random_Randomizer"] = 3088036);
     var _random_ce_Random_IntervalBoundary = (Module["_random_ce_Random_IntervalBoundary"] =
-      3088008);
-    var _reflection_enum_ptr = (Module["_reflection_enum_ptr"] = 3088016);
-    var _reflection_class_ptr = (Module["_reflection_class_ptr"] = 3088020);
-    var _reflection_exception_ptr = (Module["_reflection_exception_ptr"] = 3088024);
-    var _zend_ce_generator = (Module["_zend_ce_generator"] = 3172964);
-    var _zend_ce_traversable = (Module["_zend_ce_traversable"] = 3173104);
+      3088040);
+    var _reflection_enum_ptr = (Module["_reflection_enum_ptr"] = 3088048);
+    var _reflection_class_ptr = (Module["_reflection_class_ptr"] = 3088052);
+    var _reflection_exception_ptr = (Module["_reflection_exception_ptr"] = 3088056);
+    var _zend_ce_generator = (Module["_zend_ce_generator"] = 3172996);
+    var _zend_ce_traversable = (Module["_zend_ce_traversable"] = 3173136);
     var _reflection_property_hook_type_ptr = (Module["_reflection_property_hook_type_ptr"] =
-      3088028);
-    var _reflection_reference_ptr = (Module["_reflection_reference_ptr"] = 3088032);
-    var _zend_ce_fiber = (Module["_zend_ce_fiber"] = 3172960);
-    var _reflection_ptr = (Module["_reflection_ptr"] = 3088160);
-    var _zend_ce_stringable = (Module["_zend_ce_stringable"] = 3173116);
-    var _reflector_ptr = (Module["_reflector_ptr"] = 3088164);
-    var _reflection_function_abstract_ptr = (Module["_reflection_function_abstract_ptr"] = 3088168);
-    var _reflection_function_ptr = (Module["_reflection_function_ptr"] = 3088172);
-    var _reflection_generator_ptr = (Module["_reflection_generator_ptr"] = 3088176);
-    var _reflection_parameter_ptr = (Module["_reflection_parameter_ptr"] = 3088180);
-    var _reflection_type_ptr = (Module["_reflection_type_ptr"] = 3088184);
-    var _reflection_named_type_ptr = (Module["_reflection_named_type_ptr"] = 3088188);
-    var _reflection_union_type_ptr = (Module["_reflection_union_type_ptr"] = 3088192);
-    var _reflection_intersection_type_ptr = (Module["_reflection_intersection_type_ptr"] = 3088196);
-    var _reflection_method_ptr = (Module["_reflection_method_ptr"] = 3088200);
-    var _reflection_object_ptr = (Module["_reflection_object_ptr"] = 3088204);
-    var _reflection_property_ptr = (Module["_reflection_property_ptr"] = 3088208);
-    var _reflection_class_constant_ptr = (Module["_reflection_class_constant_ptr"] = 3088212);
-    var _reflection_extension_ptr = (Module["_reflection_extension_ptr"] = 3088216);
-    var _reflection_zend_extension_ptr = (Module["_reflection_zend_extension_ptr"] = 3088220);
-    var _reflection_attribute_ptr = (Module["_reflection_attribute_ptr"] = 3088224);
-    var _reflection_enum_unit_case_ptr = (Module["_reflection_enum_unit_case_ptr"] = 3088228);
-    var _reflection_enum_backed_case_ptr = (Module["_reflection_enum_backed_case_ptr"] = 3088232);
-    var _reflection_fiber_ptr = (Module["_reflection_fiber_ptr"] = 3088236);
-    var _reflection_constant_ptr = (Module["_reflection_constant_ptr"] = 3088240);
-    var _php_session_iface_entry = (Module["_php_session_iface_entry"] = 3088244);
-    var _php_session_id_iface_entry = (Module["_php_session_id_iface_entry"] = 3088248);
+      3088060);
+    var _reflection_reference_ptr = (Module["_reflection_reference_ptr"] = 3088064);
+    var _zend_ce_fiber = (Module["_zend_ce_fiber"] = 3172992);
+    var _reflection_ptr = (Module["_reflection_ptr"] = 3088192);
+    var _zend_ce_stringable = (Module["_zend_ce_stringable"] = 3173148);
+    var _reflector_ptr = (Module["_reflector_ptr"] = 3088196);
+    var _reflection_function_abstract_ptr = (Module["_reflection_function_abstract_ptr"] = 3088200);
+    var _reflection_function_ptr = (Module["_reflection_function_ptr"] = 3088204);
+    var _reflection_generator_ptr = (Module["_reflection_generator_ptr"] = 3088208);
+    var _reflection_parameter_ptr = (Module["_reflection_parameter_ptr"] = 3088212);
+    var _reflection_type_ptr = (Module["_reflection_type_ptr"] = 3088216);
+    var _reflection_named_type_ptr = (Module["_reflection_named_type_ptr"] = 3088220);
+    var _reflection_union_type_ptr = (Module["_reflection_union_type_ptr"] = 3088224);
+    var _reflection_intersection_type_ptr = (Module["_reflection_intersection_type_ptr"] = 3088228);
+    var _reflection_method_ptr = (Module["_reflection_method_ptr"] = 3088232);
+    var _reflection_object_ptr = (Module["_reflection_object_ptr"] = 3088236);
+    var _reflection_property_ptr = (Module["_reflection_property_ptr"] = 3088240);
+    var _reflection_class_constant_ptr = (Module["_reflection_class_constant_ptr"] = 3088244);
+    var _reflection_extension_ptr = (Module["_reflection_extension_ptr"] = 3088248);
+    var _reflection_zend_extension_ptr = (Module["_reflection_zend_extension_ptr"] = 3088252);
+    var _reflection_attribute_ptr = (Module["_reflection_attribute_ptr"] = 3088256);
+    var _reflection_enum_unit_case_ptr = (Module["_reflection_enum_unit_case_ptr"] = 3088260);
+    var _reflection_enum_backed_case_ptr = (Module["_reflection_enum_backed_case_ptr"] = 3088264);
+    var _reflection_fiber_ptr = (Module["_reflection_fiber_ptr"] = 3088268);
+    var _reflection_constant_ptr = (Module["_reflection_constant_ptr"] = 3088272);
+    var _php_session_iface_entry = (Module["_php_session_iface_entry"] = 3088276);
+    var _php_session_id_iface_entry = (Module["_php_session_id_iface_entry"] = 3088280);
     var _php_session_update_timestamp_iface_entry = (Module[
       "_php_session_update_timestamp_iface_entry"
-    ] = 3088252);
-    var _php_session_class_entry = (Module["_php_session_class_entry"] = 3088256);
-    var _php_rfc1867_callback = (Module["_php_rfc1867_callback"] = 3170056);
-    var _spl_ce_AppendIterator = (Module["_spl_ce_AppendIterator"] = 3089528);
-    var _spl_ce_ArrayIterator = (Module["_spl_ce_ArrayIterator"] = 3089752);
-    var _spl_ce_ArrayObject = (Module["_spl_ce_ArrayObject"] = 3088632);
-    var _spl_ce_BadFunctionCallException = (Module["_spl_ce_BadFunctionCallException"] = 3089096);
-    var _spl_ce_BadMethodCallException = (Module["_spl_ce_BadMethodCallException"] = 3089508);
-    var _spl_ce_CachingIterator = (Module["_spl_ce_CachingIterator"] = 3089504);
-    var _spl_ce_CallbackFilterIterator = (Module["_spl_ce_CallbackFilterIterator"] = 3089472);
-    var _spl_ce_DirectoryIterator = (Module["_spl_ce_DirectoryIterator"] = 3088856);
-    var _spl_ce_DomainException = (Module["_spl_ce_DomainException"] = 3089100);
-    var _spl_ce_EmptyIterator = (Module["_spl_ce_EmptyIterator"] = 3089744);
-    var _spl_ce_FilesystemIterator = (Module["_spl_ce_FilesystemIterator"] = 3088860);
-    var _spl_ce_FilterIterator = (Module["_spl_ce_FilterIterator"] = 3089468);
-    var _spl_ce_GlobIterator = (Module["_spl_ce_GlobIterator"] = 3088972);
-    var _spl_ce_InfiniteIterator = (Module["_spl_ce_InfiniteIterator"] = 3089524);
-    var _spl_ce_InvalidArgumentException = (Module["_spl_ce_InvalidArgumentException"] = 3089772);
-    var _spl_ce_IteratorIterator = (Module["_spl_ce_IteratorIterator"] = 3089516);
-    var _spl_ce_LengthException = (Module["_spl_ce_LengthException"] = 3089104);
-    var _spl_ce_LimitIterator = (Module["_spl_ce_LimitIterator"] = 3089500);
-    var _spl_ce_LogicException = (Module["_spl_ce_LogicException"] = 3089748);
-    var _spl_ce_MultipleIterator = (Module["_spl_ce_MultipleIterator"] = 3089996);
-    var _spl_ce_NoRewindIterator = (Module["_spl_ce_NoRewindIterator"] = 3089520);
-    var _spl_ce_OuterIterator = (Module["_spl_ce_OuterIterator"] = 3089532);
-    var _spl_ce_OutOfBoundsException = (Module["_spl_ce_OutOfBoundsException"] = 3089768);
-    var _spl_ce_OutOfRangeException = (Module["_spl_ce_OutOfRangeException"] = 3089108);
-    var _spl_ce_OverflowException = (Module["_spl_ce_OverflowException"] = 3089112);
-    var _spl_ce_ParentIterator = (Module["_spl_ce_ParentIterator"] = 3089488);
-    var _spl_ce_RangeException = (Module["_spl_ce_RangeException"] = 3089116);
-    var _spl_ce_RecursiveArrayIterator = (Module["_spl_ce_RecursiveArrayIterator"] = 3088740);
-    var _spl_ce_RecursiveCachingIterator = (Module["_spl_ce_RecursiveCachingIterator"] = 3089512);
+    ] = 3088284);
+    var _php_session_class_entry = (Module["_php_session_class_entry"] = 3088288);
+    var _php_rfc1867_callback = (Module["_php_rfc1867_callback"] = 3170088);
+    var _spl_ce_AppendIterator = (Module["_spl_ce_AppendIterator"] = 3089560);
+    var _spl_ce_ArrayIterator = (Module["_spl_ce_ArrayIterator"] = 3089784);
+    var _spl_ce_ArrayObject = (Module["_spl_ce_ArrayObject"] = 3088664);
+    var _spl_ce_BadFunctionCallException = (Module["_spl_ce_BadFunctionCallException"] = 3089128);
+    var _spl_ce_BadMethodCallException = (Module["_spl_ce_BadMethodCallException"] = 3089540);
+    var _spl_ce_CachingIterator = (Module["_spl_ce_CachingIterator"] = 3089536);
+    var _spl_ce_CallbackFilterIterator = (Module["_spl_ce_CallbackFilterIterator"] = 3089504);
+    var _spl_ce_DirectoryIterator = (Module["_spl_ce_DirectoryIterator"] = 3088888);
+    var _spl_ce_DomainException = (Module["_spl_ce_DomainException"] = 3089132);
+    var _spl_ce_EmptyIterator = (Module["_spl_ce_EmptyIterator"] = 3089776);
+    var _spl_ce_FilesystemIterator = (Module["_spl_ce_FilesystemIterator"] = 3088892);
+    var _spl_ce_FilterIterator = (Module["_spl_ce_FilterIterator"] = 3089500);
+    var _spl_ce_GlobIterator = (Module["_spl_ce_GlobIterator"] = 3089004);
+    var _spl_ce_InfiniteIterator = (Module["_spl_ce_InfiniteIterator"] = 3089556);
+    var _spl_ce_InvalidArgumentException = (Module["_spl_ce_InvalidArgumentException"] = 3089804);
+    var _spl_ce_IteratorIterator = (Module["_spl_ce_IteratorIterator"] = 3089548);
+    var _spl_ce_LengthException = (Module["_spl_ce_LengthException"] = 3089136);
+    var _spl_ce_LimitIterator = (Module["_spl_ce_LimitIterator"] = 3089532);
+    var _spl_ce_LogicException = (Module["_spl_ce_LogicException"] = 3089780);
+    var _spl_ce_MultipleIterator = (Module["_spl_ce_MultipleIterator"] = 3090028);
+    var _spl_ce_NoRewindIterator = (Module["_spl_ce_NoRewindIterator"] = 3089552);
+    var _spl_ce_OuterIterator = (Module["_spl_ce_OuterIterator"] = 3089564);
+    var _spl_ce_OutOfBoundsException = (Module["_spl_ce_OutOfBoundsException"] = 3089800);
+    var _spl_ce_OutOfRangeException = (Module["_spl_ce_OutOfRangeException"] = 3089140);
+    var _spl_ce_OverflowException = (Module["_spl_ce_OverflowException"] = 3089144);
+    var _spl_ce_ParentIterator = (Module["_spl_ce_ParentIterator"] = 3089520);
+    var _spl_ce_RangeException = (Module["_spl_ce_RangeException"] = 3089148);
+    var _spl_ce_RecursiveArrayIterator = (Module["_spl_ce_RecursiveArrayIterator"] = 3088772);
+    var _spl_ce_RecursiveCachingIterator = (Module["_spl_ce_RecursiveCachingIterator"] = 3089544);
     var _spl_ce_RecursiveCallbackFilterIterator = (Module[
       "_spl_ce_RecursiveCallbackFilterIterator"
-    ] = 3089476);
+    ] = 3089508);
     var _spl_ce_RecursiveDirectoryIterator = (Module["_spl_ce_RecursiveDirectoryIterator"] =
-      3088864);
-    var _spl_ce_RecursiveFilterIterator = (Module["_spl_ce_RecursiveFilterIterator"] = 3089484);
-    var _spl_ce_RecursiveIterator = (Module["_spl_ce_RecursiveIterator"] = 3089480);
-    var _spl_ce_RecursiveIteratorIterator = (Module["_spl_ce_RecursiveIteratorIterator"] = 3089460);
-    var _spl_ce_RecursiveRegexIterator = (Module["_spl_ce_RecursiveRegexIterator"] = 3089496);
-    var _spl_ce_RecursiveTreeIterator = (Module["_spl_ce_RecursiveTreeIterator"] = 3089464);
-    var _spl_ce_RegexIterator = (Module["_spl_ce_RegexIterator"] = 3089492);
-    var _spl_ce_SeekableIterator = (Module["_spl_ce_SeekableIterator"] = 3089784);
-    var _spl_ce_SplDoublyLinkedList = (Module["_spl_ce_SplDoublyLinkedList"] = 3088980);
-    var _spl_ce_SplFileInfo = (Module["_spl_ce_SplFileInfo"] = 3088748);
-    var _spl_ce_SplFileObject = (Module["_spl_ce_SplFileObject"] = 3088744);
-    var _spl_ce_SplFixedArray = (Module["_spl_ce_SplFixedArray"] = 3089124);
-    var _spl_ce_SplHeap = (Module["_spl_ce_SplHeap"] = 3089236);
-    var _spl_ce_SplMinHeap = (Module["_spl_ce_SplMinHeap"] = 3089348);
-    var _spl_ce_SplMaxHeap = (Module["_spl_ce_SplMaxHeap"] = 3089352);
-    var _spl_ce_SplObjectStorage = (Module["_spl_ce_SplObjectStorage"] = 3089760);
-    var _spl_ce_SplObserver = (Module["_spl_ce_SplObserver"] = 3089776);
-    var _spl_ce_SplPriorityQueue = (Module["_spl_ce_SplPriorityQueue"] = 3089240);
-    var _spl_ce_SplQueue = (Module["_spl_ce_SplQueue"] = 3089088);
-    var _spl_ce_SplStack = (Module["_spl_ce_SplStack"] = 3089092);
-    var _spl_ce_SplSubject = (Module["_spl_ce_SplSubject"] = 3089780);
-    var _spl_ce_SplTempFileObject = (Module["_spl_ce_SplTempFileObject"] = 3088976);
-    var _spl_ce_UnderflowException = (Module["_spl_ce_UnderflowException"] = 3089120);
-    var _spl_ce_UnexpectedValueException = (Module["_spl_ce_UnexpectedValueException"] = 3089756);
-    var _zend_autoload = (Module["_zend_autoload"] = 3171680);
-    var _zend_ce_arrayaccess = (Module["_zend_ce_arrayaccess"] = 3180028);
-    var _zend_ce_serializable = (Module["_zend_ce_serializable"] = 3173112);
-    var _zend_ce_countable = (Module["_zend_ce_countable"] = 3180032);
-    var _php_glob_stream_ops = (Module["_php_glob_stream_ops"] = 2176880);
-    var _zend_ce_throwable = (Module["_zend_ce_throwable"] = 3172972);
-    var _assertion_error_ce = (Module["_assertion_error_ce"] = 3090040);
-    var _php_ce_incomplete_class = (Module["_php_ce_incomplete_class"] = 3099600);
-    var _rounding_mode_ce = (Module["_rounding_mode_ce"] = 3098536);
+      3088896);
+    var _spl_ce_RecursiveFilterIterator = (Module["_spl_ce_RecursiveFilterIterator"] = 3089516);
+    var _spl_ce_RecursiveIterator = (Module["_spl_ce_RecursiveIterator"] = 3089512);
+    var _spl_ce_RecursiveIteratorIterator = (Module["_spl_ce_RecursiveIteratorIterator"] = 3089492);
+    var _spl_ce_RecursiveRegexIterator = (Module["_spl_ce_RecursiveRegexIterator"] = 3089528);
+    var _spl_ce_RecursiveTreeIterator = (Module["_spl_ce_RecursiveTreeIterator"] = 3089496);
+    var _spl_ce_RegexIterator = (Module["_spl_ce_RegexIterator"] = 3089524);
+    var _spl_ce_SeekableIterator = (Module["_spl_ce_SeekableIterator"] = 3089816);
+    var _spl_ce_SplDoublyLinkedList = (Module["_spl_ce_SplDoublyLinkedList"] = 3089012);
+    var _spl_ce_SplFileInfo = (Module["_spl_ce_SplFileInfo"] = 3088780);
+    var _spl_ce_SplFileObject = (Module["_spl_ce_SplFileObject"] = 3088776);
+    var _spl_ce_SplFixedArray = (Module["_spl_ce_SplFixedArray"] = 3089156);
+    var _spl_ce_SplHeap = (Module["_spl_ce_SplHeap"] = 3089268);
+    var _spl_ce_SplMinHeap = (Module["_spl_ce_SplMinHeap"] = 3089380);
+    var _spl_ce_SplMaxHeap = (Module["_spl_ce_SplMaxHeap"] = 3089384);
+    var _spl_ce_SplObjectStorage = (Module["_spl_ce_SplObjectStorage"] = 3089792);
+    var _spl_ce_SplObserver = (Module["_spl_ce_SplObserver"] = 3089808);
+    var _spl_ce_SplPriorityQueue = (Module["_spl_ce_SplPriorityQueue"] = 3089272);
+    var _spl_ce_SplQueue = (Module["_spl_ce_SplQueue"] = 3089120);
+    var _spl_ce_SplStack = (Module["_spl_ce_SplStack"] = 3089124);
+    var _spl_ce_SplSubject = (Module["_spl_ce_SplSubject"] = 3089812);
+    var _spl_ce_SplTempFileObject = (Module["_spl_ce_SplTempFileObject"] = 3089008);
+    var _spl_ce_UnderflowException = (Module["_spl_ce_UnderflowException"] = 3089152);
+    var _spl_ce_UnexpectedValueException = (Module["_spl_ce_UnexpectedValueException"] = 3089788);
+    var _zend_autoload = (Module["_zend_autoload"] = 3171712);
+    var _zend_ce_arrayaccess = (Module["_zend_ce_arrayaccess"] = 3180060);
+    var _zend_ce_serializable = (Module["_zend_ce_serializable"] = 3173144);
+    var _zend_ce_countable = (Module["_zend_ce_countable"] = 3180064);
+    var _php_glob_stream_ops = (Module["_php_glob_stream_ops"] = 2176912);
+    var _zend_ce_throwable = (Module["_zend_ce_throwable"] = 3173004);
+    var _assertion_error_ce = (Module["_assertion_error_ce"] = 3090072);
+    var _php_ce_incomplete_class = (Module["_php_ce_incomplete_class"] = 3099632);
+    var _rounding_mode_ce = (Module["_rounding_mode_ce"] = 3098568);
     var _php_stream_php_wrapper = (Module["_php_stream_php_wrapper"] = 2159760);
-    var _php_plain_files_wrapper = (Module["_php_plain_files_wrapper"] = 3074556);
-    var _php_glob_stream_wrapper = (Module["_php_glob_stream_wrapper"] = 2177096);
-    var _php_stream_rfc2397_wrapper = (Module["_php_stream_rfc2397_wrapper"] = 2177040);
-    var _php_load_environment_variables = (Module["_php_load_environment_variables"] = 3074476);
-    var _environ = (Module["_environ"] = 3198480);
-    var _php_optidx = (Module["_php_optidx"] = 3074460);
-    var _zend_tolower_map = (Module["_zend_tolower_map"] = 2272400);
-    var _zend_new_interned_string = (Module["_zend_new_interned_string"] = 3174564);
-    var _php_stream_stdio_ops = (Module["_php_stream_stdio_ops"] = 3074508);
+    var _php_plain_files_wrapper = (Module["_php_plain_files_wrapper"] = 3074588);
+    var _php_glob_stream_wrapper = (Module["_php_glob_stream_wrapper"] = 2177128);
+    var _php_stream_rfc2397_wrapper = (Module["_php_stream_rfc2397_wrapper"] = 2177072);
+    var _php_load_environment_variables = (Module["_php_load_environment_variables"] = 3074508);
+    var _environ = (Module["_environ"] = 3198512);
+    var _php_optidx = (Module["_php_optidx"] = 3074492);
+    var _zend_tolower_map = (Module["_zend_tolower_map"] = 2272432);
+    var _zend_new_interned_string = (Module["_zend_new_interned_string"] = 3174596);
+    var _php_stream_stdio_ops = (Module["_php_stream_stdio_ops"] = 3074540);
     var _php_stream_ftp_wrapper = (Module["_php_stream_ftp_wrapper"] = 2002496);
     var _php_stream_http_wrapper = (Module["_php_stream_http_wrapper"] = 2159404);
     var _zend_ce_request_parse_body_exception = (Module["_zend_ce_request_parse_body_exception"] =
-      3171020);
+      3171052);
     var _php_sig_gif = (Module["_php_sig_gif"] = 2159416);
     var _php_sig_psd = (Module["_php_sig_psd"] = 2159419);
     var _php_sig_bmp = (Module["_php_sig_bmp"] = 2159423);
@@ -26684,106 +26716,106 @@ var PHP = (() => {
     var _php_sig_heic = (Module["_php_sig_heic"] = 2159489);
     var _php_sig_heix = (Module["_php_sig_heix"] = 2159493);
     var _php_tiff_bytes_per_format = (Module["_php_tiff_bytes_per_format"] = 2159504);
-    var _php_ini_opened_path = (Module["_php_ini_opened_path"] = 3169936);
-    var _php_ini_scanned_path = (Module["_php_ini_scanned_path"] = 3169940);
-    var _php_ini_scanned_files = (Module["_php_ini_scanned_files"] = 3169944);
-    var _zend_ce_division_by_zero_error = (Module["_zend_ce_division_by_zero_error"] = 3173860);
-    var _zend_ce_arithmetic_error = (Module["_zend_ce_arithmetic_error"] = 3173864);
-    var _stdin = (Module["_stdin"] = 2286988);
-    var _php_stream_socket_ops = (Module["_php_stream_socket_ops"] = 2177368);
-    var _zend_toupper_map = (Module["_zend_toupper_map"] = 2272656);
+    var _php_ini_opened_path = (Module["_php_ini_opened_path"] = 3169968);
+    var _php_ini_scanned_path = (Module["_php_ini_scanned_path"] = 3169972);
+    var _php_ini_scanned_files = (Module["_php_ini_scanned_files"] = 3169976);
+    var _zend_ce_division_by_zero_error = (Module["_zend_ce_division_by_zero_error"] = 3173892);
+    var _zend_ce_arithmetic_error = (Module["_zend_ce_arithmetic_error"] = 3173896);
+    var _stdin = (Module["_stdin"] = 2287020);
+    var _php_stream_socket_ops = (Module["_php_stream_socket_ops"] = 2177400);
+    var _zend_toupper_map = (Module["_zend_toupper_map"] = 2272688);
     var _zend_string_init_existing_interned = (Module["_zend_string_init_existing_interned"] =
-      3174568);
-    var _zend_write = (Module["_zend_write"] = 3180184);
+      3174600);
+    var _zend_write = (Module["_zend_write"] = 3180216);
     var _php_uri_parser_rfc3986 = (Module["_php_uri_parser_rfc3986"] = 2172984);
     var _php_uri_parser_whatwg = (Module["_php_uri_parser_whatwg"] = 2173068);
     var _php_uri_parser_php_parse_url = (Module["_php_uri_parser_php_parse_url"] = 2173152);
     var _php_register_internal_extensions_func = (Module["_php_register_internal_extensions_func"] =
-      3074464);
-    var _php_internal_encoding_changed = (Module["_php_internal_encoding_changed"] = 3169760);
-    var _le_index_ptr = (Module["_le_index_ptr"] = 3173600);
-    var _in6addr_any = (Module["_in6addr_any"] = 2299004);
-    var _output_globals = (Module["_output_globals"] = 3169768);
-    var _php_import_environment_variables = (Module["_php_import_environment_variables"] = 3076720);
-    var _php_stream_memory_ops = (Module["_php_stream_memory_ops"] = 2177144);
-    var _php_stream_temp_ops = (Module["_php_stream_temp_ops"] = 2177180);
-    var _php_stream_rfc2397_ops = (Module["_php_stream_rfc2397_ops"] = 2176960);
-    var _php_stream_rfc2397_wops = (Module["_php_stream_rfc2397_wops"] = 2176996);
-    var _php_stream_userspace_ops = (Module["_php_stream_userspace_ops"] = 2177260);
-    var _php_stream_userspace_dir_ops = (Module["_php_stream_userspace_dir_ops"] = 2177296);
-    var _zend_op_array_extension_handles = (Module["_zend_op_array_extension_handles"] = 3173844);
-    var _zend_func_info_rid = (Module["_zend_func_info_rid"] = 3074568);
-    var _zend_flf_functions = (Module["_zend_flf_functions"] = 3180488);
-    var _zend_random_bytes_insecure = (Module["_zend_random_bytes_insecure"] = 3180168);
-    var _zend_dl_use_deepbind = (Module["_zend_dl_use_deepbind"] = 3170465);
-    var _zend_ce_type_error = (Module["_zend_ce_type_error"] = 3180512);
-    var _zend_flf_handlers = (Module["_zend_flf_handlers"] = 3180492);
-    var _zend_ast_process = (Module["_zend_ast_process"] = 3175792);
+      3074496);
+    var _php_internal_encoding_changed = (Module["_php_internal_encoding_changed"] = 3169792);
+    var _le_index_ptr = (Module["_le_index_ptr"] = 3173632);
+    var _in6addr_any = (Module["_in6addr_any"] = 2299036);
+    var _output_globals = (Module["_output_globals"] = 3169800);
+    var _php_import_environment_variables = (Module["_php_import_environment_variables"] = 3076752);
+    var _php_stream_memory_ops = (Module["_php_stream_memory_ops"] = 2177176);
+    var _php_stream_temp_ops = (Module["_php_stream_temp_ops"] = 2177212);
+    var _php_stream_rfc2397_ops = (Module["_php_stream_rfc2397_ops"] = 2176992);
+    var _php_stream_rfc2397_wops = (Module["_php_stream_rfc2397_wops"] = 2177028);
+    var _php_stream_userspace_ops = (Module["_php_stream_userspace_ops"] = 2177292);
+    var _php_stream_userspace_dir_ops = (Module["_php_stream_userspace_dir_ops"] = 2177328);
+    var _zend_op_array_extension_handles = (Module["_zend_op_array_extension_handles"] = 3173876);
+    var _zend_func_info_rid = (Module["_zend_func_info_rid"] = 3074600);
+    var _zend_flf_functions = (Module["_zend_flf_functions"] = 3180520);
+    var _zend_random_bytes_insecure = (Module["_zend_random_bytes_insecure"] = 3180200);
+    var _zend_dl_use_deepbind = (Module["_zend_dl_use_deepbind"] = 3170497);
+    var _zend_ce_type_error = (Module["_zend_ce_type_error"] = 3180544);
+    var _zend_flf_handlers = (Module["_zend_flf_handlers"] = 3180524);
+    var _zend_ast_process = (Module["_zend_ast_process"] = 3175824);
     var _zend_ce_sensitive_parameter_value = (Module["_zend_ce_sensitive_parameter_value"] =
-      3170660);
-    var _zend_ce_deprecated = (Module["_zend_ce_deprecated"] = 3172736);
-    var _zend_ce_nodiscard = (Module["_zend_ce_nodiscard"] = 3172740);
-    var _zend_ce_attribute = (Module["_zend_ce_attribute"] = 3170488);
+      3170692);
+    var _zend_ce_deprecated = (Module["_zend_ce_deprecated"] = 3172768);
+    var _zend_ce_nodiscard = (Module["_zend_ce_nodiscard"] = 3172772);
+    var _zend_ce_attribute = (Module["_zend_ce_attribute"] = 3170520);
     var _zend_ce_return_type_will_change_attribute = (Module[
       "_zend_ce_return_type_will_change_attribute"
-    ] = 3170536);
-    var _zend_ce_allow_dynamic_properties = (Module["_zend_ce_allow_dynamic_properties"] = 3170540);
-    var _zend_ce_sensitive_parameter = (Module["_zend_ce_sensitive_parameter"] = 3170544);
-    var _zend_ce_override = (Module["_zend_ce_override"] = 3170652);
+    ] = 3170568);
+    var _zend_ce_allow_dynamic_properties = (Module["_zend_ce_allow_dynamic_properties"] = 3170572);
+    var _zend_ce_sensitive_parameter = (Module["_zend_ce_sensitive_parameter"] = 3170576);
+    var _zend_ce_override = (Module["_zend_ce_override"] = 3170684);
     var _zend_ce_delayed_target_validation = (Module["_zend_ce_delayed_target_validation"] =
-      3170656);
-    var _gc_collect_cycles = (Module["_gc_collect_cycles"] = 3180248);
-    var _language_scanner_globals = (Module["_language_scanner_globals"] = 3180324);
-    var _zend_ce_compile_error = (Module["_zend_ce_compile_error"] = 3173552);
-    var _zend_execute_internal = (Module["_zend_execute_internal"] = 3180236);
-    var _zend_execute_ex = (Module["_zend_execute_ex"] = 3180232);
-    var _zend_compile_string = (Module["_zend_compile_string"] = 3180240);
-    var _zend_ce_unit_enum = (Module["_zend_ce_unit_enum"] = 3170800);
-    var _zend_ce_backed_enum = (Module["_zend_ce_backed_enum"] = 3170804);
-    var _zend_ce_parse_error = (Module["_zend_ce_parse_error"] = 3180504);
-    var _zend_throw_exception_hook = (Module["_zend_throw_exception_hook"] = 3180244);
-    var _zend_ce_argument_count_error = (Module["_zend_ce_argument_count_error"] = 3180516);
-    var _zend_ce_error_exception = (Module["_zend_ce_error_exception"] = 3171016);
-    var _zend_ce_unhandled_match_error = (Module["_zend_ce_unhandled_match_error"] = 3171684);
-    var _zend_observer_errors_observed = (Module["_zend_observer_errors_observed"] = 3182104);
-    var _zend_interrupt_function = (Module["_zend_interrupt_function"] = 3180224);
-    var _zend_on_timeout = (Module["_zend_on_timeout"] = 3180212);
-    var _zend_pass_function = (Module["_zend_pass_function"] = 2193488);
+      3170688);
+    var _gc_collect_cycles = (Module["_gc_collect_cycles"] = 3180280);
+    var _language_scanner_globals = (Module["_language_scanner_globals"] = 3180356);
+    var _zend_ce_compile_error = (Module["_zend_ce_compile_error"] = 3173584);
+    var _zend_execute_internal = (Module["_zend_execute_internal"] = 3180268);
+    var _zend_execute_ex = (Module["_zend_execute_ex"] = 3180264);
+    var _zend_compile_string = (Module["_zend_compile_string"] = 3180272);
+    var _zend_ce_unit_enum = (Module["_zend_ce_unit_enum"] = 3170832);
+    var _zend_ce_backed_enum = (Module["_zend_ce_backed_enum"] = 3170836);
+    var _zend_ce_parse_error = (Module["_zend_ce_parse_error"] = 3180536);
+    var _zend_throw_exception_hook = (Module["_zend_throw_exception_hook"] = 3180276);
+    var _zend_ce_argument_count_error = (Module["_zend_ce_argument_count_error"] = 3180548);
+    var _zend_ce_error_exception = (Module["_zend_ce_error_exception"] = 3171048);
+    var _zend_ce_unhandled_match_error = (Module["_zend_ce_unhandled_match_error"] = 3171716);
+    var _zend_observer_errors_observed = (Module["_zend_observer_errors_observed"] = 3182136);
+    var _zend_interrupt_function = (Module["_zend_interrupt_function"] = 3180256);
+    var _zend_on_timeout = (Module["_zend_on_timeout"] = 3180244);
+    var _zend_pass_function = (Module["_zend_pass_function"] = 2193520);
     var _zend_observer_fcall_internal_function_extension = (Module[
       "_zend_observer_fcall_internal_function_extension"
-    ] = 3173836);
-    var _zend_touch_vm_stack_data = (Module["_zend_touch_vm_stack_data"] = 3171688);
-    var _zend_ticks_function = (Module["_zend_ticks_function"] = 3180208);
-    var _zend_extension_flags = (Module["_zend_extension_flags"] = 3173848);
+    ] = 3173868);
+    var _zend_touch_vm_stack_data = (Module["_zend_touch_vm_stack_data"] = 3171720);
+    var _zend_ticks_function = (Module["_zend_ticks_function"] = 3180240);
+    var _zend_extension_flags = (Module["_zend_extension_flags"] = 3173880);
     var _zend_internal_function_extension_handles = (Module[
       "_zend_internal_function_extension_handles"
-    ] = 3172744);
-    var ___jit_debug_descriptor = (Module["___jit_debug_descriptor"] = 3075184);
-    var _zend_ce_ClosedGeneratorException = (Module["_zend_ce_ClosedGeneratorException"] = 3172968);
-    var _zend_printf = (Module["_zend_printf"] = 3185464);
-    var _ini_scanner_globals = (Module["_ini_scanner_globals"] = 3180260);
-    var _zend_getenv = (Module["_zend_getenv"] = 3180216);
-    var _zend_uv = (Module["_zend_uv"] = 3180500);
-    var _zend_ce_internal_iterator = (Module["_zend_ce_internal_iterator"] = 3173100);
-    var _zend_multibyte_encoding_utf32be = (Module["_zend_multibyte_encoding_utf32be"] = 3075200);
-    var _zend_multibyte_encoding_utf32le = (Module["_zend_multibyte_encoding_utf32le"] = 3075204);
-    var _zend_multibyte_encoding_utf16be = (Module["_zend_multibyte_encoding_utf16be"] = 3075208);
-    var _zend_multibyte_encoding_utf16le = (Module["_zend_multibyte_encoding_utf16le"] = 3075212);
-    var _zend_multibyte_encoding_utf8 = (Module["_zend_multibyte_encoding_utf8"] = 3075216);
-    var _zend_fopen = (Module["_zend_fopen"] = 3180192);
-    var _zend_ce_weakref = (Module["_zend_ce_weakref"] = 3179920);
-    var _zend_random_bytes = (Module["_zend_random_bytes"] = 3180164);
-    var _zend_dtrace_enabled = (Module["_zend_dtrace_enabled"] = 3180524);
-    var ___environ = (Module["___environ"] = 3198480);
-    var ____environ = (Module["____environ"] = 3198480);
-    var __environ = (Module["__environ"] = 3198480);
-    var _timezone = (Module["_timezone"] = 3198464);
-    var _daylight = (Module["_daylight"] = 3198468);
-    var _tzname = (Module["_tzname"] = 3198472);
-    var ___sig_pending = (Module["___sig_pending"] = 3186784);
-    var ___sig_actions = (Module["___sig_actions"] = 3187200);
-    var ___THREW__ = (Module["___THREW__"] = 3078676);
-    var ___threwValue = (Module["___threwValue"] = 3078680);
+    ] = 3172776);
+    var ___jit_debug_descriptor = (Module["___jit_debug_descriptor"] = 3075216);
+    var _zend_ce_ClosedGeneratorException = (Module["_zend_ce_ClosedGeneratorException"] = 3173e3);
+    var _zend_printf = (Module["_zend_printf"] = 3185496);
+    var _ini_scanner_globals = (Module["_ini_scanner_globals"] = 3180292);
+    var _zend_getenv = (Module["_zend_getenv"] = 3180248);
+    var _zend_uv = (Module["_zend_uv"] = 3180532);
+    var _zend_ce_internal_iterator = (Module["_zend_ce_internal_iterator"] = 3173132);
+    var _zend_multibyte_encoding_utf32be = (Module["_zend_multibyte_encoding_utf32be"] = 3075232);
+    var _zend_multibyte_encoding_utf32le = (Module["_zend_multibyte_encoding_utf32le"] = 3075236);
+    var _zend_multibyte_encoding_utf16be = (Module["_zend_multibyte_encoding_utf16be"] = 3075240);
+    var _zend_multibyte_encoding_utf16le = (Module["_zend_multibyte_encoding_utf16le"] = 3075244);
+    var _zend_multibyte_encoding_utf8 = (Module["_zend_multibyte_encoding_utf8"] = 3075248);
+    var _zend_fopen = (Module["_zend_fopen"] = 3180224);
+    var _zend_ce_weakref = (Module["_zend_ce_weakref"] = 3179952);
+    var _zend_random_bytes = (Module["_zend_random_bytes"] = 3180196);
+    var _zend_dtrace_enabled = (Module["_zend_dtrace_enabled"] = 3180556);
+    var ___environ = (Module["___environ"] = 3198512);
+    var ____environ = (Module["____environ"] = 3198512);
+    var __environ = (Module["__environ"] = 3198512);
+    var _timezone = (Module["_timezone"] = 3198496);
+    var _daylight = (Module["_daylight"] = 3198500);
+    var _tzname = (Module["_tzname"] = 3198504);
+    var ___sig_pending = (Module["___sig_pending"] = 3186816);
+    var ___sig_actions = (Module["___sig_actions"] = 3187232);
+    var ___THREW__ = (Module["___THREW__"] = 3078708);
+    var ___threwValue = (Module["___threwValue"] = 3078712);
     function invoke_iiii(index, a1, a2, a3) {
       var sp = stackSave();
       try {
