@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.1.2](https://github.com/kieranbrown/laraworker/compare/v1.1.1...v1.1.2) (2026-02-26)
+
+
+### Bug Fixes
+
+* include exception renderer dist files in build ([cf37bb1](https://github.com/kieranbrown/laraworker/commit/cf37bb1b1828d14a306cc5dc137101bc5d6c59fa))
+
+
+### Miscellaneous Chores
+
+* reformat php-wasm-build modules ([2429995](https://github.com/kieranbrown/laraworker/commit/24299957a9ce8430548ccc4613447e9184554c26))
+
+
+### Code Refactoring
+
+* simplify playground to default Laravel with D1 database support ([e9a2e84](https://github.com/kieranbrown/laraworker/commit/e9a2e8437105294c2437b62d330b0f3af30d1702))
+
 ## [1.1.1](https://github.com/kieranbrown/laraworker/compare/v1.1.0...v1.1.1) (2026-02-26)
 
 
