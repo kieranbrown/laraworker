@@ -1,11 +1,6 @@
 <?php
 
 return [
-    'inertiajs/inertia-laravel' => [
-        'providers' => [
-            0 => 'Inertia\\ServiceProvider',
-        ],
-    ],
     'kieranbrown/laraworker' => [
         'providers' => [
             0 => 'Laraworker\\LaraworkerServiceProvider',
