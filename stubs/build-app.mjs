@@ -496,7 +496,7 @@ if (!defined('T_OPEN_TAG')) {
     define('T_VARIABLE', 320);
     define('T_INLINE_HTML', 323);
     define('T_ECHO', 328);
-    define('T_CONSTANT_ENCAPSED_STRING', 323);
+    define('T_CONSTANT_ENCAPSED_STRING', 321);
     define('T_LNUMBER', 311);
     define('T_DNUMBER', 312);
     define('TOKEN_PARSE', 1);
@@ -569,7 +569,7 @@ if (!function_exists('token_get_all')) {
 }
 if (!function_exists('token_name')) {
     function token_name($id) {
-        $names = [379 => 'T_OPEN_TAG', 380 => 'T_OPEN_TAG_WITH_ECHO', 381 => 'T_CLOSE_TAG', 396 => 'T_WHITESPACE', 397 => 'T_COMMENT', 398 => 'T_DOC_COMMENT', 319 => 'T_STRING', 320 => 'T_VARIABLE', 323 => 'T_INLINE_HTML', 328 => 'T_ECHO'];
+        $names = [379 => 'T_OPEN_TAG', 380 => 'T_OPEN_TAG_WITH_ECHO', 381 => 'T_CLOSE_TAG', 396 => 'T_WHITESPACE', 397 => 'T_COMMENT', 398 => 'T_DOC_COMMENT', 319 => 'T_STRING', 320 => 'T_VARIABLE', 321 => 'T_CONSTANT_ENCAPSED_STRING', 323 => 'T_INLINE_HTML', 328 => 'T_ECHO'];
         return $names[$id] ?? 'UNKNOWN';
     }
 }`);
@@ -623,9 +623,9 @@ if (file_exists('/app/bootstrap/preload.php')) {
 }`);
 
   // The WASM PHP tokenizer is broken: token_get_all() treats all code after <?php
-  // as a single T_STRING token instead of properly tokenizing. This breaks
-  // BladeCompiler::hasEvenNumberOfParentheses() which relies on token_get_all
-  // to count parentheses while skipping those inside string literals.
+  // as a single T_STRING token instead of properly tokenizing. This breaks both:
+  // 1. BladeCompiler::hasEvenNumberOfParentheses() — needs string-aware paren counting
+  // 2. BladeCompiler::compileString()/parseToken() — needs T_INLINE_HTML for @directives
   //
   // PHP resolves bare function calls to the current namespace first, so defining
   // token_get_all in the Illuminate\View\Compilers namespace shadows the broken
@@ -635,61 +635,111 @@ namespace Illuminate\\View\\Compilers {
     function token_get_all(string $code, int $flags = 0): array {
         $tokens = [];
         $len = strlen($code);
-        $i = 0;
+        $pos = 0;
         $line = 1;
-        if (substr($code, 0, 5) === '<?php') {
-            $tagEnd = 5;
-            if ($tagEnd < $len && ($code[$tagEnd] === ' ' || $code[$tagEnd] === "\\n" || $code[$tagEnd] === "\\r" || $code[$tagEnd] === "\\t")) {
-                $tagEnd++;
-            }
-            $tokens[] = [T_OPEN_TAG, substr($code, 0, $tagEnd), 1];
-            $i = $tagEnd;
-            $line += substr_count(substr($code, 0, $tagEnd), "\\n");
-        }
-        $current = '';
-        while ($i < $len) {
-            $char = $code[$i];
-            if ($char === '"' || $char === "'") {
-                if ($current !== '') {
-                    $tokens[] = [T_STRING, $current, $line];
-                    $current = '';
+
+        while ($pos < $len) {
+            $nextOpen = strpos($code, '<?', $pos);
+
+            if ($nextOpen === false) {
+                $html = substr($code, $pos);
+                if ($html !== '') {
+                    $tokens[] = [T_INLINE_HTML, $html, $line];
                 }
-                $quote = $char;
-                $str = $char;
-                $i++;
-                while ($i < $len && $code[$i] !== $quote) {
-                    if ($code[$i] === '\\\\' && $i + 1 < $len) {
-                        $str .= $code[$i] . $code[$i + 1];
-                        $i += 2;
-                        continue;
+                break;
+            }
+
+            if ($nextOpen > $pos) {
+                $html = substr($code, $pos, $nextOpen - $pos);
+                $tokens[] = [T_INLINE_HTML, $html, $line];
+                $line += substr_count($html, "\\n");
+            }
+
+            if (substr($code, $nextOpen, 5) === '<?php' && ($nextOpen + 5 >= $len || !ctype_alnum($code[$nextOpen + 5]))) {
+                $tagEnd = $nextOpen + 5;
+                if ($tagEnd < $len && ($code[$tagEnd] === ' ' || $code[$tagEnd] === "\\n" || $code[$tagEnd] === "\\r" || $code[$tagEnd] === "\\t")) {
+                    $tagEnd++;
+                }
+                $openTag = substr($code, $nextOpen, $tagEnd - $nextOpen);
+                $tokens[] = [T_OPEN_TAG, $openTag, $line];
+                $line += substr_count($openTag, "\\n");
+                $pos = $tagEnd;
+            } elseif (substr($code, $nextOpen, 3) === '<?=') {
+                $tokens[] = [T_OPEN_TAG_WITH_ECHO, '<?= ', $line];
+                $pos = $nextOpen + 3;
+                if ($pos < $len && $code[$pos] === ' ') $pos++;
+            } else {
+                $tokens[] = [T_INLINE_HTML, '<?', $line];
+                $pos = $nextOpen + 2;
+                continue;
+            }
+
+            $current = '';
+            $inPhp = true;
+            while ($pos < $len && $inPhp) {
+                $char = $code[$pos];
+
+                if ($char === '?' && $pos + 1 < $len && $code[$pos + 1] === '>') {
+                    if ($current !== '') {
+                        $tokens[] = [T_STRING, $current, $line];
+                        $current = '';
                     }
-                    if ($code[$i] === "\\n") $line++;
-                    $str .= $code[$i];
-                    $i++;
+                    $closeEnd = $pos + 2;
+                    if ($closeEnd < $len && $code[$closeEnd] === "\\n") $closeEnd++;
+                    $closeTag = substr($code, $pos, $closeEnd - $pos);
+                    $tokens[] = [T_CLOSE_TAG, $closeTag, $line];
+                    $line += substr_count($closeTag, "\\n");
+                    $pos = $closeEnd;
+                    $inPhp = false;
+                    continue;
                 }
-                if ($i < $len) {
-                    $str .= $code[$i];
-                    $i++;
+
+                if ($char === '"' || $char === "'") {
+                    if ($current !== '') {
+                        $tokens[] = [T_STRING, $current, $line];
+                        $current = '';
+                    }
+                    $quote = $char;
+                    $str = $char;
+                    $pos++;
+                    while ($pos < $len && $code[$pos] !== $quote) {
+                        if ($code[$pos] === '\\\\' && $pos + 1 < $len) {
+                            $str .= $code[$pos] . $code[$pos + 1];
+                            $pos += 2;
+                            continue;
+                        }
+                        if ($code[$pos] === "\\n") $line++;
+                        $str .= $code[$pos];
+                        $pos++;
+                    }
+                    if ($pos < $len) {
+                        $str .= $code[$pos];
+                        $pos++;
+                    }
+                    $tokens[] = [T_CONSTANT_ENCAPSED_STRING, $str, $line];
+                    continue;
                 }
-                $tokens[] = [T_CONSTANT_ENCAPSED_STRING, $str, $line];
-                continue;
+
+                if ($char === '(' || $char === ')') {
+                    if ($current !== '') {
+                        $tokens[] = [T_STRING, $current, $line];
+                        $current = '';
+                    }
+                    $tokens[] = $char;
+                    $pos++;
+                    continue;
+                }
+
+                if ($char === "\\n") $line++;
+                $current .= $char;
+                $pos++;
             }
-            if ($char === '(' || $char === ')') {
-                if ($current !== '') {
-                    $tokens[] = [T_STRING, $current, $line];
-                    $current = '';
-                }
-                $tokens[] = $char;
-                $i++;
-                continue;
+
+            if ($inPhp && $current !== '') {
+                $tokens[] = [T_STRING, $current, $line];
             }
-            if ($char === "\\n") $line++;
-            $current .= $char;
-            $i++;
         }
-        if ($current !== '') {
-            $tokens[] = [T_STRING, $current, $line];
-        }
+
         return $tokens;
     }
 }
