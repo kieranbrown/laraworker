@@ -16,7 +16,7 @@ export const sendMessageFor =
     if (serviceWorker instanceof ServiceWorker) {
       serviceWorker.postMessage({ action, params, token });
     } else {
-      void navigator.serviceWorker.getRegistration(serviceWorker).then((registration) => {
+      navigator.serviceWorker.getRegistration(serviceWorker).then((registration) => {
         if (registration.active) {
           registration.active.postMessage({ action, params, token });
         } else {

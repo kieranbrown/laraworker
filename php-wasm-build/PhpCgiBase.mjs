@@ -21,6 +21,7 @@ import { resolveDependencies } from "./resolveDependencies.mjs";
  * @property {function():fileDef[]} getFiles
  */
 
+const STR = "string";
 const NUM = "number";
 
 const putEnv = (php, key, value) =>
@@ -328,7 +329,7 @@ export class PhpCgiBase {
     }
   }
 
-  async _enqueue(callback, params = [], _readOnly = false) {
+  async _enqueue(callback, params = [], readOnly = false) {
     let accept, reject;
 
     const coordinator = new Promise((a, r) => ([accept, reject] = [a, r]));
@@ -355,10 +356,11 @@ export class PhpCgiBase {
       libs: sharedLibs,
       urlLibs: sharedLibUrls,
     } = resolveDependencies(this.sharedLibs, this);
-    const { files: dynamicLibFiles, urlLibs: dynamicLibUrls } = resolveDependencies(
-      this.dynamicLibs,
-      this,
-    );
+    const {
+      files: dynamicLibFiles,
+      libs: dynamicLibs,
+      urlLibs: dynamicLibUrls,
+    } = resolveDependencies(this.dynamicLibs, this);
 
     const userLocateFile = this.phpArgs.locateFile || (() => undefined);
 
@@ -445,9 +447,7 @@ export class PhpCgiBase {
           }
         });
 
-        if (this.phpArgs.ini) {
-          iniLines.push(this.phpArgs.ini.replace(/\n\s+/g, "\n"));
-        }
+        this.phpArgs.ini && iniLines.push(this.phpArgs.ini.replace(/\n\s+/g, "\n"));
 
         php.FS.writeFile("/php.ini", iniLines.join("\n") + "\n", { encoding: "utf8" });
 
@@ -543,7 +543,7 @@ export class PhpCgiBase {
         }
         if (globalThis.caches) {
           const cache = await caches.open("static-v1");
-          void cache.put(url, response.clone());
+          cache.put(url, response.clone());
         }
         this.onRequest(request, response);
         return response;
@@ -693,11 +693,7 @@ export class PhpCgiBase {
       return response;
     } finally {
       if (exitCode === 0) {
-        const stderrOutput = new TextDecoder().decode(new Uint8Array(this.error).buffer);
-        if (stderrOutput) {
-          console.error("[PHP STDERR]", stderrOutput);
-        }
-        void this._afterRequest();
+        this._afterRequest();
       } else {
         console.warn(new TextDecoder().decode(new Uint8Array(this.output).buffer));
         console.error(new TextDecoder().decode(new Uint8Array(this.error).buffer));
@@ -708,42 +704,39 @@ export class PhpCgiBase {
   }
 
   analyzePath(path) {
-    return this._enqueue((b, p) => fsOps.analyzePath(b, p), [this.binary, path]);
+    return this._enqueue(fsOps.analyzePath, [this.binary, path]);
   }
 
   readdir(path) {
-    return this._enqueue((b, p) => fsOps.readdir(b, p), [this.binary, path]);
+    return this._enqueue(fsOps.readdir, [this.binary, path]);
   }
 
   readFile(path, options) {
-    return this._enqueue((b, p, o) => fsOps.readFile(b, p, o), [this.binary, path, options]);
+    return this._enqueue(fsOps.readFile, [this.binary, path, options]);
   }
 
   stat(path) {
-    return this._enqueue((b, p) => fsOps.stat(b, p), [this.binary, path]);
+    return this._enqueue(fsOps.stat, [this.binary, path]);
   }
 
   mkdir(path) {
-    return this._enqueue((b, p) => fsOps.mkdir(b, p), [this.binary, path]);
+    return this._enqueue(fsOps.mkdir, [this.binary, path]);
   }
 
   rmdir(path) {
-    return this._enqueue((b, p) => fsOps.rmdir(b, p), [this.binary, path]);
+    return this._enqueue(fsOps.rmdir, [this.binary, path]);
   }
 
   rename(path, newPath) {
-    return this._enqueue((b, p, n) => fsOps.rename(b, p, n), [this.binary, path, newPath]);
+    return this._enqueue(fsOps.rename, [this.binary, path, newPath]);
   }
 
   writeFile(path, data, options) {
-    return this._enqueue(
-      (b, p, d, o) => fsOps.writeFile(b, p, d, o),
-      [this.binary, path, data, options],
-    );
+    return this._enqueue(fsOps.writeFile, [this.binary, path, data, options]);
   }
 
   unlink(path) {
-    return this._enqueue((b, p) => fsOps.unlink(b, p), [this.binary, path]);
+    return this._enqueue(fsOps.unlink, [this.binary, path]);
   }
 
   async putEnv(name, value) {

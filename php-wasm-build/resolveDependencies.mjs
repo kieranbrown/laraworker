@@ -3,7 +3,7 @@
  * @typedef {object} ResolvedDependencies
  * @property {FileDef[]} files
  * @property {LibDef[]} libs
- * @property {Object<string, string|URL>} urlLibs mapping of resource names to URLs
+ * @property {Object<string, string|url>} urlLibs mapping of resource names to URLs
  */
 
 /**

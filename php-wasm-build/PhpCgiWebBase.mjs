@@ -2,6 +2,7 @@ import { PhpCgiBase } from "./PhpCgiBase.mjs";
 import { commitTransaction, startTransaction } from "./webTransactions.mjs";
 import { resolveDependencies } from "./resolveDependencies.mjs";
 
+const STR = "string";
 const NUM = "number";
 
 export class PhpCgiWebBase extends PhpCgiBase {
@@ -53,10 +54,11 @@ export class PhpCgiWebBase extends PhpCgiBase {
       libs: sharedLibs,
       urlLibs: sharedLibUrls,
     } = resolveDependencies(this.sharedLibs, this);
-    const { files: dynamicLibFiles, urlLibs: dynamicLibUrls } = resolveDependencies(
-      this.dynamicLibs,
-      this,
-    );
+    const {
+      files: dynamicLibFiles,
+      libs: dynamicLibs,
+      urlLibs: dynamicLibUrls,
+    } = resolveDependencies(this.dynamicLibs, this);
 
     const userLocateFile = this.phpArgs.locateFile || (() => undefined);
 
@@ -123,9 +125,7 @@ export class PhpCgiWebBase extends PhpCgiBase {
         }
       });
 
-      if (this.phpArgs.ini) {
-        iniLines.push(this.phpArgs.ini.replace(/\n\s+/g, "\n"));
-      }
+      this.phpArgs.ini && iniLines.push(this.phpArgs.ini.replace(/\n\s+/g, "\n"));
 
       php.FS.writeFile("/php.ini", iniLines.join("\n") + "\n", { encoding: "utf8" });
 
@@ -157,7 +157,7 @@ export class PhpCgiWebBase extends PhpCgiBase {
 
     this.queue.push([callback, params, accept, reject]);
 
-    void navigator.locks.request("php-wasm-fs-lock", async () => {
+    navigator.locks.request("php-wasm-fs-lock", async () => {
       if (!this.queue.length) {
         return;
       }
