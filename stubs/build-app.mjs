@@ -154,8 +154,7 @@ const DEFAULT_EXCLUDE_PATTERNS = [
   // Symfony polyfill stubs for PHP ≤ 8.4 (target runtime is PHP 8.5; native classes exist)
   "/vendor\\/symfony\\/polyfill-php[0-9]+\\/Resources\\/stubs\\//",
 
-  // Laravel framework exception renderer build artifacts (APP_DEBUG=false in production)
-  "/vendor\\/laravel\\/framework\\/src\\/Illuminate\\/Foundation\\/resources\\/exceptions\\/renderer\\/dist\\//",
+  // Laravel framework exception renderer build tooling (not needed at runtime)
   "/vendor\\/laravel\\/framework\\/src\\/Illuminate\\/Foundation\\/resources\\/exceptions\\/renderer\\/package/",
   "/vendor\\/laravel\\/framework\\/src\\/Illuminate\\/Foundation\\/resources\\/exceptions\\/renderer\\/vite/",
 
