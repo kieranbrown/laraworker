@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/kieranbrown/laraworker/compare/v1.0.0...v1.0.1) (2026-02-26)
+
+
+### Miscellaneous Chores
+
+* added support for laravel 11 ([287208b](https://github.com/kieranbrown/laraworker/commit/287208b235f27babb65a1a63aee2daa32670ba0c))
+
 ## 1.0.0 (2026-02-26)
 
 
