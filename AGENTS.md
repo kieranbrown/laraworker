@@ -96,7 +96,26 @@ When modifying PHP internals (CGI SAPI patches, extension changes, php.ini defau
 ### Prerequisites
 
 - Docker (OrbStack, Rancher, or Docker Desktop)
-- The builder image: `docker pull seanmorris/phpwasm-emscripten-builder:latest`
+- The builder image `seanmorris/phpwasm-emscripten-builder:latest` (linux/amd64, ~2.6 GB). **This image is NOT publicly pullable from Docker Hub.** It must already be cached locally. Verify with:
+  ```bash
+  docker images | grep phpwasm-emscripten-builder
+  ```
+  If missing, it can be built from the `emscripten-builder.dockerfile` in the `seanmorris/php-wasm` sm-8.5 branch.
+
+#### Apple Silicon (arm64) — Rosetta Required
+
+The builder image is x86_64 only. On Apple Silicon Macs, Docker runs it via Rosetta emulation.
+
+**OrbStack:** Enable Rosetta in Settings > General > "Use Rosetta". This is usually enabled by default.
+
+**Docker Desktop:** Enable Rosetta in Settings > General > "Use Rosetta for x86_64/amd64 emulation on Apple Silicon".
+
+**Verify Rosetta works:**
+```bash
+docker run --rm --platform linux/amd64 seanmorris/phpwasm-emscripten-builder:latest echo "Rosetta works"
+```
+
+If you get `rosetta error: Rosetta is only intended to run on Apple Silicon...`, enable Rosetta in your Docker runtime settings.
 
 ### Build Process
 
@@ -104,11 +123,16 @@ When modifying PHP internals (CGI SAPI patches, extension changes, php.ini defau
 cd php-wasm-build && ./build.sh
 ```
 
-**Build time: 20-60 minutes.** The script:
-1. Clones `seanmorris/php-wasm` sm-8.5 branch into a temp dir
+**CRITICAL: Run from the host machine, NOT inside a Docker container.** The Makefile uses `docker compose` to spawn containers for each build step. Running inside Docker causes Docker-in-Docker recursion.
+
+**Build time: 20-60 minutes** (longer on Apple Silicon due to Rosetta emulation). The script:
+1. Clones `seanmorris/php-wasm` sm-8.5 branch into `/tmp/php-wasm-build-XXXXXX`
 2. Copies `.php-wasm-rc` (build config) and patches from `patches/`
-3. Runs `make worker-cgi-mjs` via Docker (Emscripten cross-compilation)
-4. Copies output (`php8.5-cgi-worker.mjs` + `.wasm`) back to `php-wasm-build/`
+3. Injects patch scripts and configure flags into the Makefile
+4. Runs `make worker-cgi-mjs` — Makefile spawns Docker containers via `docker compose` for each compilation step
+5. Checks output binary size against 4 MB gzipped budget
+6. Copies output (`php8.5-cgi-worker.mjs` + `.wasm` + helper `.mjs` modules) back to `php-wasm-build/`
+7. Cleans up the temp directory
 
 ### Adding New Patches
 
@@ -130,6 +154,43 @@ cd playground && php artisan laraworker:build
 # Test locally:
 cd .laraworker && npx wrangler dev
 ```
+
+### Verifying the Build
+
+After a successful build, verify the output:
+
+```bash
+# Check binary exists and size is reasonable
+ls -lh php-wasm-build/php8.5-cgi-worker.mjs.wasm
+# Expected: ~13-14 MB uncompressed
+
+# Check gzipped size is within budget (< 4 MB)
+gzip -c php-wasm-build/php8.5-cgi-worker.mjs.wasm | wc -c
+# Expected: < 4194304 bytes
+
+# Verify wasmTable export exists (required for ALLOW_TABLE_GROWTH persistent module)
+grep -c 'wasmTable' php-wasm-build/php8.5-cgi-worker.mjs
+# Expected: > 0 (table growth is a WASM-level property, not a named JS export)
+
+# Full integration test: build playground and run sequential requests
+scripts/playground-build.sh
+cd playground/.laraworker && npx wrangler dev &
+sleep 5
+for i in {1..10}; do curl -s -o /dev/null -w "Request $i: %{time_total}s\n" http://localhost:8787/; done
+# Request 1 should be slow (cold), requests 2+ should be fast (OPcache hot)
+```
+
+### Troubleshooting
+
+**"Rosetta is only intended to run on Apple Silicon..."** — Enable Rosetta in your Docker runtime (OrbStack/Docker Desktop). See Prerequisites above.
+
+**"pull access denied for seanmorris/phpwasm-emscripten-builder"** — The image is NOT on Docker Hub. It must already be cached in your local Docker. Check with `docker images | grep phpwasm-emscripten-builder`.
+
+**Build hangs during `git clone`** — The php-wasm repo can be large. The clone uses `--depth 1 --single-branch` to minimize download. Ensure you have a stable internet connection.
+
+**Docker-in-Docker errors** — You're running `build.sh` inside a container. Run it from the host machine directly.
+
+**"table index is out of bounds" at runtime** — The WASM binary was built without `ALLOW_TABLE_GROWTH=1`. This flag is injected into `EXTRA_FLAGS` in `build.sh` (not `LDFLAGS`, which is unused by the upstream Makefile). Verify the sed injection in build.sh is working.
 
 ### Key Files
 
