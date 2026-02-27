@@ -213,13 +213,7 @@ class BuildDirectory
         $env = file_get_contents($envPath);
 
         /** @var array<string, string> $overrides */
-        $overrides = config('laraworker.env_overrides', [
-            'APP_ENV' => 'production',
-            'APP_DEBUG' => 'false',
-            'LOG_CHANNEL' => 'stderr',
-            'SESSION_DRIVER' => 'array',
-            'CACHE_STORE' => 'array',
-        ]);
+        $overrides = config('laraworker.env_overrides', []);
 
         $lines = explode("\n", $env);
         $result = [];

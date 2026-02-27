@@ -90,6 +90,12 @@ export class PhpCgiCloudflare extends PhpCgiBase {
   /**
    * Called by PhpCgiBase after `this.binary` resolves but before env vars are set.
    * Sets HTTP_<NAME> env vars for each request header not already handled by PhpCgiBase.
+   *
+   * Critically, this also populates the CookieJar from the incoming request's
+   * Cookie header. PhpCgiBase sets HTTP_COOKIE from cookieJar.toEnv() AFTER
+   * this hook runs — so we must inject browser cookies into the CookieJar here.
+   * Without this, sessions (and CSRF tokens) are lost on Worker cold starts
+   * because the CookieJar only persists within a single isolate lifetime.
    */
   async _beforeRequest(): Promise<void> {
     const headers = this._pendingHeaders;
@@ -105,6 +111,23 @@ export class PhpCgiCloudflare extends PhpCgiBase {
       putEnv(key, '');
     }
     this._previousHeaderEnvKeys = [];
+
+    // Populate cookieJar from the incoming Cookie header so PhpCgiBase
+    // includes browser cookies when it sets HTTP_COOKIE. Clear first to
+    // prevent stale cookies from a previous request leaking across users.
+    // @ts-expect-error — untyped base class property
+    const cookieJar = this.cookieJar;
+    cookieJar.cookies.clear();
+
+    const cookieHeader = headers.get('cookie');
+    if (cookieHeader) {
+      for (const pair of cookieHeader.split(';')) {
+        const trimmed = pair.trim();
+        if (trimmed) {
+          cookieJar.store(trimmed);
+        }
+      }
+    }
 
     // Headers already set by PhpCgiBase — skip to avoid double-setting
     const skip = new Set(['host', 'cookie', 'content-type', 'content-length']);
