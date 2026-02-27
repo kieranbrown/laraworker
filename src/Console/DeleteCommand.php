@@ -39,7 +39,7 @@ class DeleteCommand extends Command
         }
 
         // Check wrangler availability
-        $checkProcess = new Process(['npx', 'wrangler', '--version'], base_path(), null, null, 30);
+        $checkProcess = $this->createProcess(['npx', 'wrangler', '--version'], base_path(), null, null, 30);
         $checkProcess->run();
 
         if (! $checkProcess->isSuccessful()) {
@@ -49,7 +49,7 @@ class DeleteCommand extends Command
         }
 
         // Check authentication
-        $authProcess = new Process(['npx', 'wrangler', 'whoami'], base_path(), null, null, 30);
+        $authProcess = $this->createProcess(['npx', 'wrangler', 'whoami'], base_path(), null, null, 30);
         $authProcess->run();
 
         if (! $authProcess->isSuccessful()) {
@@ -68,7 +68,7 @@ class DeleteCommand extends Command
             $env['CLOUDFLARE_ACCOUNT_ID'] = $accountId;
         }
 
-        $process = new Process(
+        $process = $this->createProcess(
             ['npx', 'wrangler', 'delete', '--name', $workerName],
             base_path(),
             $env,
@@ -99,5 +99,14 @@ class DeleteCommand extends Command
         $this->components->info("Worker '{$workerName}' deleted successfully.");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * @param  list<string>  $command
+     * @param  array<string, string>|null  $env
+     */
+    protected function createProcess(array $command, ?string $cwd = null, ?array $env = null, mixed $input = null, ?float $timeout = null): Process
+    {
+        return new Process($command, $cwd, $env, $input, $timeout);
     }
 }
