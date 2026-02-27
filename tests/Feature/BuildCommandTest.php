@@ -3,21 +3,36 @@
 use Illuminate\Support\Facades\File;
 use Laraworker\BuildDirectory;
 
-afterEach(function () {
-    $buildDir = base_path(BuildDirectory::DIRECTORY);
+beforeEach(function () {
+    $this->buildDir = base_path(BuildDirectory::DIRECTORY);
 
-    if (is_dir($buildDir)) {
-        File::deleteDirectory($buildDir);
+    if (is_dir($this->buildDir)) {
+        File::deleteDirectory($this->buildDir);
+    }
+
+    // Save and ensure .env exists for build tests
+    $this->envPath = base_path('.env');
+    $this->originalEnv = file_exists($this->envPath) ? file_get_contents($this->envPath) : null;
+
+    if ($this->originalEnv === null) {
+        file_put_contents($this->envPath, "APP_NAME=Test\nAPP_ENV=local\nAPP_DEBUG=true\n");
+    }
+});
+
+afterEach(function () {
+    if (is_dir($this->buildDir)) {
+        File::deleteDirectory($this->buildDir);
+    }
+
+    // Restore original .env state
+    if ($this->originalEnv !== null) {
+        file_put_contents($this->envPath, $this->originalEnv);
+    } else {
+        @unlink($this->envPath);
     }
 });
 
 test('build command generates env production', function () {
-    $envPath = base_path('.env');
-    $hadEnv = file_exists($envPath);
-    if (! $hadEnv) {
-        file_put_contents($envPath, "APP_NAME=Test\nAPP_ENV=local\nAPP_DEBUG=true\n");
-    }
-
     $envProduction = base_path(BuildDirectory::DIRECTORY.'/.env.production');
 
     // The command will fail at build script stage (no node build-app.mjs), but
@@ -33,19 +48,9 @@ test('build command generates env production', function () {
         ->toContain('LOG_CHANNEL=stderr')
         ->toContain('SESSION_DRIVER=cookie')
         ->toContain('CACHE_STORE=array');
-
-    if (! $hadEnv) {
-        unlink($envPath);
-    }
 });
 
 test('build command regenerates env production on each build', function () {
-    $envPath = base_path('.env');
-    $hadEnv = file_exists($envPath);
-    if (! $hadEnv) {
-        file_put_contents($envPath, "APP_NAME=Test\nAPP_ENV=local\nAPP_DEBUG=true\n");
-    }
-
     $envProduction = base_path(BuildDirectory::DIRECTORY.'/.env.production');
     @mkdir(dirname($envProduction), 0755, true);
     file_put_contents($envProduction, "APP_ENV=staging\n");
@@ -55,10 +60,6 @@ test('build command regenerates env production on each build', function () {
     // File should be regenerated with production overrides
     $contents = file_get_contents($envProduction);
     expect($contents)->toContain('APP_ENV=production');
-
-    if (! $hadEnv) {
-        unlink($envPath);
-    }
 });
 
 test('fix cached paths replaces base path with /app', function () {

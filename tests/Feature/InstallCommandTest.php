@@ -3,14 +3,9 @@
 use Illuminate\Support\Facades\File;
 use Laraworker\BuildDirectory;
 
-function cleanUpInstallTest(): void
-{
-    $dirs = [base_path('.cloudflare'), base_path(BuildDirectory::DIRECTORY)];
-    foreach ($dirs as $dir) {
-        if (is_dir($dir)) {
-            File::deleteDirectory($dir);
-        }
-    }
+beforeEach(function () {
+    // Save original state of files that tests will create/modify
+    $this->savedFiles = [];
 
     $files = [
         base_path('package.json'),
@@ -18,19 +13,42 @@ function cleanUpInstallTest(): void
         base_path('.env'),
         config_path('laraworker.php'),
     ];
+
     foreach ($files as $file) {
-        if (file_exists($file)) {
-            unlink($file);
+        $this->savedFiles[$file] = file_exists($file) ? file_get_contents($file) : null;
+    }
+
+    // Clean directories
+    $dirs = [base_path('.cloudflare'), base_path(BuildDirectory::DIRECTORY)];
+    foreach ($dirs as $dir) {
+        if (is_dir($dir)) {
+            File::deleteDirectory($dir);
         }
     }
-}
 
-beforeEach(function () {
-    cleanUpInstallTest();
+    // Remove files so each test starts clean
+    foreach ($files as $file) {
+        @unlink($file);
+    }
 });
 
 afterEach(function () {
-    cleanUpInstallTest();
+    // Clean directories
+    $dirs = [base_path('.cloudflare'), base_path(BuildDirectory::DIRECTORY)];
+    foreach ($dirs as $dir) {
+        if (is_dir($dir)) {
+            File::deleteDirectory($dir);
+        }
+    }
+
+    // Restore original file state
+    foreach ($this->savedFiles as $file => $contents) {
+        if ($contents !== null) {
+            file_put_contents($file, $contents);
+        } else {
+            @unlink($file);
+        }
+    }
 });
 
 test('install publishes config', function () {
