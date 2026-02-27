@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.0](https://github.com/kieranbrown/laraworker/compare/v1.3.3...v1.4.0) (2026-02-27)
+
+
+### Features
+
+* restore demo showcase site in demo/ folder with deploy CI ([54c9e36](https://github.com/kieranbrown/laraworker/commit/54c9e36f866cc622eb58585bc3886d8b46cfcc2b))
+
+
+### Bug Fixes
+
+* stop excluding blade-icon SVG files from production tar ([0a5d280](https://github.com/kieranbrown/laraworker/commit/0a5d28021e6482eedf68b1f4af1a05b6d3feead2))
+
 ## [1.3.3](https://github.com/kieranbrown/laraworker/compare/v1.3.2...v1.3.3) (2026-02-27)
 
 
