@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.2](https://github.com/kieranbrown/laraworker/compare/v1.3.1...v1.3.2) (2026-02-27)
+
+
+### Bug Fixes
+
+* **ci:** re-trigger release workflow after auto-merging release PR ([61e0847](https://github.com/kieranbrown/laraworker/commit/61e0847bcbf3d9413f039cbe032c1548fa175042))
+
 ## [1.3.1](https://github.com/kieranbrown/laraworker/compare/v1.3.0...v1.3.1) (2026-02-27)
 
 
