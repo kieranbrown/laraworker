@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.5.4](https://github.com/kieranbrown/laraworker/compare/v1.5.3...v1.5.4) (2026-02-27)
+
+
+### Bug Fixes
+
+* pass ALLOW_TABLE_GROWTH via EXTRA_FLAGS instead of unused LDFLAGS ([41dc791](https://github.com/kieranbrown/laraworker/commit/41dc791411e4e7e8be3e862e550ae72bc19ec695))
+* prevent WASM table index out of bounds crash on warm isolates ([4f9d11f](https://github.com/kieranbrown/laraworker/commit/4f9d11f719032c9aa1c1f89bd9bac8c675bca0ce))
+* rebuild WASM binary and update helper modules from upstream sm-8.5 ([bbe63d9](https://github.com/kieranbrown/laraworker/commit/bbe63d92033061a6890ea8c0ca820a4a5a4854b0))
+
 ## [1.5.3](https://github.com/kieranbrown/laraworker/compare/v1.5.2...v1.5.3) (2026-02-27)
 
 
