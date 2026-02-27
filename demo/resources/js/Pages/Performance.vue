@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import AppLayout from '../Layouts/AppLayout.vue';
 
 interface OpcacheStats {
@@ -32,6 +32,10 @@ const latency = ref<number | null>(null);
 const measuring = ref(false);
 const measurements = ref<number[]>([]);
 
+const opcacheStats = ref<OpcacheStats>({ ...props.opcacheStats });
+const memoryUsage = ref<MemoryUsage>({ ...props.memoryUsage });
+const opcacheEnabled = ref(props.opcacheEnabled);
+
 function formatBytes(bytes: number): string {
     if (bytes === 0) return '0 B';
     const units = ['B', 'KB', 'MB', 'GB'];
@@ -43,7 +47,13 @@ async function measureLatency(): Promise<void> {
     measuring.value = true;
     const start = performance.now();
     try {
-        await fetch('/performance', { headers: { 'X-Inertia': 'true', 'X-Inertia-Version': '' } });
+        const response = await fetch('/performance', { headers: { 'X-Inertia': 'true', 'X-Inertia-Version': '' } });
+        const data = await response.json();
+        if (data?.props) {
+            opcacheEnabled.value = data.props.opcacheEnabled;
+            opcacheStats.value = { ...data.props.opcacheStats };
+            memoryUsage.value = { ...data.props.memoryUsage };
+        }
     } catch {
         // Ignore fetch errors for timing purposes
     }
@@ -53,10 +63,10 @@ async function measureLatency(): Promise<void> {
     measuring.value = false;
 }
 
-const totalMemory = (props.memoryUsage.usedMemory + props.memoryUsage.freeMemory) || 1;
-const memoryPercent = Math.round((props.memoryUsage.usedMemory / totalMemory) * 100);
-const totalRequests = (props.opcacheStats.hits + props.opcacheStats.misses) || 1;
-const hitPercent = Math.round((props.opcacheStats.hits / totalRequests) * 100);
+const totalMemory = computed(() => (memoryUsage.value.usedMemory + memoryUsage.value.freeMemory) || 1);
+const memoryPercent = computed(() => Math.round((memoryUsage.value.usedMemory / totalMemory.value) * 100));
+const totalRequests = computed(() => (opcacheStats.value.hits + opcacheStats.value.misses) || 1);
+const hitPercent = computed(() => Math.round((opcacheStats.value.hits / totalRequests.value) * 100));
 </script>
 
 <template>
