@@ -27795,7 +27795,7 @@ var PHP = (() => {
       );
     };
     var stackSave = function () {
-      return (stackSave = Module["asm"]["wfa"]).apply(null, arguments);
+      return (stackSave = Module["asm"]["ima"]).apply(null, arguments);
     };
     var stackRestore = function () {
       return (stackRestore = Module["asm"]["gma"]).apply(null, arguments);
