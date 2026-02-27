@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.3.1](https://github.com/kieranbrown/laraworker/compare/v1.3.0...v1.3.1) (2026-02-27)
+
+
+### Bug Fixes
+
+* add missing playground resource files required for CI build ([bb7079e](https://github.com/kieranbrown/laraworker/commit/bb7079ecab1285277a995be1f9303dbbb15d42db))
+* **ci:** change composer install to update for local package path resolution ([199319a](https://github.com/kieranbrown/laraworker/commit/199319a57565bf291f393902683c1e8b38937f89))
+* **ci:** extract PR number from JSON in auto-merge command ([7941706](https://github.com/kieranbrown/laraworker/commit/7941706e269d8cfd395f88903dd4b058e695943d))
+* escape dot in laraworker exclude regex ([367fa1f](https://github.com/kieranbrown/laraworker/commit/367fa1fe2c406564c0480721fa259224c58a44e0))
+
+
+### Miscellaneous Chores
+
+* merge epic e-422e63 WASM memory efficiency improvements ([bd4ade2](https://github.com/kieranbrown/laraworker/commit/bd4ade226ac568851655e6050290a9f2a6378904))
+* remove --auto from pr merge ([829f45e](https://github.com/kieranbrown/laraworker/commit/829f45e17e6721fd4ef2dc6b01b2102f94d6822c))
+
+
+### Documentation
+
+* add CI pipeline verification results to epic plan ([1b878fb](https://github.com/kieranbrown/laraworker/commit/1b878fb413c5dafd2745ef184749d9e21f6ba981))
+
+
+### Continuous Integration
+
+* consolidate workflows into single CI pipeline ([e75bc3a](https://github.com/kieranbrown/laraworker/commit/e75bc3aef5c1143304f9c1878a489c1435308edf))
+* remove SSR build step from Deploy Demo ([69c05c9](https://github.com/kieranbrown/laraworker/commit/69c05c9b4affc2ca088eae523bc15c9c770fe83e))
+
 ## [1.3.0](https://github.com/kieranbrown/laraworker/compare/v1.2.1...v1.3.0) (2026-02-27)
 
 
