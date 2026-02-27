@@ -160,6 +160,38 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | MEMFS Budget Configuration
+    |--------------------------------------------------------------------------
+    |
+    | The uncompressed app bundle size that can be extracted into MEMFS
+    | (WASM virtual filesystem). This is the real memory constraint since
+    | the entire tar is extracted into linear memory before PHP runs.
+    |
+    | Default: 30 MB (Cloudflare Workers WASM has ~64 MB linear memory)
+    |
+    | When the uncompressed size exceeds this budget, a warning is shown
+    | in the build report. Set show_top_dirs=true to see which directories
+    | are using the most space.
+    |
+    */
+
+    'memfs_budget_mb' => 30,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Show Top Directories
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, the build report includes a list of the top 10 directories
+    | by uncompressed size. Useful for debugging which packages are consuming
+    | the most MEMFS space.
+    |
+    */
+
+    'show_top_dirs' => false,
+
+    /*
+    |--------------------------------------------------------------------------
     | Inertia SSR
     |--------------------------------------------------------------------------
     |
