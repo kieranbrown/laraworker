@@ -119,6 +119,6 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Auto-merge release PR
-        run: gh pr merge ${{ needs.release-please.outputs.pr }} --squash
+        run: gh pr merge ${{ fromJSON(needs.release-please.outputs.pr).number }} --squash --auto
         env:
           GH_TOKEN: ${{ github.token }}
