@@ -134,6 +134,9 @@ const DEFAULT_EXCLUDE_PATTERNS = [
   "/vendor\/kieranbrown\/laraworker\/dist\//",
   "/vendor\/kieranbrown\/laraworker\/scripts\//",
   "/vendor\/kieranbrown\/laraworker\/node_modules\//",
+  "/vendor\/kieranbrown\/laraworker\/vendor\//",
+  "/vendor\/kieranbrown\/laraworker\/\./",
+  "/vendor\/kieranbrown\/laraworker\/composer\.lock$/",
   "/vendor\/kieranbrown\/laraworker\/[^/]+\.wasm$/",
   "/vendor\/kieranbrown\/laraworker\/[^/]+\.mjs$/",
 
@@ -141,6 +144,30 @@ const DEFAULT_EXCLUDE_PATTERNS = [
   // Raw SVG component files in resources/svg/ are no longer needed at runtime (~5 MB savings).
   // Covers blade-heroicons, blade-icons, and all blade-ui-kit icon sets.
   "/vendor\\/blade-ui-kit\\/[^/]+\\/resources\\/svg\\//",
+
+  // ──── Vendor frontend assets already served by Cloudflare Static Assets ────
+  // Compiled JS/CSS/fonts are published to public/ via vendor:publish and served from
+  // CF edge before the Worker is invoked. The vendor source copies waste MEMFS space.
+  // PHP references these through Vite manifests and public URLs, not vendor paths.
+
+  // Filament compiled JS/CSS — published to public/vendor/filament/ for edge serving.
+  // Filament's asset system resolves URLs via Vite manifests (included in tar separately).
+  "/vendor\\/filament\\/[^/]+\\/resources\\/dist\\//",
+
+  // Livewire source maps — development-only, never needed in production.
+  // NOTE: Livewire JS files are kept because Livewire serves them via a PHP route
+  // handler (FrontendAssets::returnJavaScriptAsFile) that reads from dist/ at runtime.
+  "/vendor\\/livewire\\/[^/]+\\/dist\\/.*\\.map$/",
+
+  // Generic vendor compiled frontend assets in resources/dist/ directories.
+  // Convention: resources/dist/ contains publishable compiled assets (JS/CSS/fonts)
+  // that packages copy to public/ via vendor:publish. PHP reads manifests (JSON) at
+  // runtime but never reads JS/CSS/font files directly from vendor.
+  "/vendor\\/[^/]+\\/[^/]+\\/resources\\/dist\\/.*\\.(js|css|woff2?|ttf|eot)$/",
+
+  // Source map files in vendor (development-only, never needed at runtime)
+  "/vendor\\/.*\\.js\\.map$/",
+  "/vendor\\/.*\\.css\\.map$/",
 
   // Vendor CLI scripts (not useful in Workers)
   "/vendor\\/bin\\//",
@@ -1220,8 +1247,7 @@ if (devPackagesFound.length > 0) {
   if (devPackagesFound.length > 10) {
     console.error(`    ... and ${devPackagesFound.length - 10} more`);
   }
-  console.warn("  ⚠️  Continuing despite dev packages (for testing only)");
-  // process.exit(1);
+  process.exit(1);
 } else {
   console.log("  ✓ No dev packages found in bundle");
 }
@@ -1375,6 +1401,23 @@ console.log(
   `  │ MEMFS budget (${MEMFS_BUDGET_MB} MB uncompressed): ${memfsFitsBudget ? "✅ FITS" : "⚠️  EXCEEDS"}${" ".repeat(27)}│`,
 );
 console.log("  └──────────────────────────────────────────────────────────────────────┘");
+
+// Show prominent warning if MEMFS budget is exceeded
+if (!memfsFitsBudget) {
+  const excessMB = ((totalUncompressed - memfsBudgetBytes) / 1024 / 1024).toFixed(1);
+  console.log("");
+  console.log("  ⚠️  WARNING: MEMFS budget exceeded!");
+  console.log(`     Uncompressed size: ${fmt(totalUncompressed)} (budget: ${MEMFS_BUDGET_MB} MB)`);
+  console.log(`     Excess: ${excessMB} MB over budget`);
+  console.log("");
+  console.log("     This can cause 'Worker resource exceeded' errors at runtime.");
+  console.log("     To reduce size:");
+  console.log("       - Add exclude_patterns in config/laraworker.php");
+  console.log("       - Enable strip_whitespace for production builds");
+  console.log("       - Set show_top_dirs=true to see largest directories");
+  console.log("");
+}
+
 console.log("");
 
 // Show top 10 directories by uncompressed size for debugging
