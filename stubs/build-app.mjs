@@ -69,13 +69,14 @@ const DEFAULT_EXCLUDE_PATTERNS = [
   "/\\/node_modules\\//",
   "/\\/\\.DS_Store$/",
 
-  // Vendor tests, examples, benchmarks, fixtures (dev-only)
+  // Vendor tests, examples, benchmarks, fixtures, demos (dev-only)
   "/vendor\\/[^/]+\\/[^/]+\\/tests\\//",
   "/vendor\\/[^/]+\\/[^/]+\\/Tests\\//",
   "/vendor\\/[^/]+\\/[^/]+\\/test\\//",
   "/vendor\\/[^/]+\\/[^/]+\\/examples?\\//",
   "/vendor\\/[^/]+\\/[^/]+\\/benchmarks?\\//",
   "/vendor\\/[^/]+\\/[^/]+\\/fixtures?\\//",
+  "/vendor\\/[^/]+\\/[^/]+\\/demo\\//",
 
   // Vendor docs & metadata
   "/vendor\\/[^/]+\\/[^/]+\\/docs\\//",
@@ -240,7 +241,47 @@ function generatePhpStubs(extensions) {
 // Report PHP errors to stderr (visible in Cloudflare Workers logs)
 error_reporting(E_ALL);
 ini_set('display_errors', 'stderr');
-ini_set('display_startup_errors', '1');`);
+ini_set('display_startup_errors', '1');
+
+// PHP-side request profiling — logs timing of key bootstrap phases
+\$_SERVER['__PHP_T0'] = microtime(true);
+\$_SERVER['__PHP_LAST_MILESTONE'] = 0;
+register_shutdown_function(function() {
+    \$elapsed = (microtime(true) - \$_SERVER['__PHP_T0']) * 1000;
+    error_log(sprintf('[php-time] total=%.0fms uri=%s', \$elapsed, \$_SERVER['REQUEST_URI'] ?? '?'));
+});
+
+// Output buffer to detect when PHP starts generating response
+ob_start(function(\$buffer) {
+    static \$started = false;
+    if (!\$started) {
+        \$started = true;
+        \$elapsed = (microtime(true) - \$_SERVER['__PHP_T0']) * 1000;
+        error_log(sprintf('[php-output] first output at %.0fms (%d bytes)', \$elapsed, strlen(\$buffer)));
+    }
+    return \$buffer;
+}, 4096);
+
+// Track milestones when key classes are loaded
+spl_autoload_register(function(\$class) {
+    \$milestones = [
+        'Illuminate\\\\Foundation\\\\Application' => 'Laravel Application',
+        'Illuminate\\\\Routing\\\\Router' => 'Laravel Router',
+        'Illuminate\\\\View\\\\View' => 'View class',
+        'Livewire\\\\LivewireManager' => 'Livewire Manager',
+        'Livewire\\\\Mechanisms\\\\HandleComponents\\\\HandleComponents' => 'Livewire HandleComponents',
+        'Filament\\\\Panel' => 'Filament Panel',
+        'Filament\\\\Http\\\\Middleware\\\\SetUpPanel' => 'SetUpPanel middleware',
+        'Filament\\\\Auth\\\\Pages\\\\Login' => 'Filament Login page',
+        'Illuminate\\\\Session\\\\Middleware\\\\StartSession' => 'StartSession middleware',
+        'Illuminate\\\\Cookie\\\\Middleware\\\\EncryptCookies' => 'EncryptCookies middleware',
+        'Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\VerifyCsrfToken' => 'VerifyCsrfToken middleware',
+    ];
+    if (isset(\$milestones[\$class])) {
+        \$elapsed = (microtime(true) - \$_SERVER['__PHP_T0']) * 1000;
+        error_log(sprintf('[php-milestone] %s at %.0fms', \$milestones[\$class], \$elapsed));
+    }
+}, true, true);`);
 
   // umask fix for MEMFS - always needed
   stubs.push(`
@@ -427,7 +468,7 @@ if (!function_exists('filter_var')) {
             case 513: // FILTER_SANITIZE_STRING
                 return strip_tags((string) $value);
             case 1024: // FILTER_CALLBACK
-                $callback = $opts['callback'] ?? $opts ?? null;
+                $callback = is_callable($opts) ? $opts : ($opts['callback'] ?? null);
                 return is_callable($callback) ? $callback($value) : $value;
             default: // FILTER_DEFAULT
                 return (string) $value;
@@ -548,36 +589,42 @@ if (!defined('T_OPEN_TAG')) {
 }
 if (!function_exists('token_get_all')) {
     /**
-     * Minimal tokenizer that splits PHP open/close tags from inline HTML.
-     * Required by Blade compiler which tokenizes compiled templates to
-     * separate T_INLINE_HTML (for Blade directives) from PHP code blocks.
+     * String-aware PHP tokenizer stub for WASM (tokenizer extension disabled).
+     * Properly handles strings, parentheses, and close tags inside strings.
+     * Used by Livewire, phpdocumentor, serializable-closure, and other packages
+     * that call token_get_all() at runtime.
      */
     function token_get_all($code, $flags = 0) {
         $tokens = [];
-        $line = 1;
-        $pos = 0;
         $len = strlen($code);
+        $pos = 0;
+        $line = 1;
+
         while ($pos < $len) {
             $nextOpen = strpos($code, '<?', $pos);
+
             if ($nextOpen === false) {
                 $html = substr($code, $pos);
                 if ($html !== '') {
                     $tokens[] = [T_INLINE_HTML, $html, $line];
-                    $line += substr_count($html, "\\n");
                 }
                 break;
             }
+
             if ($nextOpen > $pos) {
                 $html = substr($code, $pos, $nextOpen - $pos);
                 $tokens[] = [T_INLINE_HTML, $html, $line];
                 $line += substr_count($html, "\\n");
             }
+
             if (substr($code, $nextOpen, 5) === '<?php' && ($nextOpen + 5 >= $len || !ctype_alnum($code[$nextOpen + 5]))) {
                 $tagEnd = $nextOpen + 5;
                 if ($tagEnd < $len && ($code[$tagEnd] === ' ' || $code[$tagEnd] === "\\n" || $code[$tagEnd] === "\\r" || $code[$tagEnd] === "\\t")) {
                     $tagEnd++;
                 }
-                $tokens[] = [T_OPEN_TAG, substr($code, $nextOpen, $tagEnd - $nextOpen), $line];
+                $openTag = substr($code, $nextOpen, $tagEnd - $nextOpen);
+                $tokens[] = [T_OPEN_TAG, $openTag, $line];
+                $line += substr_count($openTag, "\\n");
                 $pos = $tagEnd;
             } elseif (substr($code, $nextOpen, 3) === '<?=') {
                 $tokens[] = [T_OPEN_TAG_WITH_ECHO, '<?= ', $line];
@@ -588,27 +635,74 @@ if (!function_exists('token_get_all')) {
                 $pos = $nextOpen + 2;
                 continue;
             }
-            $closePos = strpos($code, '?>', $pos);
-            if ($closePos === false) {
-                $phpCode = substr($code, $pos);
-                if ($phpCode !== '') {
-                    $tokens[] = [T_STRING, $phpCode, $line];
-                    $line += substr_count($phpCode, "\\n");
+
+            // Character-by-character PHP block parsing — handles strings and parens
+            $current = '';
+            $inPhp = true;
+            while ($pos < $len && $inPhp) {
+                $char = $code[$pos];
+
+                if ($char === '?' && $pos + 1 < $len && $code[$pos + 1] === '>') {
+                    if ($current !== '') {
+                        $tokens[] = [T_STRING, $current, $line];
+                        $current = '';
+                    }
+                    $closeEnd = $pos + 2;
+                    if ($closeEnd < $len && $code[$closeEnd] === "\\n") $closeEnd++;
+                    $closeTag = substr($code, $pos, $closeEnd - $pos);
+                    $tokens[] = [T_CLOSE_TAG, $closeTag, $line];
+                    $line += substr_count($closeTag, "\\n");
+                    $pos = $closeEnd;
+                    $inPhp = false;
+                    continue;
                 }
-                break;
+
+                if ($char === '"' || $char === "'") {
+                    if ($current !== '') {
+                        $tokens[] = [T_STRING, $current, $line];
+                        $current = '';
+                    }
+                    $quote = $char;
+                    $str = $char;
+                    $pos++;
+                    while ($pos < $len && $code[$pos] !== $quote) {
+                        if ($code[$pos] === '\\\\' && $pos + 1 < $len) {
+                            $str .= $code[$pos] . $code[$pos + 1];
+                            $pos += 2;
+                            continue;
+                        }
+                        if ($code[$pos] === "\\n") $line++;
+                        $str .= $code[$pos];
+                        $pos++;
+                    }
+                    if ($pos < $len) {
+                        $str .= $code[$pos];
+                        $pos++;
+                    }
+                    $tokens[] = [T_CONSTANT_ENCAPSED_STRING, $str, $line];
+                    continue;
+                }
+
+                if ($char === '(' || $char === ')') {
+                    if ($current !== '') {
+                        $tokens[] = [T_STRING, $current, $line];
+                        $current = '';
+                    }
+                    $tokens[] = $char;
+                    $pos++;
+                    continue;
+                }
+
+                if ($char === "\\n") $line++;
+                $current .= $char;
+                $pos++;
             }
-            $phpCode = substr($code, $pos, $closePos - $pos);
-            if ($phpCode !== '') {
-                $tokens[] = [T_STRING, $phpCode, $line];
-                $line += substr_count($phpCode, "\\n");
+
+            if ($inPhp && $current !== '') {
+                $tokens[] = [T_STRING, $current, $line];
             }
-            $closeEnd = $closePos + 2;
-            if ($closeEnd < $len && $code[$closeEnd] === "\\n") $closeEnd++;
-            $closeTag = substr($code, $closePos, $closeEnd - $closePos);
-            $tokens[] = [T_CLOSE_TAG, $closeTag, $line];
-            $line += substr_count($closeTag, "\\n");
-            $pos = $closeEnd;
         }
+
         return $tokens;
     }
 }
@@ -665,7 +759,67 @@ if (!function_exists('openssl_cipher_iv_length')) {
 // Class preloader — eliminates per-class autoloader lookups in WASM
 if (file_exists('/app/bootstrap/preload.php')) {
     require_once '/app/bootstrap/preload.php';
-}`);
+}
+
+// Autoloader timing — track how much time is spent loading classes
+\$_SERVER['__AUTOLOAD_COUNT'] = 0;
+\$_SERVER['__AUTOLOAD_TIME'] = 0.0;
+spl_autoload_register(function(\$class) {
+    \$t = microtime(true);
+    // Let the real autoloader do its thing by returning false
+    return;
+}, true, true);
+// Wrap the existing autoloader to measure class loading time
+\$_SERVER['__AUTOLOAD_WRAP'] = function() {
+    \$loaders = spl_autoload_functions();
+    // Remove our timing loader (it's first due to prepend=true)
+    spl_autoload_unregister(\$loaders[0]);
+    // Replace the Composer autoloader with a timing wrapper
+    if (count(\$loaders) > 1) {
+        \$original = \$loaders[1];
+        spl_autoload_unregister(\$original);
+        spl_autoload_register(function(\$class) use (\$original) {
+            \$_SERVER['__AUTOLOAD_COUNT']++;
+            \$n = \$_SERVER['__AUTOLOAD_COUNT'];
+            \$now = microtime(true);
+            \$total = (\$now - \$_SERVER['__PHP_T0']) * 1000;
+            // Detect long gaps between class loads (>2 seconds)
+            if (\$_SERVER['__PHP_LAST_MILESTONE'] > 0) {
+                \$gap = (\$now - \$_SERVER['__PHP_LAST_MILESTONE']) * 1000;
+                if (\$gap > 2000) {
+                    error_log(sprintf('[php-gap] %.0fms gap before class #%d: %s', \$gap, \$n, \$class));
+                }
+            }
+            \$_SERVER['__PHP_LAST_MILESTONE'] = \$now;
+            // After class #650, log BEFORE loading to catch hanging class
+            if (\$n > 650) {
+                error_log(sprintf('[php-loading] #%d at %.0fms: %s', \$n, \$total, \$class));
+            }
+            \$t = microtime(true);
+            \$original(\$class);
+            \$elapsed = microtime(true) - \$t;
+            \$_SERVER['__AUTOLOAD_TIME'] += \$elapsed;
+            // Log every 25th class
+            if (\$n % 25 === 0) {
+                \$total = (microtime(true) - \$_SERVER['__PHP_T0']) * 1000;
+                error_log(sprintf('[php-autoload] #%d at %.0fms: %s (%.0fms)',
+                    \$n, \$total, \$class, \$elapsed * 1000));
+            }
+            if (\$elapsed > 0.05) {
+                error_log(sprintf('[php-slow-class] %s took %.0fms', \$class, \$elapsed * 1000));
+            }
+        });
+    }
+};
+\$_SERVER['__AUTOLOAD_WRAP']();
+
+register_shutdown_function(function() {
+    \$total = (microtime(true) - \$_SERVER['__PHP_T0']) * 1000;
+    \$autoload = \$_SERVER['__AUTOLOAD_TIME'] * 1000;
+    \$autoloadCount = \$_SERVER['__AUTOLOAD_COUNT'];
+    error_log(sprintf('[php-time] total=%.0fms autoload=%.0fms classes=%d uri=%s',
+        \$total, \$autoload, \$autoloadCount, \$_SERVER['REQUEST_URI'] ?? '?'));
+});`);
 
   // The WASM PHP tokenizer is broken: token_get_all() treats all code after <?php
   // as a single T_STRING token instead of properly tokenizing. This breaks both:
@@ -790,13 +944,53 @@ namespace Illuminate\\View\\Compilers {
 }
 `;
 
+  // uniqid() hangs on the 2nd call within a single WASM process because the native
+  // C implementation calls usleep(1) internally and usleep is broken under Emscripten
+  // Asyncify. PHP resolves bare function calls to the current namespace first, so we
+  // define a safe uniqid() in every namespace that calls it at runtime.
+  //
+  // The global helper __wasm_safe_uniqid() lives in the global namespace and produces
+  // output identical to native uniqid(): prefix + 13 hex chars (+ ".XXXXXXXX" with
+  // more_entropy). A static counter ensures uniqueness even when microtime hasn't
+  // advanced between calls.
+  const uniqidNamespaces = ["Livewire\\Features\\SupportQueryString", "Illuminate\\Cache"];
+  const wasmUniqidFix =
+    `
+namespace {
+    function __wasm_safe_uniqid(string $prefix = '', bool $more_entropy = false): string {
+        static $counter = 0;
+        $counter++;
+        $time = microtime(true);
+        $sec = (int)$time;
+        $usec = (int)(($time - $sec) * 1000000);
+        $result = $prefix . sprintf('%08x%05x', $sec, $usec + $counter);
+        if ($more_entropy) {
+            $result .= sprintf('.%08d', mt_rand(0, 99999999));
+        }
+        return $result;
+    }
+}
+` +
+    uniqidNamespaces
+      .map(
+        (ns) => `
+namespace ${ns} {
+    function uniqid(string $prefix = '', bool $more_entropy = false): string {
+        return \\__wasm_safe_uniqid($prefix, $more_entropy);
+    }
+}
+`,
+      )
+      .join("");
+
   return (
     "<?php\n// Auto-generated PHP stubs for missing extensions\n// Extensions enabled: " +
     JSON.stringify(extensions) +
     "\nnamespace {\n" +
     stubs.join("\n") +
     "\n}\n" +
-    bladeTokenizerFix
+    bladeTokenizerFix +
+    wasmUniqidFix
   );
 }
 
@@ -1199,20 +1393,181 @@ for (const { fullPath, tarPath } of extraManifests) {
   console.log(`  ✓ Vite manifest included in tar (${tarPath})`);
 }
 
-// Strip Carbon locale files (keep only en.php — no regional variants like en_AU, en_GB)
+// ──── Locale stripping ────
+// Strip locale/language files from vendor packages, keeping only configured locales.
+// This saves significant MEMFS space — e.g. Filament ships ~13 MB of locale files.
+const KEEP_LOCALES = config.locales ?? ["en"];
+
+// Carbon locale files: vendor/nesbot/carbon/src/Carbon/Lang/{locale}.php
 const carbonLangPrefix = "vendor/nesbot/carbon/src/Carbon/Lang/";
 const carbonRemoved = [];
 for (let i = allFiles.length - 1; i >= 0; i--) {
   const f = allFiles[i];
   if (!f.path.startsWith(carbonLangPrefix) || f.isDir) continue;
   const filename = f.path.substring(carbonLangPrefix.length);
-  if (filename !== "en.php") {
+  // Carbon uses flat files: en.php, fr.php, etc.
+  const locale = filename.replace(/\.php$/, "");
+  if (!KEEP_LOCALES.includes(locale)) {
     carbonRemoved.push(f.path);
     allFiles.splice(i, 1);
   }
 }
 if (carbonRemoved.length > 0) {
-  console.log(`  Stripped ${carbonRemoved.length} Carbon locale files (kept en.php only)`);
+  console.log(
+    `  Stripped ${carbonRemoved.length} Carbon locale files (kept: ${KEEP_LOCALES.join(", ")})`,
+  );
+}
+
+// Vendor lang directories: vendor/*/*/resources/lang/{locale}/ and vendor/*/resources/lang/{locale}/
+// Matches Filament, Cachet, Livewire, and other Laravel packages that use resources/lang/{locale}/ structure.
+const vendorLangPattern = /^vendor\/(?:[^/]+\/)?[^/]+\/resources\/lang\/([^/]+)\//;
+const vendorLangRemoved = [];
+for (let i = allFiles.length - 1; i >= 0; i--) {
+  const f = allFiles[i];
+  const match = f.path.match(vendorLangPattern);
+  if (!match) continue;
+  const locale = match[1];
+  if (!KEEP_LOCALES.includes(locale)) {
+    vendorLangRemoved.push(f.path);
+    allFiles.splice(i, 1);
+  }
+}
+if (vendorLangRemoved.length > 0) {
+  console.log(
+    `  Stripped ${vendorLangRemoved.length} vendor locale files (kept: ${KEEP_LOCALES.join(", ")})`,
+  );
+}
+
+// ──── Blade icon tree-shaking ────
+// Scan all PHP/Blade files for blade-icon references (e.g. heroicon-o-check, heroicon-m-calendar)
+// and remove unused SVG files from blade icon packages. Filament ships 1,288 heroicon SVGs (~5 MB)
+// but a typical app uses only 20-30 icons.
+//
+// Also handles dynamically-referenced icons via Filament's Heroicon enum — icons referenced as
+// Heroicon::Eye are resolved at runtime to heroicon-m-eye / heroicon-s-eye / heroicon-c-eye
+// depending on icon size, so we parse the enum and scan for Heroicon:: references in PHP files.
+const BLADE_ICON_SETS = [
+  {
+    prefix: "heroicon-",
+    svgDir: "vendor/blade-ui-kit/blade-heroicons/resources/svg/",
+    // Filament's Heroicon enum generates icon names dynamically at runtime
+    enumFile: "vendor/filament/support/src/Icons/Heroicon.php",
+    enumRefPattern: /Heroicon::(\w+)/g,
+  },
+];
+
+for (const iconSet of BLADE_ICON_SETS) {
+  const svgPrefix = iconSet.svgDir;
+  const svgFiles = allFiles.filter(
+    (f) => !f.isDir && f.path.startsWith(svgPrefix) && f.path.endsWith(".svg"),
+  );
+  if (svgFiles.length === 0) continue;
+
+  // Scan all PHP, Blade, and compiled view files for literal icon references
+  const usedIcons = new Set();
+  const iconRefPattern = new RegExp(
+    iconSet.prefix.replace(/-/g, "[-.]") + "([a-z0-9][-a-z0-9]*)",
+    "g",
+  );
+
+  for (const f of allFiles) {
+    if (f.isDir || !f.fullPath) continue;
+    if (
+      !(
+        f.path.endsWith(".php") ||
+        f.path.endsWith(".blade.php") ||
+        f.path.startsWith("storage/framework/views/")
+      )
+    )
+      continue;
+    try {
+      const content = readFileSync(f.fullPath, "utf8");
+      for (const match of content.matchAll(iconRefPattern)) {
+        // match[0] = "heroicon-o-check", match[1] = "o-check"
+        // SVG filename is the part after the prefix: "o-check.svg"
+        usedIcons.add(match[1] + ".svg");
+      }
+    } catch {}
+  }
+
+  // Scan for dynamically-referenced icons via enum (e.g. Filament's Heroicon::Eye)
+  // These are resolved at runtime by getIconForSize() to heroicon-{size}-{value}
+  if (iconSet.enumFile) {
+    const enumEntry = allFiles.find((f) => !f.isDir && f.path === iconSet.enumFile);
+    if (enumEntry?.fullPath) {
+      try {
+        const enumContent = readFileSync(enumEntry.fullPath, "utf8");
+        // Parse all "case CaseName = 'value';" entries
+        const caseMap = new Map();
+        for (const m of enumContent.matchAll(/case\s+(\w+)\s*=\s*'([^']+)'/g)) {
+          caseMap.set(m[1], m[2]);
+        }
+
+        if (caseMap.size > 0) {
+          // Scan PHP files for Heroicon::CaseName references
+          const referencedValues = new Set();
+          for (const f of allFiles) {
+            if (f.isDir || !f.fullPath || !f.path.endsWith(".php")) continue;
+            try {
+              const content = readFileSync(f.fullPath, "utf8");
+              for (const m of content.matchAll(iconSet.enumRefPattern)) {
+                const value = caseMap.get(m[1]);
+                if (value) referencedValues.add(value);
+              }
+            } catch {}
+          }
+
+          // For each referenced enum value, generate all size variant SVG filenames
+          let enumIconsAdded = 0;
+          for (const value of referencedValues) {
+            if (value.startsWith("o-")) {
+              // Outlined variants use the value directly
+              usedIcons.add(value + ".svg");
+              enumIconsAdded++;
+            } else {
+              // Non-outlined: generate all size variants (m-, s-, c-)
+              for (const sizePrefix of ["m-", "s-", "c-"]) {
+                usedIcons.add(sizePrefix + value + ".svg");
+              }
+              enumIconsAdded += 3;
+            }
+          }
+
+          if (enumIconsAdded > 0) {
+            console.log(
+              `  Found ${referencedValues.size} Heroicon enum references → ${enumIconsAdded} SVG variants preserved`,
+            );
+          }
+        }
+      } catch {}
+    }
+  }
+
+  if (usedIcons.size === 0) {
+    // Could not detect any used icons — keep all to be safe
+    console.log(
+      `  ⚠ No ${iconSet.prefix}* references detected, keeping all ${svgFiles.length} SVGs`,
+    );
+    continue;
+  }
+
+  const iconsBefore = svgFiles.length;
+  let iconsRemoved = 0;
+  for (let i = allFiles.length - 1; i >= 0; i--) {
+    const f = allFiles[i];
+    if (f.isDir || !f.path.startsWith(svgPrefix) || !f.path.endsWith(".svg")) continue;
+    const filename = f.path.substring(svgPrefix.length);
+    if (!usedIcons.has(filename)) {
+      allFiles.splice(i, 1);
+      iconsRemoved++;
+    }
+  }
+
+  if (iconsRemoved > 0) {
+    console.log(
+      `  Stripped ${iconsRemoved}/${iconsBefore} unused ${iconSet.prefix}* SVGs (kept ${usedIcons.size} used icons)`,
+    );
+  }
 }
 
 // Verify no dev packages in the final bundle
