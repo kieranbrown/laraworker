@@ -268,6 +268,8 @@ class BuildDirectory
             'strip_whitespace' => config('laraworker.strip_whitespace', false),
             'strip_providers' => config('laraworker.strip_providers', []),
             'public_assets' => config('laraworker.public_assets', true),
+            'memfs_budget_mb' => config('laraworker.memfs_budget_mb', 30),
+            'show_top_dirs' => config('laraworker.show_top_dirs', false),
         ];
 
         file_put_contents(
