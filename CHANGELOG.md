@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.2](https://github.com/kieranbrown/laraworker/compare/v1.5.1...v1.5.2) (2026-02-27)
+
+
+### Bug Fixes
+
+* move extensions config directly below its comment block ([ab3c802](https://github.com/kieranbrown/laraworker/commit/ab3c80224e01fa0c671754bfbbac85c057752e23))
+* remove profiling instrumentation from php-stubs to fix WASM table crash ([33bc88e](https://github.com/kieranbrown/laraworker/commit/33bc88e1ea67c529eef75e769229acf37fb5a704))
+
 ## [1.5.1](https://github.com/kieranbrown/laraworker/compare/v1.5.0...v1.5.1) (2026-02-27)
 
 
