@@ -49,6 +49,28 @@ interface Env {
    * and should NOT be enabled in production unless debugging performance issues.
    */
   OPCACHE_DEBUG?: string;
+  /**
+   * Set to "true" to log WASM heap size and memory metrics on every request.
+   * Useful for diagnosing "Worker exceeded resource limits" (Error 1102).
+   */
+  MEMORY_DEBUG?: string;
+}
+
+/**
+ * Log WASM heap and memory metrics.
+ * Works by inspecting the Emscripten HEAP buffer exposed by PhpCgiCloudflare.
+ */
+function logMemory(label: string, instance: PhpCgiCloudflare | null): void {
+  const parts = [`[mem] ${label}`];
+  try {
+    // PhpCgiCloudflare inherits from PhpCgiBase which exposes the Emscripten module
+    // after initialization. The WASM heap is available as HEAP8.buffer.
+    const mod = (instance as any)?._phpModule ?? (instance as any)?.phpModule;
+    if (mod?.HEAP8?.buffer) {
+      parts.push(`wasm=${(mod.HEAP8.buffer.byteLength / 1024 / 1024).toFixed(1)}MB`);
+    }
+  } catch {}
+  console.log(parts.join(' '));
 }
 
 let php: PhpCgiCloudflare | null = null;
@@ -113,9 +135,16 @@ async function initializeFilesystem(
     new DecompressionStream('gzip'),
   );
   const tarBuffer = await new Response(decompressed).arrayBuffer();
+  if ((env as Env).MEMORY_DEBUG === 'true') {
+    console.log(`[mem] tar decompressed: ${(tarBuffer.byteLength / 1024 / 1024).toFixed(1)}MB`);
+    logMemory('before-untar', php);
+  }
 
   // Unpack into MEMFS at /app
   untar(FS, tarBuffer, '/app');
+  if ((env as Env).MEMORY_DEBUG === 'true') {
+    logMemory('after-untar', php);
+  }
 
   // Ensure required Laravel directories exist
   const dirs = [
@@ -222,6 +251,22 @@ export default {
       return new Response('OK', { status: 200, headers: { 'Content-Type': 'text/plain' } });
     }
 
+    // Memory diagnostic endpoint — protected by env var
+    if (url.pathname === '/__memory-debug' && env.MEMORY_DEBUG === 'true') {
+      const info: Record<string, unknown> = { requestCount };
+      try {
+        const mod = (php as any)?._phpModule ?? (php as any)?.phpModule;
+        if (mod?.HEAP8?.buffer) {
+          info.wasmHeapBytes = mod.HEAP8.buffer.byteLength;
+          info.wasmHeapMB = +(mod.HEAP8.buffer.byteLength / 1024 / 1024).toFixed(1);
+        }
+      } catch {}
+      return new Response(JSON.stringify(info, null, 2), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     // OPcache diagnostic endpoint — protected by env var
     if (url.pathname === '/__opcache-status' && env.OPCACHE_DEBUG === 'true') {
       try {
@@ -245,6 +290,10 @@ export default {
       const instance = await ensureInitialized(env);
       const tInit = performance.now();
 
+      if (env.MEMORY_DEBUG === 'true') {
+        logMemory(`req#${requestCount + 1} after-init`, instance);
+      }
+
       // Update globalThis.location to match the actual request URL so that
       // PhpCgiBase sets HTTP_HOST and REQUEST_SCHEME correctly (it reads
       // from globalThis.location). The shim defaults to https://localhost.
@@ -255,6 +304,10 @@ export default {
       // by Cloudflare Static Assets before the worker is invoked
       const response = await instance.request(request);
       const tPhp = performance.now();
+
+      if (env.MEMORY_DEBUG === 'true') {
+        logMemory(`req#${requestCount + 1} after-php`, instance);
+      }
 
       if (!response || typeof response.headers?.get !== 'function') {
         console.error('PHP returned invalid response:', typeof response, response);

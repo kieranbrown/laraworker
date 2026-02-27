@@ -160,6 +160,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Locales
+    |--------------------------------------------------------------------------
+    |
+    | Locale codes to keep in the vendor bundle. All other locale/language
+    | files are stripped at build time. This significantly reduces bundle
+    | size — e.g. Filament ships ~13 MB of locale files across 50+ languages.
+    |
+    | Default: ['en'] — keeps only English translations.
+    |
+    */
+
+    'locales' => ['en'],
+
+    /*
+    |--------------------------------------------------------------------------
     | MEMFS Budget Configuration
     |--------------------------------------------------------------------------
     |

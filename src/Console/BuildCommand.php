@@ -90,6 +90,8 @@ class BuildCommand extends Command
 
         $this->generatePreloadFile();
 
+        $this->cacheFilamentComponents($basePath);
+
         $this->components->task('Preparing production vendor (no-dev)', function () use ($basePath) {
             return $this->prepareProductionVendor($basePath);
         });
@@ -480,6 +482,27 @@ class BuildCommand extends Command
             file_put_contents($preloadPath, implode("\n", $lines)."\n");
 
             return true;
+        });
+    }
+
+    /**
+     * Cache Filament components if Filament is installed.
+     *
+     * Filament's discoverResources/Pages/Widgets performs expensive directory
+     * scanning + ReflectionClass instantiation on every request. Running
+     * filament:cache-components pre-computes the discovery results into a
+     * PHP array at bootstrap/cache/filament/panels/*.php, eliminating this
+     * overhead at runtime.
+     */
+    private function cacheFilamentComponents(string $basePath): void
+    {
+        // Only run if Filament is installed (check for the artisan command)
+        if (! class_exists(\Filament\FilamentServiceProvider::class)) {
+            return;
+        }
+
+        $this->components->task('Caching Filament components', function () use ($basePath) {
+            return $this->runArtisan(['filament:cache-components'], $basePath);
         });
     }
 

@@ -1199,20 +1199,118 @@ for (const { fullPath, tarPath } of extraManifests) {
   console.log(`  ✓ Vite manifest included in tar (${tarPath})`);
 }
 
-// Strip Carbon locale files (keep only en.php — no regional variants like en_AU, en_GB)
+// ──── Locale stripping ────
+// Strip locale/language files from vendor packages, keeping only configured locales.
+// This saves significant MEMFS space — e.g. Filament ships ~13 MB of locale files.
+const KEEP_LOCALES = config.locales ?? ["en"];
+
+// Carbon locale files: vendor/nesbot/carbon/src/Carbon/Lang/{locale}.php
 const carbonLangPrefix = "vendor/nesbot/carbon/src/Carbon/Lang/";
 const carbonRemoved = [];
 for (let i = allFiles.length - 1; i >= 0; i--) {
   const f = allFiles[i];
   if (!f.path.startsWith(carbonLangPrefix) || f.isDir) continue;
   const filename = f.path.substring(carbonLangPrefix.length);
-  if (filename !== "en.php") {
+  // Carbon uses flat files: en.php, fr.php, etc.
+  const locale = filename.replace(/\.php$/, "");
+  if (!KEEP_LOCALES.includes(locale)) {
     carbonRemoved.push(f.path);
     allFiles.splice(i, 1);
   }
 }
 if (carbonRemoved.length > 0) {
-  console.log(`  Stripped ${carbonRemoved.length} Carbon locale files (kept en.php only)`);
+  console.log(
+    `  Stripped ${carbonRemoved.length} Carbon locale files (kept: ${KEEP_LOCALES.join(", ")})`,
+  );
+}
+
+// Vendor lang directories: vendor/*/*/resources/lang/{locale}/ and vendor/*/resources/lang/{locale}/
+// Matches Filament, Cachet, Livewire, and other Laravel packages that use resources/lang/{locale}/ structure.
+const vendorLangPattern = /^vendor\/(?:[^/]+\/)?[^/]+\/resources\/lang\/([^/]+)\//;
+const vendorLangRemoved = [];
+for (let i = allFiles.length - 1; i >= 0; i--) {
+  const f = allFiles[i];
+  const match = f.path.match(vendorLangPattern);
+  if (!match) continue;
+  const locale = match[1];
+  if (!KEEP_LOCALES.includes(locale)) {
+    vendorLangRemoved.push(f.path);
+    allFiles.splice(i, 1);
+  }
+}
+if (vendorLangRemoved.length > 0) {
+  console.log(
+    `  Stripped ${vendorLangRemoved.length} vendor locale files (kept: ${KEEP_LOCALES.join(", ")})`,
+  );
+}
+
+// ──── Blade icon tree-shaking ────
+// Scan all PHP/Blade files for blade-icon references (e.g. heroicon-o-check, heroicon-m-calendar)
+// and remove unused SVG files from blade icon packages. Filament ships 1,288 heroicon SVGs (~5 MB)
+// but a typical app uses only 20-30 icons.
+const BLADE_ICON_SETS = [
+  { prefix: "heroicon-", svgDir: "vendor/blade-ui-kit/blade-heroicons/resources/svg/" },
+];
+
+for (const iconSet of BLADE_ICON_SETS) {
+  const svgPrefix = iconSet.svgDir;
+  const svgFiles = allFiles.filter(
+    (f) => !f.isDir && f.path.startsWith(svgPrefix) && f.path.endsWith(".svg"),
+  );
+  if (svgFiles.length === 0) continue;
+
+  // Scan all PHP, Blade, and compiled view files for icon references
+  const usedIcons = new Set();
+  const iconRefPattern = new RegExp(
+    iconSet.prefix.replace(/-/g, "[-.]") + "([a-z0-9][-a-z0-9]*)",
+    "g",
+  );
+
+  for (const f of allFiles) {
+    if (f.isDir || !f.fullPath) continue;
+    if (
+      !(
+        f.path.endsWith(".php") ||
+        f.path.endsWith(".blade.php") ||
+        f.path.startsWith("storage/framework/views/")
+      )
+    )
+      continue;
+    try {
+      const content = readFileSync(f.fullPath, "utf8");
+      for (const match of content.matchAll(iconRefPattern)) {
+        // match[0] = "heroicon-o-check", match[1] = "o-check"
+        // SVG filename is the part after the prefix: "o-check.svg"
+        usedIcons.add(match[1] + ".svg");
+      }
+    } catch {}
+  }
+
+  if (usedIcons.size === 0) {
+    // Could not detect any used icons — keep all to be safe
+    console.log(
+      `  ⚠ No ${iconSet.prefix}* references detected, keeping all ${svgFiles.length} SVGs`,
+    );
+    continue;
+  }
+
+  const iconsBefore = svgFiles.length;
+  let iconsRemoved = 0;
+  for (let i = allFiles.length - 1; i >= 0; i--) {
+    const f = allFiles[i];
+    if (f.isDir || !f.path.startsWith(svgPrefix) || !f.path.endsWith(".svg")) continue;
+    const filename = f.path.substring(svgPrefix.length);
+    if (!usedIcons.has(filename)) {
+      allFiles.splice(i, 1);
+      iconsRemoved++;
+    }
+  }
+
+  if (iconsRemoved > 0) {
+    console.log(
+      `  Stripped ${iconsRemoved}/${iconsBefore} unused ${iconSet.prefix}* SVGs (kept ${usedIcons.size} used icons)`,
+    );
+  }
 }
 
 // Verify no dev packages in the final bundle
