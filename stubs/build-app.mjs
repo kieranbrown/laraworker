@@ -135,7 +135,7 @@ const DEFAULT_EXCLUDE_PATTERNS = [
   "/vendor\/kieranbrown\/laraworker\/scripts\//",
   "/vendor\/kieranbrown\/laraworker\/node_modules\//",
   "/vendor\/kieranbrown\/laraworker\/vendor\//",
-  "/vendor\/kieranbrown\/laraworker\/\./",
+  "/vendor\/kieranbrown\/laraworker\/\\./",
   "/vendor\/kieranbrown\/laraworker\/composer\.lock$/",
   "/vendor\/kieranbrown\/laraworker\/[^/]+\.wasm$/",
   "/vendor\/kieranbrown\/laraworker\/[^/]+\.mjs$/",
