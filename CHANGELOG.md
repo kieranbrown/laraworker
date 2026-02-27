@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.5.1](https://github.com/kieranbrown/laraworker/compare/v1.5.0...v1.5.1) (2026-02-27)
+
+
+### Bug Fixes
+
+* forward incoming Cookie header to PHP and remove hardcoded env_overrides fallback ([7b3b064](https://github.com/kieranbrown/laraworker/commit/7b3b06468221f343c5fcafc5ed4ca65257cf1922))
+
+
+### Continuous Integration
+
+* only run tests on pull requests ([f6f3ab3](https://github.com/kieranbrown/laraworker/commit/f6f3ab3ca3cdca697c776e9f0fb12717fd7a1165))
+
 ## [1.5.0](https://github.com/kieranbrown/laraworker/compare/v1.4.0...v1.5.0) (2026-02-27)
 
 
