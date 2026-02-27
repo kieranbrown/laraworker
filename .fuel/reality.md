@@ -31,6 +31,8 @@ Standalone Composer package (`kieranbrown/laraworker`) for running Laravel on Cl
 - **Deployment isolation**: Playground uses a unique `LARAWORKER_NAME` env var (not `laraworker`) to avoid overwriting the production demo (`laraworker.kswb.dev`). Teardown scripts call `laraworker:delete` to clean up ephemeral workers after testing.
 - **OPcache configuration**: `config/laraworker.php` exposes OPcache settings — OPcache caches compiled PHP opcodes in WASM linear memory for warm request speedup. OPcache SHM now persists across requests within an isolate (SAPI lifecycle patched). Works alongside ClassPreloader (complementary optimizations). See `.fuel/docs/performance-investigation.md` for measured results (~17ms warm locally, 781+ hits in production)
 - **D1 database binding**: `config/laraworker.php` accepts `d1_databases` array; `BuildDirectory` injects D1 bindings into wrangler config and the worker stub exposes them to PHP via `$_ENV`. Uses `seanmorris/pdo-cfd1` PDO driver (statically linked in WASM). Laravel's `database.php` configured with `pdo_cfd1` driver pointing to D1 binding name.
+- **MEMFS budget monitoring**: `stubs/build-app.mjs` calculates uncompressed MEMFS size post-build and compares against configurable `memfs_budget` (default 50MB). Build report shows compressed + uncompressed sizes with ✅ FITS / ⚠️ EXCEEDS indicator. Optional `show_top_dirs` config lists top 10 dirs by size.
+- **Laraworker self-exclusion**: `stubs/build-app.mjs` excludes laraworker's own non-runtime files from the app tar (php-wasm-build, playground, stubs, dist, scripts, node_modules, dotfiles, *.wasm, *.mjs). Saves ~15MB uncompressed from MEMFS. Only `src/`, `config/`, `routes/`, `resources/`, `composer.json`, `LICENSE` are kept.
 
 ## Quality Gates
 | Tool | Command | Purpose |
@@ -40,9 +42,9 @@ Standalone Composer package (`kieranbrown/laraworker`) for running Laravel on Cl
 | Fuel quality-gate | `.fuel/quality-gate` | Pre-commit hook: Pint auto-fix on staged PHP files → restage → full Pest suite |
 
 ## Recent Changes
+- 2026-02-27: Added MEMFS budget monitoring — build report shows uncompressed MEMFS size with configurable budget (`memfs_budget`, `show_top_dirs` in config). Laraworker self-exclusion from app tar saves ~15MB uncompressed.
 - 2026-02-25: Added Cloudflare D1 database support via `seanmorris/pdo-cfd1` — WASM rebuilt with PDO+pdo_cfd1, `BuildDirectory` injects D1 bindings into wrangler config, worker stub exposes bindings to PHP, playground demo added.
 - 2026-02-25: Added `laraworker:delete` command — deletes a deployed Cloudflare Worker by name; teardown scripts now call this to prevent orphaned workers. Playground uses unique `LARAWORKER_NAME` (via env) to avoid overwriting production (`laraworker.kswb.dev`).
-- OPcache truly persists: Patched `cgi_main.c` to skip `php_module_startup()` after first request (if-guard with `_wasm_module_started` flag). OPcache SHM survives between requests within an isolate. Warm requests now ~17ms locally, 781+ hits observed in production.
+- 2026-02-24: OPcache truly persists: Patched `cgi_main.c` to skip `php_module_startup()` after first request (if-guard with `_wasm_module_started` flag). OPcache SHM survives between requests within an isolate. Warm requests now ~17ms locally, 781+ hits observed in production.
 - 2026-02-23: Statically linked OPcache into custom PHP WASM binary — caches compiled opcodes in WASM linear memory, directly addresses cold-start bottleneck (parsing all framework files without OPcache)
-- 2026-02-23: Added OPcache configuration to `config/laraworker.php` — exposes OPcache settings for WASM environment with sensible defaults for ~3x warm request speedup
-_Last updated: 2026-02-25_
+_Last updated: 2026-02-27_
