@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import AppLayout from '../Layouts/AppLayout.vue';
 
 interface Props {
@@ -67,12 +67,12 @@ const featureCards = [
                         >
                             View on GitHub
                         </a>
-                        <a
+                        <Link
                             href="/performance"
                             class="px-6 py-3 rounded-xl border border-gray-700 hover:border-gray-500 text-gray-300 hover:text-white font-semibold transition-colors"
                         >
                             See Performance
-                        </a>
+                        </Link>
                     </div>
                 </div>
             </div>
