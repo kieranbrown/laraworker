@@ -69,7 +69,6 @@ jobs:
           {
             echo "CLOUDFLARE_ACCOUNT_ID=$CLOUDFLARE_ACCOUNT_ID"
             echo "LARAWORKER_NAME=laraworker"
-            echo "LARAWORKER_INERTIA_SSR=true"
           } >> .env
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -85,7 +84,7 @@ jobs:
 
       - name: Build frontend assets
         working-directory: playground
-        run: bun run build && bun run build:ssr
+        run: bun run build
 
       - name: Install laraworker
         working-directory: playground
