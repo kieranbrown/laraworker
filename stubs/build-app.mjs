@@ -241,47 +241,7 @@ function generatePhpStubs(extensions) {
 // Report PHP errors to stderr (visible in Cloudflare Workers logs)
 error_reporting(E_ALL);
 ini_set('display_errors', 'stderr');
-ini_set('display_startup_errors', '1');
-
-// PHP-side request profiling — logs timing of key bootstrap phases
-\$_SERVER['__PHP_T0'] = microtime(true);
-\$_SERVER['__PHP_LAST_MILESTONE'] = 0;
-register_shutdown_function(function() {
-    \$elapsed = (microtime(true) - \$_SERVER['__PHP_T0']) * 1000;
-    error_log(sprintf('[php-time] total=%.0fms uri=%s', \$elapsed, \$_SERVER['REQUEST_URI'] ?? '?'));
-});
-
-// Output buffer to detect when PHP starts generating response
-ob_start(function(\$buffer) {
-    static \$started = false;
-    if (!\$started) {
-        \$started = true;
-        \$elapsed = (microtime(true) - \$_SERVER['__PHP_T0']) * 1000;
-        error_log(sprintf('[php-output] first output at %.0fms (%d bytes)', \$elapsed, strlen(\$buffer)));
-    }
-    return \$buffer;
-}, 4096);
-
-// Track milestones when key classes are loaded
-spl_autoload_register(function(\$class) {
-    \$milestones = [
-        'Illuminate\\\\Foundation\\\\Application' => 'Laravel Application',
-        'Illuminate\\\\Routing\\\\Router' => 'Laravel Router',
-        'Illuminate\\\\View\\\\View' => 'View class',
-        'Livewire\\\\LivewireManager' => 'Livewire Manager',
-        'Livewire\\\\Mechanisms\\\\HandleComponents\\\\HandleComponents' => 'Livewire HandleComponents',
-        'Filament\\\\Panel' => 'Filament Panel',
-        'Filament\\\\Http\\\\Middleware\\\\SetUpPanel' => 'SetUpPanel middleware',
-        'Filament\\\\Auth\\\\Pages\\\\Login' => 'Filament Login page',
-        'Illuminate\\\\Session\\\\Middleware\\\\StartSession' => 'StartSession middleware',
-        'Illuminate\\\\Cookie\\\\Middleware\\\\EncryptCookies' => 'EncryptCookies middleware',
-        'Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\VerifyCsrfToken' => 'VerifyCsrfToken middleware',
-    ];
-    if (isset(\$milestones[\$class])) {
-        \$elapsed = (microtime(true) - \$_SERVER['__PHP_T0']) * 1000;
-        error_log(sprintf('[php-milestone] %s at %.0fms', \$milestones[\$class], \$elapsed));
-    }
-}, true, true);`);
+ini_set('display_startup_errors', '1');`);
 
   // umask fix for MEMFS - always needed
   stubs.push(`
@@ -314,6 +274,11 @@ if (!function_exists('iconv_substr')) {
 if (!function_exists('iconv_strpos')) {
     function iconv_strpos($haystack, $needle, $offset = 0, $encoding = null) {
         return strpos($haystack, $needle, $offset);
+    }
+}
+if (!function_exists('iconv_strrpos')) {
+    function iconv_strrpos($haystack, $needle, $encoding = null) {
+        return strrpos($haystack, $needle);
     }
 }`);
   }
@@ -759,67 +724,7 @@ if (!function_exists('openssl_cipher_iv_length')) {
 // Class preloader — eliminates per-class autoloader lookups in WASM
 if (file_exists('/app/bootstrap/preload.php')) {
     require_once '/app/bootstrap/preload.php';
-}
-
-// Autoloader timing — track how much time is spent loading classes
-\$_SERVER['__AUTOLOAD_COUNT'] = 0;
-\$_SERVER['__AUTOLOAD_TIME'] = 0.0;
-spl_autoload_register(function(\$class) {
-    \$t = microtime(true);
-    // Let the real autoloader do its thing by returning false
-    return;
-}, true, true);
-// Wrap the existing autoloader to measure class loading time
-\$_SERVER['__AUTOLOAD_WRAP'] = function() {
-    \$loaders = spl_autoload_functions();
-    // Remove our timing loader (it's first due to prepend=true)
-    spl_autoload_unregister(\$loaders[0]);
-    // Replace the Composer autoloader with a timing wrapper
-    if (count(\$loaders) > 1) {
-        \$original = \$loaders[1];
-        spl_autoload_unregister(\$original);
-        spl_autoload_register(function(\$class) use (\$original) {
-            \$_SERVER['__AUTOLOAD_COUNT']++;
-            \$n = \$_SERVER['__AUTOLOAD_COUNT'];
-            \$now = microtime(true);
-            \$total = (\$now - \$_SERVER['__PHP_T0']) * 1000;
-            // Detect long gaps between class loads (>2 seconds)
-            if (\$_SERVER['__PHP_LAST_MILESTONE'] > 0) {
-                \$gap = (\$now - \$_SERVER['__PHP_LAST_MILESTONE']) * 1000;
-                if (\$gap > 2000) {
-                    error_log(sprintf('[php-gap] %.0fms gap before class #%d: %s', \$gap, \$n, \$class));
-                }
-            }
-            \$_SERVER['__PHP_LAST_MILESTONE'] = \$now;
-            // After class #650, log BEFORE loading to catch hanging class
-            if (\$n > 650) {
-                error_log(sprintf('[php-loading] #%d at %.0fms: %s', \$n, \$total, \$class));
-            }
-            \$t = microtime(true);
-            \$original(\$class);
-            \$elapsed = microtime(true) - \$t;
-            \$_SERVER['__AUTOLOAD_TIME'] += \$elapsed;
-            // Log every 25th class
-            if (\$n % 25 === 0) {
-                \$total = (microtime(true) - \$_SERVER['__PHP_T0']) * 1000;
-                error_log(sprintf('[php-autoload] #%d at %.0fms: %s (%.0fms)',
-                    \$n, \$total, \$class, \$elapsed * 1000));
-            }
-            if (\$elapsed > 0.05) {
-                error_log(sprintf('[php-slow-class] %s took %.0fms', \$class, \$elapsed * 1000));
-            }
-        });
-    }
-};
-\$_SERVER['__AUTOLOAD_WRAP']();
-
-register_shutdown_function(function() {
-    \$total = (microtime(true) - \$_SERVER['__PHP_T0']) * 1000;
-    \$autoload = \$_SERVER['__AUTOLOAD_TIME'] * 1000;
-    \$autoloadCount = \$_SERVER['__AUTOLOAD_COUNT'];
-    error_log(sprintf('[php-time] total=%.0fms autoload=%.0fms classes=%d uri=%s',
-        \$total, \$autoload, \$autoloadCount, \$_SERVER['REQUEST_URI'] ?? '?'));
-});`);
+}`);
 
   // The WASM PHP tokenizer is broken: token_get_all() treats all code after <?php
   // as a single T_STRING token instead of properly tokenizing. This breaks both:
