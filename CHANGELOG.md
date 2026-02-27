@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.3.0](https://github.com/kieranbrown/laraworker/compare/v1.2.1...v1.3.0) (2026-02-27)
+
+
+### Features
+
+* add MEMFS budget configuration to laraworker config ([4a05be3](https://github.com/kieranbrown/laraworker/commit/4a05be3418273d68932cd2a79ac86c80a18d1afe))
+* add uncompressed MEMFS size to build report with budget warning ([47e0e3f](https://github.com/kieranbrown/laraworker/commit/47e0e3f3545b3a8ba0c735a266d1a9ac6cf83dfe))
+
+
+### Bug Fixes
+
+* add file_exists guard before reading build-config.json ([c307505](https://github.com/kieranbrown/laraworker/commit/c3075055fa0b323563b78259d130537513160811))
+* exclude laraworker package internals from app tar ([8c1f417](https://github.com/kieranbrown/laraworker/commit/8c1f417d76898ef628b5ca2a611f705b390c1be2))
+
+
+### Documentation
+
+* mark Task 5 as complete in epic plan ([bd8c4c5](https://github.com/kieranbrown/laraworker/commit/bd8c4c5c849380a58efaadf13d0cfbdbd78fb5f8))
+
 ## [1.2.1](https://github.com/kieranbrown/laraworker/compare/v1.2.0...v1.2.1) (2026-02-27)
 
 
