@@ -230,7 +230,7 @@ class BuildCommand extends Command
 
         // Write staging path to build config for build-app.mjs
         $buildConfigPath = $this->buildDirectory->path('build-config.json');
-        $config = json_decode(file_get_contents($buildConfigPath), true);
+        $config = file_exists($buildConfigPath) ? json_decode(file_get_contents($buildConfigPath), true) : [];
         $config['vendor_staging_dir'] = $stagingDir;
         file_put_contents($buildConfigPath, json_encode($config, JSON_PRETTY_PRINT)."\n");
 
