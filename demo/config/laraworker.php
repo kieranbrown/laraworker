@@ -18,6 +18,11 @@ return [
     |
     */
 
+    'extensions' => [
+        'mbstring' => false,
+        'openssl' => false,
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Public Static Assets
@@ -31,11 +36,6 @@ return [
     */
 
     'public_assets' => true,
-
-    'extensions' => [
-        'mbstring' => false,
-        'openssl' => false,
-    ],
 
     /*
     |--------------------------------------------------------------------------
