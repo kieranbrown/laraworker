@@ -603,19 +603,40 @@ class BuildCommand extends Command
                 );
             }
 
-            // Rebuild services.php to match the stripped config providers exactly.
+            // Rebuild services.php to match the exact merged provider list that
+            // Laravel builds at runtime: config('app.providers') + PackageManifest::providers().
             // ProviderRepository::shouldRecompile() compares services.php['providers']
-            // with config('app.providers'). If they differ, Laravel tries to regenerate
-            // the manifest — which fails in the read-only WASM runtime.
+            // with this merged list. If they differ, Laravel recompiles the manifest
+            // on every request — expensive and potentially broken in WASM.
             $servicesPath = base_path('bootstrap/cache/services.php');
             if (file_exists($servicesPath) && ! empty($configProviders)) {
                 $services = require $servicesPath;
 
-                // Set providers to exactly match config — prevents shouldRecompile()
-                $services['providers'] = array_values($configProviders);
+                // Build the same merged list Laravel uses at runtime:
+                // 1. Partition config providers into Illuminate vs non-Illuminate
+                // 2. Insert package-discovered providers between them
+                $illuminate = array_values(array_filter($configProviders, fn (string $p) => str_starts_with($p, 'Illuminate\\')));
+                $nonIlluminate = array_values(array_filter($configProviders, fn (string $p) => ! str_starts_with($p, 'Illuminate\\')));
 
-                // Filter eager, deferred, and when to only include kept providers
-                $providerSet = array_flip($configProviders);
+                $packageProviders = [];
+                if (file_exists($packagesPath)) {
+                    $pkgs = require $packagesPath;
+                    foreach ($pkgs as $pkg) {
+                        foreach ($pkg['providers'] ?? [] as $p) {
+                            $packageProviders[] = $p;
+                        }
+                    }
+                }
+
+                $mergedProviders = array_values(array_unique(
+                    array_merge($illuminate, $packageProviders, $nonIlluminate)
+                ));
+
+                $services['providers'] = $mergedProviders;
+
+                // Filter eager, deferred, and when to only include kept providers.
+                // Package-discovered providers not yet in services.php are added as eager.
+                $providerSet = array_flip($mergedProviders);
 
                 if (isset($services['eager'])) {
                     $services['eager'] = array_values(
@@ -636,6 +657,21 @@ class BuildCommand extends Command
                         fn (array $events, string $p) => isset($providerSet[$p]),
                         ARRAY_FILTER_USE_BOTH
                     );
+                }
+
+                // Add package-discovered providers that aren't yet categorized as eager.
+                // These are providers from packages.php that weren't in the original
+                // services.php (e.g., because artisan optimize wasn't run with them).
+                $categorized = array_merge(
+                    $services['eager'] ?? [],
+                    array_values($services['deferred'] ?? [])
+                );
+                $categorizedSet = array_flip($categorized);
+
+                foreach ($mergedProviders as $provider) {
+                    if (! isset($categorizedSet[$provider])) {
+                        $services['eager'][] = $provider;
+                    }
                 }
 
                 file_put_contents(
