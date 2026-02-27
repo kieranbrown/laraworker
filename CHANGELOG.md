@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.3.3](https://github.com/kieranbrown/laraworker/compare/v1.3.2...v1.3.3) (2026-02-27)
+
+
+### Bug Fixes
+
+* **test:** improve test isolation for Build/Deploy/Install tests ([d639ab2](https://github.com/kieranbrown/laraworker/commit/d639ab24f326810f7a6c93c69058f6baffbc613e))
+
+
+### Miscellaneous Chores
+
+* remove playground folder ([c37dc3b](https://github.com/kieranbrown/laraworker/commit/c37dc3bcb27552ca57dca3d3793de1d156379343))
+* update reality index ([3c7a035](https://github.com/kieranbrown/laraworker/commit/3c7a03518ae4161e256edae52f4e20ff1faf9b7d))
+
+
+### Code Refactoring
+
+* **ci:** split CI into separate workflow files ([89e60d8](https://github.com/kieranbrown/laraworker/commit/89e60d85503b5d114c40400bee0281a8369d2761))
+
 ## [1.3.2](https://github.com/kieranbrown/laraworker/compare/v1.3.1...v1.3.2) (2026-02-27)
 
 
