@@ -2,16 +2,28 @@
 
 This document provides guidance for AI agents working on the laraworker project.
 
+## Important: Do NOT Deploy to laraworker.kswb.dev
+
+The demo site at `https://laraworker.kswb.dev` is the **showcase marketing site** deployed automatically via CI from the `demo/` folder. **Do not deploy to it directly.** Agents should create their own ephemeral playground to test changes locally using the scripts below.
+
+## Project Structure
+
+- `demo/` — Showcase marketing site (Inertia + Vue + Tailwind). Deployed to `laraworker.kswb.dev` via CI on push to main. Do not modify unless working on the demo site itself.
+- `playground/` — Ephemeral test project created by `scripts/playground-setup.sh`. Gitignored. Use this to test package changes.
+
 ## Quick Local Iteration Workflow (Fast Feedback)
 
 For rapid development and testing, use local wrangler commands instead of the slow CI loop (push → CI build → deploy → test).
 
 ### Local Development Server (Instant Feedback)
 
-Build once, then start the local dev server:
+Set up an ephemeral playground, then start the local dev server:
 
 ```bash
-# From the playground (or any Laravel app with laraworker installed)
+# First-time setup (creates playground/ from a fresh Laravel project)
+scripts/playground-setup.sh --force
+
+# Build and start local dev server
 cd playground
 php artisan laraworker:build
 cd .laraworker && npx wrangler dev
@@ -28,32 +40,12 @@ curl http://localhost:8787
 - No CI wait time (5-10 minutes → instant)
 - Live reload on file changes
 
-### Direct Deploy to Production
-
-Cloudflare credentials are in `.env` (gitignored). Deploy directly:
-
-```bash
-cd playground/.laraworker
-npx wrangler deploy
-```
-
-**Deploy time:** ~30 seconds. The demo site is at `https://laraworker.kswb.dev`.
-
 **IMPORTANT:** `wrangler dev` uses miniflare locally. For WASM-specific behavior (memory, OPcache, isolate lifecycle), always verify with `wrangler deploy` against the real Cloudflare runtime. Local miniflare may behave differently.
-
-### Live Production Logs
-
-Monitor deployed workers in real-time:
-
-```bash
-cd playground/.laraworker
-npx wrangler tail
-```
 
 ### Recommended Iteration Loop
 
 1. **Iterate locally** with `wrangler dev` (fast, catches most issues)
-2. **Deploy directly** with `wrangler deploy` when ready (30s, real CF runtime)
+2. **Run smoke tests** with `scripts/playground-smoke-test.sh` for automated verification
 3. **Push to git** and let CI run as final validation (slow, but confirms everything)
 
 ### Artisan Commands Available
@@ -69,8 +61,8 @@ npx wrangler tail
 The worker exposes `/__opcache-status` when `OPCACHE_DEBUG=true` is set as a Worker env var. Use it to verify OPcache is actually caching opcodes.
 
 ```bash
-# After deploying, make two sequential requests:
-curl -s https://laraworker.kswb.dev/__opcache-status | jq .
+# After starting local dev server, make two sequential requests:
+curl -s http://localhost:8787/__opcache-status | jq .
 
 # First request:  opcache_statistics.hits should be 0, misses > 0
 # Second request: hits should increase — proves OPcache persists between requests
@@ -82,7 +74,7 @@ curl -s https://laraworker.kswb.dev/__opcache-status | jq .
 ```bash
 # Warm request timing (run multiple times, ignore the first cold start):
 for i in {1..5}; do
-  curl -s -o /dev/null -w "Request $i: %{time_total}s\n" https://laraworker.kswb.dev/
+  curl -s -o /dev/null -w "Request $i: %{time_total}s\n" http://localhost:8787/
 done
 
 # Expected with working OPcache:
@@ -94,7 +86,7 @@ done
 
 ```bash
 # Responds without initializing PHP — baseline worker overhead:
-curl -s -o /dev/null -w "%{time_total}s\n" https://laraworker.kswb.dev/__health
+curl -s -o /dev/null -w "%{time_total}s\n" http://localhost:8787/__health
 ```
 
 ## Rebuilding the PHP WASM Binary
@@ -137,9 +129,6 @@ cd playground && php artisan laraworker:build
 
 # Test locally:
 cd .laraworker && npx wrangler dev
-
-# Deploy to production:
-npx wrangler deploy
 ```
 
 ### Key Files
@@ -227,6 +216,7 @@ Removes the playground directory entirely. Use this when you're done testing or 
 - `stubs/` — Worker stubs (worker.ts.stub, build-app.mjs, wrangler.jsonc.stub)
 - `config/laraworker.php` — Package configuration (OPcache, extensions, build options)
 - `scripts/` — Playground and testing scripts
+- `demo/` — Showcase marketing site (Inertia + Vue + Tailwind), deployed to laraworker.kswb.dev via CI
 - `php-wasm-build/` — Custom PHP WASM builder toolchain
 - `php-wasm-build/patches/` — Patches applied to PHP source during WASM build
 - `php-wasm-build/PhpCgiBase.mjs` — JS-side request lifecycle (calls WASM-exported functions)
