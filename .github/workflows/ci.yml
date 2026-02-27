@@ -122,3 +122,25 @@ jobs:
         run: gh pr merge ${{ fromJSON(needs.release-please.outputs.pr).number }} --squash --auto
         env:
           GH_TOKEN: ${{ github.token }}
+
+      - name: Wait for PR to merge
+        run: |
+          PR_NUMBER=${{ fromJSON(needs.release-please.outputs.pr).number }}
+          for i in $(seq 1 30); do
+            STATE=$(gh pr view "$PR_NUMBER" --json state --jq .state)
+            if [ "$STATE" = "MERGED" ]; then
+              echo "PR #$PR_NUMBER merged"
+              exit 0
+            fi
+            echo "Waiting for PR #$PR_NUMBER to merge (attempt $i/30, state=$STATE)..."
+            sleep 10
+          done
+          echo "PR #$PR_NUMBER did not merge within 5 minutes"
+          exit 1
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Trigger release workflow
+        run: gh workflow run ci.yml --ref main
+        env:
+          GH_TOKEN: ${{ github.token }}
