@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.3](https://github.com/kieranbrown/laraworker/compare/v1.5.2...v1.5.3) (2026-02-27)
+
+
+### Bug Fixes
+
+* remove runtime instrumentation causing Worker resource limit errors ([28545ba](https://github.com/kieranbrown/laraworker/commit/28545ba30a6ce67492975feea5877081f04bf1e7))
+
 ## [1.5.2](https://github.com/kieranbrown/laraworker/compare/v1.5.1...v1.5.2) (2026-02-27)
 
 
