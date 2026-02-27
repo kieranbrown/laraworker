@@ -140,10 +140,9 @@ const DEFAULT_EXCLUDE_PATTERNS = [
   "/vendor\/kieranbrown\/laraworker\/[^/]+\.wasm$/",
   "/vendor\/kieranbrown\/laraworker\/[^/]+\.mjs$/",
 
-  // Blade icon SVG source files — after view:cache, compiled views inline the SVG markup.
-  // Raw SVG component files in resources/svg/ are no longer needed at runtime (~5 MB savings).
-  // Covers blade-heroicons, blade-icons, and all blade-ui-kit icon sets.
-  "/vendor\\/blade-ui-kit\\/[^/]+\\/resources\\/svg\\//",
+  // NOTE: blade-ui-kit SVG files are NOT excluded. Blade-icons resolves @svg()
+  // directives at runtime by reading SVG files from disk via Filesystem::get().
+  // view:cache does NOT inline SVG content into compiled views.
 
   // ──── Vendor frontend assets already served by Cloudflare Static Assets ────
   // Compiled JS/CSS/fonts are published to public/ via vendor:publish and served from
