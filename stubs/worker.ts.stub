@@ -54,6 +54,15 @@ interface Env {
    * Useful for diagnosing "Worker exceeded resource limits" (Error 1102).
    */
   MEMORY_DEBUG?: string;
+  /**
+   * Maximum requests before recycling the WASM module to prevent function
+   * table corruption. The persistent module patch keeps PHP alive across
+   * requests, but internal state (closures, callbacks, function pointers)
+   * can accumulate and corrupt the fixed-size WASM function table, causing
+   * "table index is out of bounds" crashes. Recycling creates a fresh module.
+   * Set to "0" to disable. Default: 50.
+   */
+  WORKER_MAX_REQUESTS?: string;
 }
 
 /**
@@ -287,7 +296,7 @@ export default {
 
     try {
       const t0 = performance.now();
-      const instance = await ensureInitialized(env);
+      let instance = await ensureInitialized(env);
       const tInit = performance.now();
 
       if (env.MEMORY_DEBUG === 'true') {
@@ -304,9 +313,28 @@ export default {
         console.log(`[time] init=${(tInit - t0).toFixed(0)}ms, starting PHP for ${url.pathname}`);
       }
 
+      // Clone request for potential retry — body can only be read once
+      const retryRequest = request.clone();
+
       // All requests go through PHP - static assets are served
       // by Cloudflare Static Assets before the worker is invoked
-      const response = await instance.request(request);
+      let response = await instance.request(request);
+
+      // Detect WASM crash: PhpCgiBase catches RuntimeError (e.g. "table index
+      // is out of bounds"), returns 500, and calls refresh() which wipes MEMFS.
+      // If the filesystem was wiped, the module crashed — re-init and retry once.
+      if (response.status === 500) {
+        const FS = await instance.getFS();
+        if (!FS.analyzePath('/app/public/index.php').exists) {
+          console.warn('[wasm] Module crash detected, reinitializing and retrying request');
+          await initializeFilesystem(instance, env);
+          requestCount = 0;
+          // @ts-expect-error — overriding Location with URL for PhpCgiBase
+          globalThis.location = new URL(retryRequest.url);
+          response = await instance.request(retryRequest);
+        }
+      }
+
       const tPhp = performance.now();
 
       if (env.MEMORY_DEBUG === 'true') {
@@ -350,12 +378,34 @@ export default {
       ].join(', '));
       headers.set('X-Request-Count', String(++requestCount));
 
+      // Proactive module recycling: after N requests, discard the WASM module
+      // to prevent function table corruption from accumulated internal state.
+      // Analogous to PHP-FPM's pm.max_requests — prevents stale function
+      // pointers in the persistent module from causing "table index is out of
+      // bounds" crashes on warm isolates.
+      const maxRequests = parseInt(env.WORKER_MAX_REQUESTS || '50', 10);
+      if (maxRequests > 0 && requestCount >= maxRequests) {
+        if (env.MEMORY_DEBUG === 'true') {
+          console.log(`[wasm] Recycling module after ${requestCount} requests`);
+        }
+        php = null;
+        requestCount = 0;
+      }
+
       return new Response(ssrResponse.body, {
         status: ssrResponse.status,
         statusText: ssrResponse.statusText,
         headers,
       });
     } catch (error) {
+      // WASM RuntimeError may propagate past PhpCgiBase's error handler
+      // (e.g. during Asyncify unwind/rewind). Recycle the module for recovery.
+      if (error instanceof Error && error.message.includes('table index')) {
+        console.error('[wasm] Fatal table corruption, recycling module:', error.message);
+        php = null;
+        requestCount = 0;
+      }
+
       const message =
         error instanceof Error ? error.message : 'Unknown error';
       console.error('Worker error:', message);

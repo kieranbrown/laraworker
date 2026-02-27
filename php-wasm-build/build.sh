@@ -77,9 +77,16 @@ rm -f "$BUILD_DIR/Makefile.bak"
 # symlinks), but we skip `npm install` to keep the build fast. Instead, inject
 # the configure flags directly. The patch script above already places the source
 # in ext/, so configure will find the config.m4 files.
+#
+# ALLOW_TABLE_GROWTH: The persistent module patch keeps PHP alive across
+# requests, accumulating function pointer registrations (closures, callbacks)
+# in the WASM indirect function table. Without growable tables, the fixed-size
+# table overflows after N requests with "table index is out of bounds". The
+# -sALLOW_TABLE_GROWTH=1 flag lets the table grow dynamically.
 sed -i.bak '1 a\
 CONFIGURE_FLAGS+= --enable-pdo-cfd1 --enable-vrzno\
-EXTRA_FLAGS+= -D WITH_PDO_CFD1=1 -D WITH_VRZNO=1' \
+EXTRA_FLAGS+= -D WITH_PDO_CFD1=1 -D WITH_VRZNO=1\
+LDFLAGS+= -sALLOW_TABLE_GROWTH=1' \
   "$BUILD_DIR/Makefile"
 rm -f "$BUILD_DIR/Makefile.bak"
 
