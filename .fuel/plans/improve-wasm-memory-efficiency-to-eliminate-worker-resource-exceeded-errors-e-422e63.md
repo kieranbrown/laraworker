@@ -76,13 +76,20 @@ Profile the top 20 vendor packages by size. For each, identify what PHP actually
 
 Create package-level exclusions for non-PHP files that are already served as static assets.
 
-### Task 5: Add MEMFS size monitoring and budget enforcement (LOW)
+### Task 5: Add MEMFS size monitoring and budget enforcement (LOW) ✅ COMPLETE
 **Complexity: simple**
 
 During build, after tar extraction count:
-- Report uncompressed MEMFS size in the build report (already shows compressed)
-- Warn if uncompressed size exceeds a configurable threshold (default: 30 MB)
-- Show top 10 directories by size for debugging
+- ✅ Report uncompressed MEMFS size in the build report (already shows compressed)
+- ✅ Warn if uncompressed size exceeds a configurable threshold (default: 30 MB)  
+- ✅ Show top 10 directories by size for debugging
+
+**Implementation Notes:**
+- Added `memfs_budget_mb` config option to `config/laraworker.php` (default: 30 MB)
+- Added `show_top_dirs` config option to enable top 10 directory listing
+- Build report shows uncompressed size alongside compressed in table format
+- Prominent WARNING displayed when budget exceeded with actionable advice
+- Top 10 directories shown when `show_top_dirs=true` for debugging
 
 ### Task 6: Verify OPcache works end-to-end after memory savings
 **Complexity: simple**
