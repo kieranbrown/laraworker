@@ -96,6 +96,40 @@ async function ensureInitialized(env: Env): Promise<PhpCgiCloudflare> {
 {{OPCACHE_INI}}
       ].join('\n'),
     });
+
+    // Intercept PHP stderr in real-time — PhpCgiBase resets this.error = []
+    // on each request, so we use a property descriptor to create a Proxy
+    // that logs complete lines to console as they arrive. This ensures
+    // profiling output is captured even if the Worker is killed by CPU limit.
+    const inst = php as any;
+    let stderrLine = '';
+    let realError: number[] = [];
+    Object.defineProperty(inst, 'error', {
+      get() { return realError; },
+      set(val: number[]) {
+        stderrLine = '';
+        realError = new Proxy(val, {
+          get(target: number[], prop: string | symbol) {
+            if (prop === 'push') {
+              return function(byte: number) {
+                Array.prototype.push.call(target, byte);
+                const char = String.fromCharCode(byte);
+                stderrLine += char;
+                if (char === '\n') {
+                  console.log('[php]', stderrLine.trimEnd());
+                  stderrLine = '';
+                }
+                return target.length;
+              };
+            }
+            return Reflect.get(target, prop);
+          },
+        });
+      },
+      configurable: true,
+      enumerable: true,
+    });
+    inst.error = [];
   }
 
   // PhpCgiBase.request() calls refresh() when PHP exits with non-zero code,
@@ -300,10 +334,23 @@ export default {
       // @ts-expect-error — overriding Location with URL for PhpCgiBase
       globalThis.location = new URL(request.url);
 
+      console.log(`[time] init=${(tInit - t0).toFixed(0)}ms, starting PHP for ${url.pathname}`);
+
       // All requests go through PHP - static assets are served
       // by Cloudflare Static Assets before the worker is invoked
       const response = await instance.request(request);
       const tPhp = performance.now();
+
+      // Always log PHP stderr — PhpCgiBase silently discards it on success
+      try {
+        const stderrBuf = (instance as any).error;
+        if (stderrBuf && stderrBuf.length > 0) {
+          const stderr = new TextDecoder().decode(new Uint8Array(stderrBuf).buffer);
+          if (stderr.trim()) {
+            console.log('[php-stderr]', stderr);
+          }
+        }
+      } catch {}
 
       if (env.MEMORY_DEBUG === 'true') {
         logMemory(`req#${requestCount + 1} after-php`, instance);

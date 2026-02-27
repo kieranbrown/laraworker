@@ -240,7 +240,50 @@ function generatePhpStubs(extensions) {
 // Report PHP errors to stderr (visible in Cloudflare Workers logs)
 error_reporting(E_ALL);
 ini_set('display_errors', 'stderr');
-ini_set('display_startup_errors', '1');`);
+ini_set('display_startup_errors', '1');
+
+// PHP-side request profiling — logs timing of key bootstrap phases
+\$_SERVER['__PHP_T0'] = microtime(true);
+\$_SERVER['__PHP_LAST_MILESTONE'] = 0;
+register_shutdown_function(function() {
+    \$elapsed = (microtime(true) - \$_SERVER['__PHP_T0']) * 1000;
+    error_log(sprintf('[php-time] total=%.0fms uri=%s', \$elapsed, \$_SERVER['REQUEST_URI'] ?? '?'));
+});
+
+// Diagnostic endpoints flag — checked after stubs are defined
+\$_SERVER['__DIAG_URI'] = \$_SERVER['REQUEST_URI'] ?? '';
+
+// Output buffer to detect when PHP starts generating response
+ob_start(function(\$buffer) {
+    static \$started = false;
+    if (!\$started) {
+        \$started = true;
+        \$elapsed = (microtime(true) - \$_SERVER['__PHP_T0']) * 1000;
+        error_log(sprintf('[php-output] first output at %.0fms (%d bytes)', \$elapsed, strlen(\$buffer)));
+    }
+    return \$buffer;
+}, 4096);
+
+// Track milestones when key classes are loaded
+spl_autoload_register(function(\$class) {
+    \$milestones = [
+        'Illuminate\\\\Foundation\\\\Application' => 'Laravel Application',
+        'Illuminate\\\\Routing\\\\Router' => 'Laravel Router',
+        'Illuminate\\\\View\\\\View' => 'View class',
+        'Livewire\\\\LivewireManager' => 'Livewire Manager',
+        'Livewire\\\\Mechanisms\\\\HandleComponents\\\\HandleComponents' => 'Livewire HandleComponents',
+        'Filament\\\\Panel' => 'Filament Panel',
+        'Filament\\\\Http\\\\Middleware\\\\SetUpPanel' => 'SetUpPanel middleware',
+        'Filament\\\\Auth\\\\Pages\\\\Login' => 'Filament Login page',
+        'Illuminate\\\\Session\\\\Middleware\\\\StartSession' => 'StartSession middleware',
+        'Illuminate\\\\Cookie\\\\Middleware\\\\EncryptCookies' => 'EncryptCookies middleware',
+        'Illuminate\\\\Foundation\\\\Http\\\\Middleware\\\\VerifyCsrfToken' => 'VerifyCsrfToken middleware',
+    ];
+    if (isset(\$milestones[\$class])) {
+        \$elapsed = (microtime(true) - \$_SERVER['__PHP_T0']) * 1000;
+        error_log(sprintf('[php-milestone] %s at %.0fms', \$milestones[\$class], \$elapsed));
+    }
+}, true, true);`);
 
   // umask fix for MEMFS - always needed
   stubs.push(`
@@ -548,36 +591,42 @@ if (!defined('T_OPEN_TAG')) {
 }
 if (!function_exists('token_get_all')) {
     /**
-     * Minimal tokenizer that splits PHP open/close tags from inline HTML.
-     * Required by Blade compiler which tokenizes compiled templates to
-     * separate T_INLINE_HTML (for Blade directives) from PHP code blocks.
+     * String-aware PHP tokenizer stub for WASM (tokenizer extension disabled).
+     * Properly handles strings, parentheses, and close tags inside strings.
+     * Used by Livewire, phpdocumentor, serializable-closure, and other packages
+     * that call token_get_all() at runtime.
      */
     function token_get_all($code, $flags = 0) {
         $tokens = [];
-        $line = 1;
-        $pos = 0;
         $len = strlen($code);
+        $pos = 0;
+        $line = 1;
+
         while ($pos < $len) {
             $nextOpen = strpos($code, '<?', $pos);
+
             if ($nextOpen === false) {
                 $html = substr($code, $pos);
                 if ($html !== '') {
                     $tokens[] = [T_INLINE_HTML, $html, $line];
-                    $line += substr_count($html, "\\n");
                 }
                 break;
             }
+
             if ($nextOpen > $pos) {
                 $html = substr($code, $pos, $nextOpen - $pos);
                 $tokens[] = [T_INLINE_HTML, $html, $line];
                 $line += substr_count($html, "\\n");
             }
+
             if (substr($code, $nextOpen, 5) === '<?php' && ($nextOpen + 5 >= $len || !ctype_alnum($code[$nextOpen + 5]))) {
                 $tagEnd = $nextOpen + 5;
                 if ($tagEnd < $len && ($code[$tagEnd] === ' ' || $code[$tagEnd] === "\\n" || $code[$tagEnd] === "\\r" || $code[$tagEnd] === "\\t")) {
                     $tagEnd++;
                 }
-                $tokens[] = [T_OPEN_TAG, substr($code, $nextOpen, $tagEnd - $nextOpen), $line];
+                $openTag = substr($code, $nextOpen, $tagEnd - $nextOpen);
+                $tokens[] = [T_OPEN_TAG, $openTag, $line];
+                $line += substr_count($openTag, "\\n");
                 $pos = $tagEnd;
             } elseif (substr($code, $nextOpen, 3) === '<?=') {
                 $tokens[] = [T_OPEN_TAG_WITH_ECHO, '<?= ', $line];
@@ -588,27 +637,74 @@ if (!function_exists('token_get_all')) {
                 $pos = $nextOpen + 2;
                 continue;
             }
-            $closePos = strpos($code, '?>', $pos);
-            if ($closePos === false) {
-                $phpCode = substr($code, $pos);
-                if ($phpCode !== '') {
-                    $tokens[] = [T_STRING, $phpCode, $line];
-                    $line += substr_count($phpCode, "\\n");
+
+            // Character-by-character PHP block parsing — handles strings and parens
+            $current = '';
+            $inPhp = true;
+            while ($pos < $len && $inPhp) {
+                $char = $code[$pos];
+
+                if ($char === '?' && $pos + 1 < $len && $code[$pos + 1] === '>') {
+                    if ($current !== '') {
+                        $tokens[] = [T_STRING, $current, $line];
+                        $current = '';
+                    }
+                    $closeEnd = $pos + 2;
+                    if ($closeEnd < $len && $code[$closeEnd] === "\\n") $closeEnd++;
+                    $closeTag = substr($code, $pos, $closeEnd - $pos);
+                    $tokens[] = [T_CLOSE_TAG, $closeTag, $line];
+                    $line += substr_count($closeTag, "\\n");
+                    $pos = $closeEnd;
+                    $inPhp = false;
+                    continue;
                 }
-                break;
+
+                if ($char === '"' || $char === "'") {
+                    if ($current !== '') {
+                        $tokens[] = [T_STRING, $current, $line];
+                        $current = '';
+                    }
+                    $quote = $char;
+                    $str = $char;
+                    $pos++;
+                    while ($pos < $len && $code[$pos] !== $quote) {
+                        if ($code[$pos] === '\\\\' && $pos + 1 < $len) {
+                            $str .= $code[$pos] . $code[$pos + 1];
+                            $pos += 2;
+                            continue;
+                        }
+                        if ($code[$pos] === "\\n") $line++;
+                        $str .= $code[$pos];
+                        $pos++;
+                    }
+                    if ($pos < $len) {
+                        $str .= $code[$pos];
+                        $pos++;
+                    }
+                    $tokens[] = [T_CONSTANT_ENCAPSED_STRING, $str, $line];
+                    continue;
+                }
+
+                if ($char === '(' || $char === ')') {
+                    if ($current !== '') {
+                        $tokens[] = [T_STRING, $current, $line];
+                        $current = '';
+                    }
+                    $tokens[] = $char;
+                    $pos++;
+                    continue;
+                }
+
+                if ($char === "\\n") $line++;
+                $current .= $char;
+                $pos++;
             }
-            $phpCode = substr($code, $pos, $closePos - $pos);
-            if ($phpCode !== '') {
-                $tokens[] = [T_STRING, $phpCode, $line];
-                $line += substr_count($phpCode, "\\n");
+
+            if ($inPhp && $current !== '') {
+                $tokens[] = [T_STRING, $current, $line];
             }
-            $closeEnd = $closePos + 2;
-            if ($closeEnd < $len && $code[$closeEnd] === "\\n") $closeEnd++;
-            $closeTag = substr($code, $closePos, $closeEnd - $closePos);
-            $tokens[] = [T_CLOSE_TAG, $closeTag, $line];
-            $line += substr_count($closeTag, "\\n");
-            $pos = $closeEnd;
         }
+
         return $tokens;
     }
 }
@@ -660,12 +756,1525 @@ if (!function_exists('openssl_cipher_iv_length')) {
 }`);
   }
 
+  // === Diagnostic endpoints — run AFTER all stubs are defined, BEFORE Laravel boots ===
+  stubs.push(`
+if (str_starts_with(\$_SERVER['__DIAG_URI'] ?? '', '/__diag/')) {
+    header('Content-Type: text/plain');
+    \$diag = substr(\$_SERVER['__DIAG_URI'], 8);
+
+    if (\$diag === 'openssl') {
+        \$sizes = [64, 256, 1024, 4096, 16384];
+        \$key = str_repeat('K', 32);
+        \$iv = str_repeat("\\0", 16);
+        foreach (\$sizes as \$size) {
+            \$data = str_repeat('A', \$size);
+            \$t = microtime(true);
+            for (\$i = 0; \$i < 100; \$i++) {
+                \$enc = openssl_encrypt(\$data, 'aes-256-cbc', \$key, 0, \$iv);
+            }
+            \$encTime = (microtime(true) - \$t) * 1000;
+            \$t = microtime(true);
+            for (\$i = 0; \$i < 100; \$i++) {
+                openssl_decrypt(\$enc, 'aes-256-cbc', \$key, 0, \$iv);
+            }
+            \$decTime = (microtime(true) - \$t) * 1000;
+            echo sprintf("openssl %dB: encrypt=%.1fms/100, decrypt=%.1fms/100\\n", \$size, \$encTime, \$decTime);
+        }
+        exit(0);
+    }
+    if (\$diag === 'token') {
+        \$code = '<?php namespace App; use Illuminate\\\\Support\\\\Facades\\\\Route; class Test { public function handle(\\$request, \\$next) { return \\$next(\\$request); } public function render() { return view("test", ["items" => \\$this->items, "user" => auth()->user()]); } }';
+        \$t = microtime(true);
+        for (\$i = 0; \$i < 100; \$i++) { token_get_all(\$code); }
+        \$elapsed = (microtime(true) - \$t) * 1000;
+        echo sprintf("token_get_all 100x on %dB: %.1fms\\n", strlen(\$code), \$elapsed);
+        \$large = str_repeat(\$code, 20);
+        \$t = microtime(true);
+        for (\$i = 0; \$i < 10; \$i++) { token_get_all(\$large); }
+        \$elapsed = (microtime(true) - \$t) * 1000;
+        echo sprintf("token_get_all 10x on %dB: %.1fms\\n", strlen(\$large), \$elapsed);
+        exit(0);
+    }
+    if (\$diag === 'filter') {
+        \$t = microtime(true);
+        for (\$i = 0; \$i < 1000; \$i++) {
+            filter_var('test@example.com', FILTER_VALIDATE_EMAIL);
+            filter_var('https://example.com/path?q=1', FILTER_VALIDATE_URL);
+            filter_var('192.168.1.1', FILTER_VALIDATE_IP);
+            filter_var('42', FILTER_VALIDATE_INT);
+        }
+        \$elapsed = (microtime(true) - \$t) * 1000;
+        echo sprintf("filter_var 4000 calls: %.1fms\\n", \$elapsed);
+        exit(0);
+    }
+    if (\$diag === 'ctype') {
+        \$t = microtime(true);
+        for (\$i = 0; \$i < 10000; \$i++) {
+            ctype_alnum('hello123');
+            ctype_alpha('hello');
+            ctype_digit('12345');
+        }
+        \$elapsed = (microtime(true) - \$t) * 1000;
+        echo sprintf("ctype 30000 calls: %.1fms\\n", \$elapsed);
+        exit(0);
+    }
+    if (\$diag === 'boot') {
+        // Boot Laravel through the Kernel (proper bootstrapping)
+        require '/app/vendor/autoload.php';
+        \$t0 = microtime(true);
+        \$app = require '/app/bootstrap/app.php';
+        \$tApp = microtime(true);
+        echo sprintf("App created: %.0fms\\n", (\$tApp - \$t0) * 1000);
+
+        \$kernel = \$app->make(\\Illuminate\\Contracts\\Http\\Kernel::class);
+        \$tKernel = microtime(true);
+        echo sprintf("Kernel resolved: %.0fms\\n", (\$tKernel - \$tApp) * 1000);
+
+        // Handle a simple request to / (main page) to bootstrap everything
+        \$request = \\Illuminate\\Http\\Request::create('/', 'GET');
+        \$tBeforeHandle = microtime(true);
+        try {
+            \$response = \$kernel->handle(\$request);
+            \$tHandle = microtime(true);
+            echo sprintf("Main page handled: %.0fms, status=%d\\n", (\$tHandle - \$tBeforeHandle) * 1000, \$response->getStatusCode());
+            \$kernel->terminate(\$request, \$response);
+        } catch (\\Throwable \$e) {
+            \$tHandle = microtime(true);
+            echo sprintf("Main page error at %.0fms: %s\\n", (\$tHandle - \$tBeforeHandle) * 1000, \$e->getMessage());
+        }
+
+        // Now try the dashboard with the app already booted
+        \$dashRequest = \\Illuminate\\Http\\Request::create('/dashboard/login', 'GET');
+        \$tBeforeDash = microtime(true);
+        try {
+            \$response = \$kernel->handle(\$dashRequest);
+            \$tDash = microtime(true);
+            echo sprintf("Dashboard handled: %.0fms, status=%d\\n", (\$tDash - \$tBeforeDash) * 1000, \$response->getStatusCode());
+        } catch (\\Throwable \$e) {
+            \$tDash = microtime(true);
+            echo sprintf("Dashboard error at %.0fms: %s\\n", (\$tDash - \$tBeforeDash) * 1000, \$e->getMessage());
+            echo "  " . \$e->getFile() . ":" . \$e->getLine() . "\\n";
+        }
+
+        echo sprintf("\\nTotal: %.0fms\\n", (microtime(true) - \$t0) * 1000);
+        exit(0);
+    }
+    if (\$diag === 'middleware') {
+        // Full request through the Kernel — handles bootstrapping automatically
+        require '/app/vendor/autoload.php';
+        \$app = require '/app/bootstrap/app.php';
+        \$kernel = \$app->make(\\Illuminate\\Contracts\\Http\\Kernel::class);
+        \$request = \\Illuminate\\Http\\Request::create('/dashboard/login', 'GET');
+        \$t = microtime(true);
+        try {
+            \$response = \$kernel->handle(\$request);
+            \$elapsed = (microtime(true) - \$t) * 1000;
+            echo sprintf("Full request: %.0fms, status=%d\\n", \$elapsed, \$response->getStatusCode());
+        } catch (\\Throwable \$e) {
+            \$elapsed = (microtime(true) - \$t) * 1000;
+            echo sprintf("Request failed at %.0fms: %s\\n", \$elapsed, \$e->getMessage());
+            echo "  " . \$e->getFile() . ":" . \$e->getLine() . "\\n";
+        }
+        echo sprintf("Total: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+        exit(0);
+    }
+    if (\$diag === 'step') {
+        // Step-by-step isolation of what hangs
+        require '/app/vendor/autoload.php';
+        \$t0 = microtime(true);
+
+        // Step 1: Create app
+        \$app = require '/app/bootstrap/app.php';
+        echo sprintf("1. App created: %.0fms\\n", (microtime(true) - \$t0) * 1000);
+
+        // Step 2: Resolve kernel
+        \$kernel = \$app->make(\\Illuminate\\Contracts\\Http\\Kernel::class);
+        echo sprintf("2. Kernel resolved: %.0fms\\n", (microtime(true) - \$t0) * 1000);
+
+        // Step 3: Bootstrap the app (this registers providers, boots them, etc.)
+        \$bootstrappers = [
+            \\Illuminate\\Foundation\\Bootstrap\\LoadEnvironmentVariables::class,
+            \\Illuminate\\Foundation\\Bootstrap\\LoadConfiguration::class,
+            \\Illuminate\\Foundation\\Bootstrap\\HandleExceptions::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterFacades::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterProviders::class,
+            \\Illuminate\\Foundation\\Bootstrap\\BootProviders::class,
+        ];
+        foreach (\$bootstrappers as \$bootstrapper) {
+            \$tStep = microtime(true);
+            try {
+                \$app->bootstrapWith([\$bootstrapper]);
+                echo sprintf("3. %s: %.0fms (total %.0fms)\\n",
+                    class_basename(\$bootstrapper),
+                    (microtime(true) - \$tStep) * 1000,
+                    (microtime(true) - \$t0) * 1000);
+            } catch (\\Throwable \$e) {
+                echo sprintf("3. %s FAILED at %.0fms: %s\\n",
+                    class_basename(\$bootstrapper),
+                    (microtime(true) - \$t0) * 1000,
+                    \$e->getMessage());
+            }
+        }
+
+        // Step 4: Match the route
+        \$tRoute = microtime(true);
+        try {
+            \$router = \$app->make('router');
+            \$request = \\Illuminate\\Http\\Request::create('/dashboard/login', 'GET');
+            \$route = \$router->getRoutes()->match(\$request);
+            echo sprintf("4. Route matched: %.0fms (action: %s)\\n",
+                (microtime(true) - \$tRoute) * 1000,
+                \$route->getActionName());
+            echo sprintf("   Middleware: %s\\n", implode(', ', \$route->gatherMiddleware()));
+        } catch (\\Throwable \$e) {
+            echo sprintf("4. Route match FAILED at %.0fms: %s\\n",
+                (microtime(true) - \$t0) * 1000,
+                \$e->getMessage());
+        }
+
+        // Step 5: Try booting the Filament panel
+        \$tPanel = microtime(true);
+        try {
+            \$filament = \$app->make(\\Filament\\FilamentManager::class);
+            \$panel = \$filament->getPanel('cachet');
+            \$filament->setCurrentPanel(\$panel);
+            echo sprintf("5a. Panel set: %.0fms\\n", (microtime(true) - \$tPanel) * 1000);
+
+            \$tBoot = microtime(true);
+            \$filament->bootCurrentPanel();
+            echo sprintf("5b. Panel booted: %.0fms\\n", (microtime(true) - \$tBoot) * 1000);
+        } catch (\\Throwable \$e) {
+            echo sprintf("5. Panel boot FAILED at %.0fms: %s\\n",
+                (microtime(true) - \$t0) * 1000,
+                \$e->getMessage());
+        }
+
+        // Step 6: Try creating the Login component
+        \$tLogin = microtime(true);
+        try {
+            \$loginClass = \\Filament\\Auth\\Pages\\Login::class;
+            echo sprintf("6a. Login class exists: %.0fms\\n", (microtime(true) - \$tLogin) * 1000);
+
+            // Resolve a minimal Livewire instance
+            \$livewire = \$app->make(\\Livewire\\LivewireManager::class);
+            echo sprintf("6b. Livewire manager: %.0fms\\n", (microtime(true) - \$tLogin) * 1000);
+        } catch (\\Throwable \$e) {
+            echo sprintf("6. Login FAILED at %.0fms: %s\\n",
+                (microtime(true) - \$t0) * 1000,
+                \$e->getMessage());
+        }
+
+        echo sprintf("\\nTotal: %.0fms\\n", (microtime(true) - \$t0) * 1000);
+        exit(0);
+    }
+    if (\$diag === 'render') {
+        // Test Livewire component rendering without HTTP middleware
+        require '/app/vendor/autoload.php';
+        \$app = require '/app/bootstrap/app.php';
+        \$kernel = \$app->make(\\Illuminate\\Contracts\\Http\\Kernel::class);
+
+        // Bootstrap via a simple request
+        \$request = \\Illuminate\\Http\\Request::create('/dashboard/login', 'GET');
+        \$app->instance('request', \$request);
+
+        // Bootstrap the application
+        \$app->bootstrapWith([
+            \\Illuminate\\Foundation\\Bootstrap\\LoadEnvironmentVariables::class,
+            \\Illuminate\\Foundation\\Bootstrap\\LoadConfiguration::class,
+            \\Illuminate\\Foundation\\Bootstrap\\HandleExceptions::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterFacades::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterProviders::class,
+            \\Illuminate\\Foundation\\Bootstrap\\BootProviders::class,
+        ]);
+
+        \$t0 = microtime(true);
+
+        // Boot the Filament panel (as SetUpPanel middleware would)
+        \$filament = \$app->make(\\Filament\\FilamentManager::class);
+        \$panel = \$filament->getPanel('cachet');
+        \$filament->setCurrentPanel(\$panel);
+        \$filament->bootCurrentPanel();
+        echo sprintf("Panel booted: %.0fms\\n", (microtime(true) - \$t0) * 1000);
+
+        // Try to mount the Login component directly via Livewire
+        \$tMount = microtime(true);
+        try {
+            \$livewire = \$app->make(\\Livewire\\LivewireManager::class);
+            echo sprintf("Livewire manager: %.0fms\\n", (microtime(true) - \$tMount) * 1000);
+
+            // Use Livewire's mount mechanism
+            \$tComp = microtime(true);
+            \$component = new (\\Filament\\Auth\\Pages\\Login::class)();
+            echo sprintf("Login instantiated: %.0fms\\n", (microtime(true) - \$tComp) * 1000);
+
+            // Try to render the component view
+            \$tRender = microtime(true);
+            \$view = \$component->render();
+            echo sprintf("Login rendered: %.0fms\\n", (microtime(true) - \$tRender) * 1000);
+
+            if (\$view instanceof \\Illuminate\\Contracts\\View\\View) {
+                \$tEval = microtime(true);
+                \$html = \$view->render();
+                echo sprintf("View evaluated: %.0fms (%d bytes)\\n",
+                    (microtime(true) - \$tEval) * 1000, strlen(\$html));
+            }
+        } catch (\\Throwable \$e) {
+            echo sprintf("Error at %.0fms: %s\\n",
+                (microtime(true) - \$t0) * 1000, \$e->getMessage());
+            echo "  " . \$e->getFile() . ":" . \$e->getLine() . "\\n";
+        }
+
+        echo sprintf("\\nTotal: %.0fms\\n", (microtime(true) - \$t0) * 1000);
+        exit(0);
+    }
+    if (\$diag === 'pipe') {
+        // Test middleware pipeline step by step
+        require '/app/vendor/autoload.php';
+        \$app = require '/app/bootstrap/app.php';
+        \$kernel = \$app->make(\\Illuminate\\Contracts\\Http\\Kernel::class);
+
+        \$request = \\Illuminate\\Http\\Request::create('/dashboard/login', 'GET');
+        \$app->instance('request', \$request);
+
+        \$app->bootstrapWith([
+            \\Illuminate\\Foundation\\Bootstrap\\LoadEnvironmentVariables::class,
+            \\Illuminate\\Foundation\\Bootstrap\\LoadConfiguration::class,
+            \\Illuminate\\Foundation\\Bootstrap\\HandleExceptions::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterFacades::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterProviders::class,
+            \\Illuminate\\Foundation\\Bootstrap\\BootProviders::class,
+        ]);
+
+        \$t0 = microtime(true);
+
+        // Run each middleware individually
+        \$middlewares = [
+            'panel:cachet' => \\Filament\\Http\\Middleware\\SetUpPanel::class,
+            'EncryptCookies' => \\Illuminate\\Cookie\\Middleware\\EncryptCookies::class,
+            'AddQueuedCookies' => \\Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse::class,
+            'StartSession' => \\Illuminate\\Session\\Middleware\\StartSession::class,
+            'AuthenticateSession' => \\Illuminate\\Session\\Middleware\\AuthenticateSession::class,
+            'ShareErrors' => \\Illuminate\\View\\Middleware\\ShareErrorsFromSession::class,
+            'VerifyCsrfToken' => \\Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken::class,
+            'SubstituteBindings' => \\Illuminate\\Routing\\Middleware\\SubstituteBindings::class,
+            'DisableBladeIcons' => \\Filament\\Http\\Middleware\\DisableBladeIconComponents::class,
+            'DispatchServing' => \\Filament\\Http\\Middleware\\DispatchServingFilamentEvent::class,
+        ];
+
+        foreach (\$middlewares as \$name => \$class) {
+            \$tMw = microtime(true);
+            try {
+                \$instance = \$app->make(\$class);
+                // Call handle() with a passthrough next closure
+                \$params = [\$request, function(\$req) { return new \\Illuminate\\Http\\Response('OK'); }];
+                // SetUpPanel needs the panel ID
+                if (\$name === 'panel:cachet') {
+                    \$params[] = 'cachet';
+                }
+                \$response = \$instance->handle(...\$params);
+                echo sprintf("%-20s: %.0fms (status %d)\\n",
+                    \$name, (microtime(true) - \$tMw) * 1000,
+                    \$response->getStatusCode());
+            } catch (\\Throwable \$e) {
+                echo sprintf("%-20s: FAILED at %.0fms: %s\\n",
+                    \$name, (microtime(true) - \$tMw) * 1000,
+                    substr(\$e->getMessage(), 0, 100));
+            }
+        }
+
+        echo sprintf("\\nTotal: %.0fms\\n", (microtime(true) - \$t0) * 1000);
+        exit(0);
+    }
+    if (\$diag === 'livewire') {
+        // Test Livewire's full component mount lifecycle
+        require '/app/vendor/autoload.php';
+        \$app = require '/app/bootstrap/app.php';
+        \$kernel = \$app->make(\\Illuminate\\Contracts\\Http\\Kernel::class);
+
+        \$request = \\Illuminate\\Http\\Request::create('/dashboard/login', 'GET');
+        \$app->instance('request', \$request);
+
+        \$app->bootstrapWith([
+            \\Illuminate\\Foundation\\Bootstrap\\LoadEnvironmentVariables::class,
+            \\Illuminate\\Foundation\\Bootstrap\\LoadConfiguration::class,
+            \\Illuminate\\Foundation\\Bootstrap\\HandleExceptions::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterFacades::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterProviders::class,
+            \\Illuminate\\Foundation\\Bootstrap\\BootProviders::class,
+        ]);
+
+        // Boot Filament panel
+        \$filament = \$app->make(\\Filament\\FilamentManager::class);
+        \$filament->setCurrentPanel(\$filament->getPanel('cachet'));
+        \$filament->bootCurrentPanel();
+        echo sprintf("Bootstrap + panel boot: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+
+        // Try mounting via Livewire's HandleComponents
+        \$t0 = microtime(true);
+        try {
+            \$hc = \$app->make(\\Livewire\\Mechanisms\\HandleComponents\\HandleComponents::class);
+            echo sprintf("HandleComponents resolved: %.0fms\\n", (microtime(true) - \$t0) * 1000);
+
+            \$tMount = microtime(true);
+            [\$html, \$snapshot, \$effects, \$key, \$component] = \$hc->mount(
+                'filament.auth.pages.login',
+                [],
+                'login-key'
+            );
+            echo sprintf("Livewire mount: %.0fms (%d bytes HTML)\\n",
+                (microtime(true) - \$tMount) * 1000, strlen(\$html));
+        } catch (\\Throwable \$e) {
+            echo sprintf("Mount FAILED at %.0fms: %s\\n",
+                (microtime(true) - \$t0) * 1000, \$e->getMessage());
+            echo "  " . \$e->getFile() . ":" . \$e->getLine() . "\\n";
+            // Try a simpler component
+            echo "\\nTrying a simpler Livewire component...\\n";
+            \$tSimple = microtime(true);
+            try {
+                [\$html] = \$hc->mount('filament.auth.pages.login', [], 'test');
+                echo sprintf("Simple mount: %.0fms\\n", (microtime(true) - \$tSimple) * 1000);
+            } catch (\\Throwable \$e2) {
+                echo sprintf("Simple mount FAILED: %s\\n", \$e2->getMessage());
+            }
+        }
+
+        echo sprintf("\\nTotal: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+        exit(0);
+    }
+    if (\$diag === 'view-eval') {
+        // Test Blade view evaluation for the Filament login page
+        require '/app/vendor/autoload.php';
+        \$app = require '/app/bootstrap/app.php';
+        \$kernel = \$app->make(\\Illuminate\\Contracts\\Http\\Kernel::class);
+
+        \$request = \\Illuminate\\Http\\Request::create('/dashboard/login', 'GET');
+        \$app->instance('request', \$request);
+
+        \$app->bootstrapWith([
+            \\Illuminate\\Foundation\\Bootstrap\\LoadEnvironmentVariables::class,
+            \\Illuminate\\Foundation\\Bootstrap\\LoadConfiguration::class,
+            \\Illuminate\\Foundation\\Bootstrap\\HandleExceptions::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterFacades::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterProviders::class,
+            \\Illuminate\\Foundation\\Bootstrap\\BootProviders::class,
+        ]);
+
+        \$filament = \$app->make(\\Filament\\FilamentManager::class);
+        \$filament->setCurrentPanel(\$filament->getPanel('cachet'));
+        \$filament->bootCurrentPanel();
+        echo sprintf("Bootstrap: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+
+        // Try rendering just the simple.blade.php layout
+        \$t0 = microtime(true);
+        try {
+            \$view = view('filament-panels::pages.simple');
+            echo sprintf("View resolved: %.0fms\\n", (microtime(true) - \$t0) * 1000);
+        } catch (\\Throwable \$e) {
+            echo sprintf("View resolve FAILED: %s\\n", \$e->getMessage());
+        }
+
+        // List all compiled views
+        \$viewDir = '/app/storage/framework/views';
+        if (is_dir(\$viewDir)) {
+            \$files = glob(\$viewDir . '/*.php');
+            echo sprintf("\\nCompiled views: %d files\\n", count(\$files));
+        }
+
+        echo sprintf("\\nTotal: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+        exit(0);
+    }
+    if (\$diag === 'reflect') {
+        // Test PHP Reflection performance — Livewire uses this heavily
+        require '/app/vendor/autoload.php';
+        \$app = require '/app/bootstrap/app.php';
+        \$app->bootstrapWith([
+            \\Illuminate\\Foundation\\Bootstrap\\LoadEnvironmentVariables::class,
+            \\Illuminate\\Foundation\\Bootstrap\\LoadConfiguration::class,
+            \\Illuminate\\Foundation\\Bootstrap\\HandleExceptions::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterFacades::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterProviders::class,
+            \\Illuminate\\Foundation\\Bootstrap\\BootProviders::class,
+        ]);
+        echo sprintf("Bootstrap: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+
+        // Test ReflectionClass on the Login component
+        \$t0 = microtime(true);
+        \$ref = new \\ReflectionClass(\\Filament\\Auth\\Pages\\Login::class);
+        echo sprintf("ReflectionClass: %.0fms\\n", (microtime(true) - \$t0) * 1000);
+
+        \$t = microtime(true);
+        \$methods = \$ref->getMethods();
+        echo sprintf("getMethods: %.0fms (%d methods)\\n", (microtime(true) - \$t) * 1000, count(\$methods));
+
+        \$t = microtime(true);
+        \$props = \$ref->getProperties();
+        echo sprintf("getProperties: %.0fms (%d properties)\\n", (microtime(true) - \$t) * 1000, count(\$props));
+
+        // Test attribute scanning (what SupportAttributes does)
+        \$t = microtime(true);
+        \$attrCount = 0;
+        foreach (\$methods as \$method) {
+            \$attrs = \$method->getAttributes();
+            \$attrCount += count(\$attrs);
+        }
+        echo sprintf("Method attributes: %.0fms (%d attrs across %d methods)\\n",
+            (microtime(true) - \$t) * 1000, \$attrCount, count(\$methods));
+
+        \$t = microtime(true);
+        \$attrCount = 0;
+        foreach (\$props as \$prop) {
+            \$attrs = \$prop->getAttributes();
+            \$attrCount += count(\$attrs);
+        }
+        echo sprintf("Property attributes: %.0fms (%d attrs across %d props)\\n",
+            (microtime(true) - \$t) * 1000, \$attrCount, count(\$props));
+
+        // Test class_uses_recursive (what SupportLifecycleHooks does)
+        \$t = microtime(true);
+        \$traits = class_uses_recursive(\\Filament\\Auth\\Pages\\Login::class);
+        echo sprintf("class_uses_recursive: %.0fms (%d traits)\\n",
+            (microtime(true) - \$t) * 1000, count(\$traits));
+
+        // Test instantiating Livewire Attribute objects
+        \$t = microtime(true);
+        \$attrInstances = 0;
+        foreach (\$methods as \$method) {
+            foreach (\$method->getAttributes(\\Livewire\\Attributes\\Attribute::class, \\ReflectionAttribute::IS_INSTANCEOF) as \$attr) {
+                try { \$attr->newInstance(); \$attrInstances++; } catch (\\Throwable \$e) {}
+            }
+        }
+        foreach (\$props as \$prop) {
+            foreach (\$prop->getAttributes(\\Livewire\\Attributes\\Attribute::class, \\ReflectionAttribute::IS_INSTANCEOF) as \$attr) {
+                try { \$attr->newInstance(); \$attrInstances++; } catch (\\Throwable \$e) {}
+            }
+        }
+        echo sprintf("Attribute instances: %.0fms (%d instances)\\n",
+            (microtime(true) - \$t) * 1000, \$attrInstances);
+
+        // Test heavy reflection loop (100x)
+        \$t = microtime(true);
+        for (\$i = 0; \$i < 100; \$i++) {
+            \$r = new \\ReflectionClass(\\Filament\\Auth\\Pages\\Login::class);
+            \$r->getMethods();
+            \$r->getProperties();
+        }
+        echo sprintf("100x full reflection: %.0fms\\n", (microtime(true) - \$t) * 1000);
+
+        echo sprintf("\\nTotal: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+        exit(0);
+    }
+    if (\$diag === 'mount-steps') {
+        // Break down HandleComponents::mount() into individual steps
+        require '/app/vendor/autoload.php';
+        \$app = require '/app/bootstrap/app.php';
+        \$kernel = \$app->make(\\Illuminate\\Contracts\\Http\\Kernel::class);
+        \$request = \\Illuminate\\Http\\Request::create('/dashboard/login', 'GET');
+        \$app->instance('request', \$request);
+        \$app->bootstrapWith([
+            \\Illuminate\\Foundation\\Bootstrap\\LoadEnvironmentVariables::class,
+            \\Illuminate\\Foundation\\Bootstrap\\LoadConfiguration::class,
+            \\Illuminate\\Foundation\\Bootstrap\\HandleExceptions::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterFacades::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterProviders::class,
+            \\Illuminate\\Foundation\\Bootstrap\\BootProviders::class,
+        ]);
+        \$filament = \$app->make(\\Filament\\FilamentManager::class);
+        \$filament->setCurrentPanel(\$filament->getPanel('cachet'));
+        \$filament->bootCurrentPanel();
+        echo sprintf("Bootstrap: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+
+        // Step 1: Create component through ComponentRegistry
+        \$t = microtime(true);
+        try {
+            \$registry = \$app->make(\\Livewire\\Mechanisms\\ComponentRegistry::class);
+            echo sprintf("1. Registry resolved: %.0fms\\n", (microtime(true) - \$t) * 1000);
+
+            \$t = microtime(true);
+            \$component = \$registry->new('filament.auth.pages.login');
+            echo sprintf("2. Component created: %.0fms\\n", (microtime(true) - \$t) * 1000);
+
+            // Step 2: Manually trigger what mount event does
+            \$t = microtime(true);
+            \$component->setId('test-id');
+            echo sprintf("3. ID set: %.0fms\\n", (microtime(true) - \$t) * 1000);
+
+            // Step 3: Test the EventBus trigger for 'mount'
+            \$t = microtime(true);
+            // Get the Livewire event bus and trigger mount
+            \$finish = \\Livewire\\trigger('mount', \$component, [], 'test-key', null);
+            echo sprintf("4. Mount trigger: %.0fms\\n", (microtime(true) - \$t) * 1000);
+
+            // Step 4: Call the component's mount method
+            \$t = microtime(true);
+            if (method_exists(\$component, 'mount')) {
+                \$component->mount();
+            }
+            echo sprintf("5. Component mount(): %.0fms\\n", (microtime(true) - \$t) * 1000);
+
+            // Step 5: Try rendering
+            \$t = microtime(true);
+            \$hc = \$app->make(\\Livewire\\Mechanisms\\HandleComponents\\HandleComponents::class);
+            \$renderMethod = new \\ReflectionMethod(\$hc, 'render');
+            \$renderMethod->setAccessible(true);
+            [\$html] = \$renderMethod->invoke(\$hc, \$component, '<div></div>');
+            echo sprintf("6. Render: %.0fms (%d bytes)\\n",
+                (microtime(true) - \$t) * 1000, strlen(\$html));
+
+            // Step 6: Finish hooks
+            \$t = microtime(true);
+            \$finish(\$component, \$html);
+            echo sprintf("7. Finish hooks: %.0fms\\n", (microtime(true) - \$t) * 1000);
+        } catch (\\Throwable \$e) {
+            echo sprintf("FAILED at %.0fms: %s\\n",
+                (microtime(true) - \$_SERVER['__PHP_T0']) * 1000, \$e->getMessage());
+            echo "  " . \$e->getFile() . ":" . \$e->getLine() . "\\n";
+        }
+
+        echo sprintf("\\nTotal: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+        exit(0);
+    }
+    // mount-N: test individual mount steps (binary search for hang)
+    if (preg_match('/^mount-(\\d+)$/', \$diag, \$m)) {
+        \$stopAt = (int)\$m[1];
+        require '/app/vendor/autoload.php';
+        \$app = require '/app/bootstrap/app.php';
+        \$request = \\Illuminate\\Http\\Request::create('/dashboard/login', 'GET');
+        \$app->instance('request', \$request);
+        \$app->bootstrapWith([
+            \\Illuminate\\Foundation\\Bootstrap\\LoadEnvironmentVariables::class,
+            \\Illuminate\\Foundation\\Bootstrap\\LoadConfiguration::class,
+            \\Illuminate\\Foundation\\Bootstrap\\HandleExceptions::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterFacades::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterProviders::class,
+            \\Illuminate\\Foundation\\Bootstrap\\BootProviders::class,
+        ]);
+        \$filament = \$app->make(\\Filament\\FilamentManager::class);
+        \$filament->setCurrentPanel(\$filament->getPanel('cachet'));
+        \$filament->bootCurrentPanel();
+        echo sprintf("Bootstrap: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+
+        try {
+            // Step 1: Resolve ComponentRegistry
+            if (\$stopAt >= 1) {
+                \$t = microtime(true);
+                \$registry = \$app->make(\\Livewire\\Mechanisms\\ComponentRegistry::class);
+                echo sprintf("Step 1 - Registry: %.0fms\\n", (microtime(true) - \$t) * 1000);
+            }
+
+            // Step 2: Create component instance
+            if (\$stopAt >= 2) {
+                \$t = microtime(true);
+                \$component = \$registry->new('filament.auth.pages.login');
+                echo sprintf("Step 2 - Component new(): %.0fms\\n", (microtime(true) - \$t) * 1000);
+            }
+
+            // Step 3: Set component ID
+            if (\$stopAt >= 3) {
+                \$t = microtime(true);
+                \$component->setId('test-id');
+                echo sprintf("Step 3 - setId: %.0fms\\n", (microtime(true) - \$t) * 1000);
+            }
+
+            // Step 4: Trigger 'mount' event (fires all 23+ component hooks)
+            if (\$stopAt >= 4) {
+                \$t = microtime(true);
+                \$finish = \\Livewire\\trigger('mount', \$component, [], 'test-key', null);
+                echo sprintf("Step 4 - trigger(mount): %.0fms\\n", (microtime(true) - \$t) * 1000);
+            }
+
+            // Step 5: Call component mount()
+            if (\$stopAt >= 5) {
+                \$t = microtime(true);
+                if (method_exists(\$component, 'mount')) {
+                    \$component->mount();
+                }
+                echo sprintf("Step 5 - mount(): %.0fms\\n", (microtime(true) - \$t) * 1000);
+            }
+
+            // Step 6: Render the component
+            if (\$stopAt >= 6) {
+                \$t = microtime(true);
+                \$hc = \$app->make(\\Livewire\\Mechanisms\\HandleComponents\\HandleComponents::class);
+                \$renderMethod = new \\ReflectionMethod(\$hc, 'render');
+                \$renderMethod->setAccessible(true);
+                [\$html] = \$renderMethod->invoke(\$hc, \$component, '<div></div>');
+                echo sprintf("Step 6 - render: %.0fms (%d bytes)\\n",
+                    (microtime(true) - \$t) * 1000, strlen(\$html));
+            }
+
+            // Step 7: Finish hooks
+            if (\$stopAt >= 7 && isset(\$finish)) {
+                \$t = microtime(true);
+                \$finish(\$component, \$html ?? '');
+                echo sprintf("Step 7 - finish: %.0fms\\n", (microtime(true) - \$t) * 1000);
+            }
+        } catch (\\Throwable \$e) {
+            echo sprintf("FAILED: %s\\n", \$e->getMessage());
+            echo "  " . \$e->getFile() . ":" . \$e->getLine() . "\\n";
+        }
+
+        echo sprintf("\\nTotal: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+        exit(0);
+    }
+    if (\$diag === 'hooks') {
+        // Test each Livewire mount hook individually by iterating EventBus listeners
+        require '/app/vendor/autoload.php';
+        \$app = require '/app/bootstrap/app.php';
+        \$request = \\Illuminate\\Http\\Request::create('/dashboard/login', 'GET');
+        \$app->instance('request', \$request);
+        \$app->bootstrapWith([
+            \\Illuminate\\Foundation\\Bootstrap\\LoadEnvironmentVariables::class,
+            \\Illuminate\\Foundation\\Bootstrap\\LoadConfiguration::class,
+            \\Illuminate\\Foundation\\Bootstrap\\HandleExceptions::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterFacades::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterProviders::class,
+            \\Illuminate\\Foundation\\Bootstrap\\BootProviders::class,
+        ]);
+        \$filament = \$app->make(\\Filament\\FilamentManager::class);
+        \$filament->setCurrentPanel(\$filament->getPanel('cachet'));
+        \$filament->bootCurrentPanel();
+        echo sprintf("Bootstrap: %.0fms\\n\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+
+        // Create the component
+        \$registry = \$app->make(\\Livewire\\Mechanisms\\ComponentRegistry::class);
+        \$component = \$registry->new('filament.auth.pages.login');
+        \$component->setId('test-id');
+
+        // Access the EventBus listeners for 'mount'
+        \$bus = \$app->make(\\Livewire\\EventBus::class);
+        \$ref = new \\ReflectionObject(\$bus);
+
+        \$allListeners = [];
+        foreach (['listenersBefore', 'listeners', 'listenersAfter'] as \$queueName) {
+            \$prop = \$ref->getProperty(\$queueName);
+            \$prop->setAccessible(true);
+            \$queue = \$prop->getValue(\$bus);
+            if (isset(\$queue['mount'])) {
+                foreach (\$queue['mount'] as \$i => \$listener) {
+                    \$allListeners[] = ['queue' => \$queueName, 'index' => \$i, 'fn' => \$listener];
+                }
+            }
+        }
+
+        echo sprintf("Total mount listeners: %d\\n\\n", count(\$allListeners));
+
+        // Call each listener one at a time with timing
+        foreach (\$allListeners as \$idx => \$entry) {
+            \$t = microtime(true);
+            try {
+                \$result = (\$entry['fn'])(\$component, [], 'test-key', null);
+                \$elapsed = (microtime(true) - \$t) * 1000;
+                \$type = is_callable(\$result) ? 'has-finisher' : 'no-finisher';
+                echo sprintf("Hook #%d (%s[%d]): %.1fms [%s]\\n",
+                    \$idx, \$entry['queue'], \$entry['index'], \$elapsed, \$type);
+            } catch (\\Throwable \$e) {
+                \$elapsed = (microtime(true) - \$t) * 1000;
+                echo sprintf("Hook #%d (%s[%d]): FAILED at %.1fms: %s\\n",
+                    \$idx, \$entry['queue'], \$entry['index'], \$elapsed,
+                    substr(\$e->getMessage(), 0, 80));
+            }
+
+            // Flush output to ensure we see results even if next hook hangs
+            if (ob_get_level()) ob_flush();
+            flush();
+        }
+
+        echo sprintf("\\nTotal: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+        exit(0);
+    }
+    // hook-N: call mount listeners 0 through N, stop before N+1
+    if (preg_match('/^hook-(\\d+)$/', \$diag, \$m)) {
+        \$stopAfter = (int)\$m[1];
+        require '/app/vendor/autoload.php';
+        \$app = require '/app/bootstrap/app.php';
+        \$request = \\Illuminate\\Http\\Request::create('/dashboard/login', 'GET');
+        \$app->instance('request', \$request);
+        \$app->bootstrapWith([
+            \\Illuminate\\Foundation\\Bootstrap\\LoadEnvironmentVariables::class,
+            \\Illuminate\\Foundation\\Bootstrap\\LoadConfiguration::class,
+            \\Illuminate\\Foundation\\Bootstrap\\HandleExceptions::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterFacades::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterProviders::class,
+            \\Illuminate\\Foundation\\Bootstrap\\BootProviders::class,
+        ]);
+        \$filament = \$app->make(\\Filament\\FilamentManager::class);
+        \$filament->setCurrentPanel(\$filament->getPanel('cachet'));
+        \$filament->bootCurrentPanel();
+
+        \$registry = \$app->make(\\Livewire\\Mechanisms\\ComponentRegistry::class);
+        \$component = \$registry->new('filament.auth.pages.login');
+        \$component->setId('test-id');
+
+        \$bus = \$app->make(\\Livewire\\EventBus::class);
+        \$ref = new \\ReflectionObject(\$bus);
+
+        \$allListeners = [];
+        foreach (['listenersBefore', 'listeners', 'listenersAfter'] as \$queueName) {
+            \$prop = \$ref->getProperty(\$queueName);
+            \$prop->setAccessible(true);
+            \$queue = \$prop->getValue(\$bus);
+            if (isset(\$queue['mount'])) {
+                foreach (\$queue['mount'] as \$listener) {
+                    \$allListeners[] = \$listener;
+                }
+            }
+        }
+
+        echo sprintf("Total listeners: %d, running 0-%d\\n", count(\$allListeners), \$stopAfter);
+
+        // Also identify hook classes from ComponentHookRegistry
+        \$hookRef = new \\ReflectionClass(\\Livewire\\ComponentHookRegistry::class);
+        \$hooksProp = \$hookRef->getProperty('componentHooks');
+        \$hooksProp->setAccessible(true);
+        \$hookClasses = \$hooksProp->getValue();
+        echo "Registered hook classes:\\n";
+        foreach (\$hookClasses as \$i => \$hClass) {
+            echo sprintf("  [%d] %s\\n", \$i, \$hClass);
+        }
+        echo "\\n";
+
+        for (\$idx = 0; \$idx <= min(\$stopAfter, count(\$allListeners) - 1); \$idx++) {
+            \$t = microtime(true);
+            try {
+                (\$allListeners[\$idx])(\$component, [], 'test-key', null);
+                echo sprintf("#%d: %.1fms\\n", \$idx, (microtime(true) - \$t) * 1000);
+            } catch (\\Throwable \$e) {
+                echo sprintf("#%d: ERR at %.1fms: %s\\n", \$idx, (microtime(true) - \$t) * 1000,
+                    substr(\$e->getMessage(), 0, 60));
+            }
+        }
+
+        echo sprintf("\\nTotal: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+        exit(0);
+    }
+    if (\$diag === 'identify') {
+        // Identify each mount listener by its source file and line
+        require '/app/vendor/autoload.php';
+        \$app = require '/app/bootstrap/app.php';
+        \$request = \\Illuminate\\Http\\Request::create('/dashboard/login', 'GET');
+        \$app->instance('request', \$request);
+        \$app->bootstrapWith([
+            \\Illuminate\\Foundation\\Bootstrap\\LoadEnvironmentVariables::class,
+            \\Illuminate\\Foundation\\Bootstrap\\LoadConfiguration::class,
+            \\Illuminate\\Foundation\\Bootstrap\\HandleExceptions::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterFacades::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterProviders::class,
+            \\Illuminate\\Foundation\\Bootstrap\\BootProviders::class,
+        ]);
+
+        \$bus = \$app->make(\\Livewire\\EventBus::class);
+        \$ref = new \\ReflectionObject(\$bus);
+
+        \$idx = 0;
+        foreach (['listenersBefore', 'listeners', 'listenersAfter'] as \$queueName) {
+            \$prop = \$ref->getProperty(\$queueName);
+            \$prop->setAccessible(true);
+            \$queue = \$prop->getValue(\$bus);
+            if (isset(\$queue['mount'])) {
+                foreach (\$queue['mount'] as \$listener) {
+                    \$closureRef = new \\ReflectionFunction(\$listener);
+                    \$file = basename(\$closureRef->getFileName());
+                    \$line = \$closureRef->getStartLine();
+                    // Try to get the use() variables to identify the hook class
+                    \$uses = \$closureRef->getStaticVariables();
+                    \$hookClass = '';
+                    if (isset(\$uses['hook'])) {
+                        \$hookClass = is_string(\$uses['hook']) ? \$uses['hook'] : get_class(\$uses['hook']);
+                    }
+                    echo sprintf("#%d [%s] %s:%d %s\\n", \$idx, \$queueName, \$file, \$line,
+                        \$hookClass ? "hook=" . basename(str_replace('\\\\\\\\', '/', \$hookClass)) : '');
+                    \$idx++;
+                }
+            }
+        }
+
+        echo sprintf("\\nTotal: %d mount listeners\\n", \$idx);
+        exit(0);
+    }
+    if (\$diag === 'attrs') {
+        // Test attribute collection and boot on Login component
+        require '/app/vendor/autoload.php';
+        \$app = require '/app/bootstrap/app.php';
+        \$request = \\Illuminate\\Http\\Request::create('/dashboard/login', 'GET');
+        \$app->instance('request', \$request);
+        \$app->bootstrapWith([
+            \\Illuminate\\Foundation\\Bootstrap\\LoadEnvironmentVariables::class,
+            \\Illuminate\\Foundation\\Bootstrap\\LoadConfiguration::class,
+            \\Illuminate\\Foundation\\Bootstrap\\HandleExceptions::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterFacades::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterProviders::class,
+            \\Illuminate\\Foundation\\Bootstrap\\BootProviders::class,
+        ]);
+        \$filament = \$app->make(\\Filament\\FilamentManager::class);
+        \$filament->setCurrentPanel(\$filament->getPanel('cachet'));
+        \$filament->bootCurrentPanel();
+
+        \$registry = \$app->make(\\Livewire\\Mechanisms\\ComponentRegistry::class);
+        \$component = \$registry->new('filament.auth.pages.login');
+        \$component->setId('test-id');
+
+        // Run hooks 0-24 first (they all complete in 0ms)
+        \$bus = \$app->make(\\Livewire\\EventBus::class);
+        \$ref = new \\ReflectionObject(\$bus);
+        \$allListeners = [];
+        foreach (['listenersBefore', 'listeners', 'listenersAfter'] as \$q) {
+            \$p = \$ref->getProperty(\$q);
+            \$p->setAccessible(true);
+            \$v = \$p->getValue(\$bus);
+            if (isset(\$v['mount'])) foreach (\$v['mount'] as \$l) \$allListeners[] = \$l;
+        }
+        for (\$i = 0; \$i < 25; \$i++) {
+            try { (\$allListeners[\$i])(\$component, [], 'k', null); } catch (\\Throwable \$e) {}
+        }
+        echo sprintf("Hooks 0-24 done: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+
+        // Now manually replicate what hook #25 (SupportAttributes) does
+        \$t = microtime(true);
+        \$attrs = \$component->getAttributes();
+        echo sprintf("getAttributes(): %.0fms, count=%d\\n", (microtime(true) - \$t) * 1000, \$attrs->count());
+
+        // List all attribute classes
+        \$byClass = [];
+        foreach (\$attrs as \$attr) {
+            \$cls = get_class(\$attr);
+            \$byClass[\$cls] = (\$byClass[\$cls] ?? 0) + 1;
+        }
+        foreach (\$byClass as \$cls => \$cnt) {
+            echo sprintf("  %s: %d\\n", basename(str_replace('\\\\', '/', \$cls)), \$cnt);
+        }
+
+        // Filter to Livewire Attribute instances (what SupportAttributes does)
+        \$t = microtime(true);
+        \$lwAttrs = \$attrs->filter(fn(\$a) => \$a instanceof \\Livewire\\Features\\SupportAttributes\\Attribute);
+        echo sprintf("\\nLivewire attributes: %d (filter %.0fms)\\n", \$lwAttrs->count(), (microtime(true) - \$t) * 1000);
+
+        // Try calling boot() on each, one at a time
+        foreach (\$lwAttrs as \$idx => \$attr) {
+            \$t = microtime(true);
+            \$cls = get_class(\$attr);
+            if (method_exists(\$attr, 'boot')) {
+                try {
+                    \$attr->boot();
+                    echo sprintf("  boot #%d %s: %.1fms\\n", \$idx, basename(str_replace('\\\\', '/', \$cls)), (microtime(true) - \$t) * 1000);
+                } catch (\\Throwable \$e) {
+                    echo sprintf("  boot #%d %s: ERR %.1fms: %s\\n", \$idx, basename(str_replace('\\\\', '/', \$cls)),
+                        (microtime(true) - \$t) * 1000, substr(\$e->getMessage(), 0, 60));
+                }
+            } else {
+                echo sprintf("  #%d %s: no boot()\\n", \$idx, basename(str_replace('\\\\', '/', \$cls)));
+            }
+        }
+
+        echo sprintf("\\nTotal: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+        exit(0);
+    }
+    if (\$diag === 'attrs2') {
+        // Test attribute mount() instead of boot()
+        require '/app/vendor/autoload.php';
+        \$app = require '/app/bootstrap/app.php';
+        \$request = \\Illuminate\\Http\\Request::create('/dashboard/login', 'GET');
+        \$app->instance('request', \$request);
+        \$app->bootstrapWith([
+            \\Illuminate\\Foundation\\Bootstrap\\LoadEnvironmentVariables::class,
+            \\Illuminate\\Foundation\\Bootstrap\\LoadConfiguration::class,
+            \\Illuminate\\Foundation\\Bootstrap\\HandleExceptions::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterFacades::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterProviders::class,
+            \\Illuminate\\Foundation\\Bootstrap\\BootProviders::class,
+        ]);
+        \$filament = \$app->make(\\Filament\\FilamentManager::class);
+        \$filament->setCurrentPanel(\$filament->getPanel('cachet'));
+        \$filament->bootCurrentPanel();
+
+        \$registry = \$app->make(\\Livewire\\Mechanisms\\ComponentRegistry::class);
+        \$component = \$registry->new('filament.auth.pages.login');
+        \$component->setId('test-id');
+
+        // Run hooks 0-24 first
+        \$bus = \$app->make(\\Livewire\\EventBus::class);
+        \$ref = new \\ReflectionObject(\$bus);
+        \$allListeners = [];
+        foreach (['listenersBefore', 'listeners', 'listenersAfter'] as \$q) {
+            \$p = \$ref->getProperty(\$q);
+            \$p->setAccessible(true);
+            \$v = \$p->getValue(\$bus);
+            if (isset(\$v['mount'])) foreach (\$v['mount'] as \$l) \$allListeners[] = \$l;
+        }
+        for (\$i = 0; \$i < 25; \$i++) {
+            try { (\$allListeners[\$i])(\$component, [], 'k', null); } catch (\\Throwable \$e) {}
+        }
+        echo sprintf("Hooks 0-24 done: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+
+        \$t = microtime(true);
+        \$attrs = \$component->getAttributes();
+        \$lwAttrs = \$attrs->filter(fn(\$a) => \$a instanceof \\Livewire\\Features\\SupportAttributes\\Attribute);
+        echo sprintf("Got %d Livewire attrs: %.0fms\\n", \$lwAttrs->count(), (microtime(true) - \$t) * 1000);
+
+        // Test mount() on each attribute individually
+        foreach (\$lwAttrs as \$idx => \$attr) {
+            \$t = microtime(true);
+            \$cls = get_class(\$attr);
+            \$short = basename(str_replace('\\\\', '/', \$cls));
+            if (method_exists(\$attr, 'mount')) {
+                echo sprintf("  mount #%d %s (name=%s)... ", \$idx, \$short, \$attr->getName());
+                try {
+                    \$attr->mount();
+                    echo sprintf("%.1fms\\n", (microtime(true) - \$t) * 1000);
+                } catch (\\Throwable \$e) {
+                    echo sprintf("ERR %.1fms: %s\\n", (microtime(true) - \$t) * 1000, substr(\$e->getMessage(), 0, 80));
+                }
+            } else {
+                echo sprintf("  #%d %s: no mount()\\n", \$idx, \$short);
+            }
+        }
+
+        echo sprintf("\\nTotal: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+        exit(0);
+    }
+    if (preg_match('/^amnt-(\\d+)$/', \$diag, \$m)) {
+        // Test mount() on a single attribute by index
+        \$target = (int)\$m[1];
+        require '/app/vendor/autoload.php';
+        \$app = require '/app/bootstrap/app.php';
+        \$request = \\Illuminate\\Http\\Request::create('/dashboard/login', 'GET');
+        \$app->instance('request', \$request);
+        \$app->bootstrapWith([
+            \\Illuminate\\Foundation\\Bootstrap\\LoadEnvironmentVariables::class,
+            \\Illuminate\\Foundation\\Bootstrap\\LoadConfiguration::class,
+            \\Illuminate\\Foundation\\Bootstrap\\HandleExceptions::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterFacades::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterProviders::class,
+            \\Illuminate\\Foundation\\Bootstrap\\BootProviders::class,
+        ]);
+        \$filament = \$app->make(\\Filament\\FilamentManager::class);
+        \$filament->setCurrentPanel(\$filament->getPanel('cachet'));
+        \$filament->bootCurrentPanel();
+
+        \$registry = \$app->make(\\Livewire\\Mechanisms\\ComponentRegistry::class);
+        \$component = \$registry->new('filament.auth.pages.login');
+        \$component->setId('test-id');
+
+        // Run hooks 0-24
+        \$bus = \$app->make(\\Livewire\\EventBus::class);
+        \$ref = new \\ReflectionObject(\$bus);
+        \$allListeners = [];
+        foreach (['listenersBefore', 'listeners', 'listenersAfter'] as \$q) {
+            \$p = \$ref->getProperty(\$q);
+            \$p->setAccessible(true);
+            \$v = \$p->getValue(\$bus);
+            if (isset(\$v['mount'])) foreach (\$v['mount'] as \$l) \$allListeners[] = \$l;
+        }
+        for (\$i = 0; \$i < 25; \$i++) {
+            try { (\$allListeners[\$i])(\$component, [], 'k', null); } catch (\\Throwable \$e) {}
+        }
+
+        \$attrs = \$component->getAttributes();
+        \$lwAttrs = \$attrs->filter(fn(\$a) => \$a instanceof \\Livewire\\Features\\SupportAttributes\\Attribute)->values();
+        echo sprintf("Got %d Livewire attrs, testing mount on #%d\\n", \$lwAttrs->count(), \$target);
+
+        if (\$target >= \$lwAttrs->count()) {
+            echo "Index out of range\\n";
+            exit(0);
+        }
+
+        \$attr = \$lwAttrs[\$target];
+        \$cls = get_class(\$attr);
+        \$short = basename(str_replace('\\\\', '/', \$cls));
+        echo sprintf("Attr #%d: %s (name=%s, level=%s)\\n", \$target, \$cls, \$attr->getName(), \$attr->getLevel()->name ?? 'unknown');
+        echo sprintf("Has mount: %s\\n", method_exists(\$attr, 'mount') ? 'yes' : 'no');
+
+        if (method_exists(\$attr, 'mount')) {
+            \$t = microtime(true);
+            echo "Calling mount()...\\n";
+            try {
+                \$attr->mount();
+                echo sprintf("mount() done: %.1fms\\n", (microtime(true) - \$t) * 1000);
+            } catch (\\Throwable \$e) {
+                echo sprintf("mount() ERR: %.1fms: %s\\n  %s\\n", (microtime(true) - \$t) * 1000, \$e->getMessage(), \$e->getTraceAsString());
+            }
+        }
+
+        echo sprintf("Total: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+        exit(0);
+    }
+    if (preg_match('/^h25-(\\d+)$/', \$diag, \$m)) {
+        // Step-by-step test of hook #25's listener closure
+        \$step = (int)\$m[1];
+        require '/app/vendor/autoload.php';
+        \$app = require '/app/bootstrap/app.php';
+        \$request = \\Illuminate\\Http\\Request::create('/dashboard/login', 'GET');
+        \$app->instance('request', \$request);
+        \$app->bootstrapWith([
+            \\Illuminate\\Foundation\\Bootstrap\\LoadEnvironmentVariables::class,
+            \\Illuminate\\Foundation\\Bootstrap\\LoadConfiguration::class,
+            \\Illuminate\\Foundation\\Bootstrap\\HandleExceptions::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterFacades::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterProviders::class,
+            \\Illuminate\\Foundation\\Bootstrap\\BootProviders::class,
+        ]);
+        \$filament = \$app->make(\\Filament\\FilamentManager::class);
+        \$filament->setCurrentPanel(\$filament->getPanel('cachet'));
+        \$filament->bootCurrentPanel();
+
+        \$registry = \$app->make(\\Livewire\\Mechanisms\\ComponentRegistry::class);
+        \$component = \$registry->new('filament.auth.pages.login');
+        \$component->setId('test-id');
+
+        // Get mount listeners
+        \$bus = \$app->make(\\Livewire\\EventBus::class);
+        \$ref = new \\ReflectionObject(\$bus);
+        \$allListeners = [];
+        foreach (['listenersBefore', 'listeners', 'listenersAfter'] as \$q) {
+            \$p = \$ref->getProperty(\$q);
+            \$p->setAccessible(true);
+            \$v = \$p->getValue(\$bus);
+            if (isset(\$v['mount'])) foreach (\$v['mount'] as \$l) \$allListeners[] = \$l;
+        }
+        echo sprintf("Total mount listeners: %d\\n", count(\$allListeners));
+
+        // Run hooks 0-24
+        for (\$i = 0; \$i < 25; \$i++) {
+            try { (\$allListeners[\$i])(\$component, [], 'k', null); } catch (\\Throwable \$e) {}
+        }
+        echo sprintf("Hooks 0-24 done: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+
+        // Inspect hook #25's closure
+        \$listener = \$allListeners[25];
+        \$closureRef = new \\ReflectionFunction(\$listener);
+        \$vars = \$closureRef->getStaticVariables();
+        echo sprintf("Hook #25 closure vars: %s\\n", json_encode(array_map(fn(\$v) => is_object(\$v) ? get_class(\$v) : (is_string(\$v) ? \$v : gettype(\$v)), \$vars)));
+        echo sprintf("Hook #25 defined in: %s:%d\\n", \$closureRef->getFileName(), \$closureRef->getStartLine());
+
+        if (\$step >= 1) {
+            // Step 1: initializeHook
+            \$hookClass = \$vars['hook'] ?? null;
+            echo sprintf("\\nStep 1: initializeHook(%s)\\n", \$hookClass);
+            \$t = microtime(true);
+            \$hook = \\Livewire\\ComponentHookRegistry::initializeHook(\$hookClass, \$component);
+            echo sprintf("  initializeHook: %.1fms, result=%s\\n", (microtime(true) - \$t) * 1000, \$hook ? get_class(\$hook) : 'null');
+        }
+
+        if (\$step >= 2 && \$hook) {
+            // Step 2: callBoot
+            echo "\\nStep 2: callBoot()\\n";
+            \$t = microtime(true);
+            \$hook->callBoot();
+            echo sprintf("  callBoot: %.1fms\\n", (microtime(true) - \$t) * 1000);
+        }
+
+        if (\$step >= 3 && \$hook) {
+            // Step 3: callMount
+            echo "\\nStep 3: callMount([], null)\\n";
+            \$t = microtime(true);
+            \$hook->callMount([], null);
+            echo sprintf("  callMount: %.1fms\\n", (microtime(true) - \$t) * 1000);
+        }
+
+        echo sprintf("\\nTotal: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+        exit(0);
+    }
+    if (\$diag === 'h25-mount') {
+        // Exact replication of what SupportAttributes::mount() does via callMount
+        require '/app/vendor/autoload.php';
+        \$app = require '/app/bootstrap/app.php';
+        \$request = \\Illuminate\\Http\\Request::create('/dashboard/login', 'GET');
+        \$app->instance('request', \$request);
+        \$app->bootstrapWith([
+            \\Illuminate\\Foundation\\Bootstrap\\LoadEnvironmentVariables::class,
+            \\Illuminate\\Foundation\\Bootstrap\\LoadConfiguration::class,
+            \\Illuminate\\Foundation\\Bootstrap\\HandleExceptions::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterFacades::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterProviders::class,
+            \\Illuminate\\Foundation\\Bootstrap\\BootProviders::class,
+        ]);
+        \$filament = \$app->make(\\Filament\\FilamentManager::class);
+        \$filament->setCurrentPanel(\$filament->getPanel('cachet'));
+        \$filament->bootCurrentPanel();
+
+        \$registry = \$app->make(\\Livewire\\Mechanisms\\ComponentRegistry::class);
+        \$component = \$registry->new('filament.auth.pages.login');
+        \$component->setId('test-id');
+
+        // Run hooks 0-24
+        \$bus = \$app->make(\\Livewire\\EventBus::class);
+        \$ref = new \\ReflectionObject(\$bus);
+        \$allListeners = [];
+        foreach (['listenersBefore', 'listeners', 'listenersAfter'] as \$q) {
+            \$p = \$ref->getProperty(\$q);
+            \$p->setAccessible(true);
+            \$v = \$p->getValue(\$bus);
+            if (isset(\$v['mount'])) foreach (\$v['mount'] as \$l) \$allListeners[] = \$l;
+        }
+        for (\$i = 0; \$i < 25; \$i++) {
+            try { (\$allListeners[\$i])(\$component, [], 'k', null); } catch (\\Throwable \$e) {}
+        }
+        echo sprintf("Hooks 0-24 done: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+
+        // Initialize hook like ComponentHookRegistry does
+        \$hook = \\Livewire\\ComponentHookRegistry::initializeHook(
+            \\Livewire\\Features\\SupportAttributes\\SupportAttributes::class, \$component
+        );
+        \$hook->callBoot();
+        echo "initializeHook+callBoot: OK\\n";
+
+        // Now manually replicate SupportAttributes::mount(...$params) with $params = [[], null]
+        \$params = [[], null]; // This is what callMount([], null) passes via mount(...$params)
+
+        \$t = microtime(true);
+        \$attrs = \$component->getAttributes();
+        echo sprintf("getAttributes: %.1fms, count=%d\\n", (microtime(true) - \$t) * 1000, \$attrs->count());
+
+        \$t = microtime(true);
+        \$filtered = \$attrs->filter(fn(\$a) => \$a instanceof \\Livewire\\Features\\SupportAttributes\\Attribute);
+        echo sprintf("whereInstanceOf filter: %.1fms, count=%d\\n", (microtime(true) - \$t) * 1000, \$filtered->count());
+
+        foreach (\$filtered as \$idx => \$attribute) {
+            \$cls = basename(str_replace('\\\\', '/', get_class(\$attribute)));
+            if (method_exists(\$attribute, 'mount')) {
+                \$t = microtime(true);
+                try {
+                    \$attribute->mount(...\$params);
+                    echo sprintf("  mount #%d %s(name=%s): %.1fms\\n", \$idx, \$cls, \$attribute->getName(), (microtime(true) - \$t) * 1000);
+                } catch (\\Throwable \$e) {
+                    echo sprintf("  mount #%d %s ERR: %s\\n", \$idx, \$cls, \$e->getMessage());
+                }
+            } else {
+                echo sprintf("  skip #%d %s (no mount)\\n", \$idx, \$cls);
+            }
+        }
+
+        echo sprintf("\\nDone: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+        exit(0);
+    }
+    if (preg_match('/^h25-m(\\d+)$/', \$diag, \$m)) {
+        // Variant tests for SupportAttributes::mount
+        // m1=no callBoot, m2=no params, m3=callBoot+all-mount-no-params, m4=callBoot+first-url-only
+        \$variant = (int)\$m[1];
+        require '/app/vendor/autoload.php';
+        \$app = require '/app/bootstrap/app.php';
+        \$request = \\Illuminate\\Http\\Request::create('/dashboard/login', 'GET');
+        \$app->instance('request', \$request);
+        \$app->bootstrapWith([
+            \\Illuminate\\Foundation\\Bootstrap\\LoadEnvironmentVariables::class,
+            \\Illuminate\\Foundation\\Bootstrap\\LoadConfiguration::class,
+            \\Illuminate\\Foundation\\Bootstrap\\HandleExceptions::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterFacades::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterProviders::class,
+            \\Illuminate\\Foundation\\Bootstrap\\BootProviders::class,
+        ]);
+        \$filament = \$app->make(\\Filament\\FilamentManager::class);
+        \$filament->setCurrentPanel(\$filament->getPanel('cachet'));
+        \$filament->bootCurrentPanel();
+
+        \$registry = \$app->make(\\Livewire\\Mechanisms\\ComponentRegistry::class);
+        \$component = \$registry->new('filament.auth.pages.login');
+        \$component->setId('test-id');
+
+        \$bus = \$app->make(\\Livewire\\EventBus::class);
+        \$ref = new \\ReflectionObject(\$bus);
+        \$allListeners = [];
+        foreach (['listenersBefore', 'listeners', 'listenersAfter'] as \$q) {
+            \$p = \$ref->getProperty(\$q);
+            \$p->setAccessible(true);
+            \$v = \$p->getValue(\$bus);
+            if (isset(\$v['mount'])) foreach (\$v['mount'] as \$l) \$allListeners[] = \$l;
+        }
+        for (\$i = 0; \$i < 25; \$i++) {
+            try { (\$allListeners[\$i])(\$component, [], 'k', null); } catch (\\Throwable \$e) {}
+        }
+        echo sprintf("Hooks 0-24: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+
+        \$hook = \\Livewire\\ComponentHookRegistry::initializeHook(
+            \\Livewire\\Features\\SupportAttributes\\SupportAttributes::class, \$component
+        );
+
+        if (\$variant >= 2) {
+            echo "Calling callBoot()...\\n";
+            \$hook->callBoot();
+            echo "callBoot done\\n";
+        } else {
+            echo "SKIPPING callBoot\\n";
+        }
+
+        \$attrs = \$component->getAttributes();
+        \$filtered = \$attrs->filter(fn(\$a) => \$a instanceof \\Livewire\\Features\\SupportAttributes\\Attribute);
+        echo sprintf("Livewire attrs: %d\\n", \$filtered->count());
+
+        if (\$variant === 1) {
+            // No callBoot, mount all with params
+            echo "Mounting all with params [[], null]...\\n";
+            foreach (\$filtered as \$idx => \$attr) {
+                if (method_exists(\$attr, 'mount')) {
+                    \$attr->mount([], null);
+                    echo sprintf("  #%d %s: OK\\n", \$idx, \$attr->getName());
+                }
+            }
+        } elseif (\$variant === 2) {
+            // With callBoot, mount all with NO params
+            echo "Mounting all with NO params...\\n";
+            foreach (\$filtered as \$idx => \$attr) {
+                if (method_exists(\$attr, 'mount')) {
+                    \$attr->mount();
+                    echo sprintf("  #%d %s: OK\\n", \$idx, \$attr->getName());
+                }
+            }
+        } elseif (\$variant === 3) {
+            // With callBoot, mount all with params [[], null]
+            echo "Mounting all with params [[], null]...\\n";
+            foreach (\$filtered as \$idx => \$attr) {
+                if (method_exists(\$attr, 'mount')) {
+                    \$attr->mount([], null);
+                    echo sprintf("  #%d %s: OK\\n", \$idx, \$attr->getName());
+                }
+            }
+        } elseif (\$variant === 4) {
+            // With callBoot, use actual callMount
+            echo "Calling hook->callMount([], null)...\\n";
+            \$hook->callMount([], null);
+            echo "callMount done\\n";
+        }
+
+        echo sprintf("\\nTotal: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+        exit(0);
+    }
+    if (preg_match('/^u(\\d+)$/', \$diag, \$m)) {
+        // Call uniqid N times
+        \$n = (int)\$m[1];
+        for (\$i = 0; \$i < \$n; \$i++) {
+            \$val = uniqid('t', true);
+        }
+        echo "uniqid x" . \$n . " done, last=" . \$val . "\\n";
+        exit(0);
+    }
+    if (\$diag === 'uslp') {
+        echo "before usleep\\n";
+        usleep(1);
+        echo "after usleep\\n";
+        exit(0);
+    }
+    if (preg_match('/^mnt2-(\\d+)$/', \$diag, \$m)) {
+        // Mount N Url attributes sequentially on same component
+        \$count = (int)\$m[1];
+        require '/app/vendor/autoload.php';
+        \$app = require '/app/bootstrap/app.php';
+        \$request = \\Illuminate\\Http\\Request::create('/dashboard/login', 'GET');
+        \$app->instance('request', \$request);
+        \$app->bootstrapWith([
+            \\Illuminate\\Foundation\\Bootstrap\\LoadEnvironmentVariables::class,
+            \\Illuminate\\Foundation\\Bootstrap\\LoadConfiguration::class,
+            \\Illuminate\\Foundation\\Bootstrap\\HandleExceptions::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterFacades::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterProviders::class,
+            \\Illuminate\\Foundation\\Bootstrap\\BootProviders::class,
+        ]);
+        \$filament = \$app->make(\\Filament\\FilamentManager::class);
+        \$filament->setCurrentPanel(\$filament->getPanel('cachet'));
+        \$filament->bootCurrentPanel();
+
+        \$registry = \$app->make(\\Livewire\\Mechanisms\\ComponentRegistry::class);
+        \$component = \$registry->new('filament.auth.pages.login');
+        \$component->setId('test-id');
+
+        \$bus = \$app->make(\\Livewire\\EventBus::class);
+        \$ref = new \\ReflectionObject(\$bus);
+        \$allListeners = [];
+        foreach (['listenersBefore', 'listeners', 'listenersAfter'] as \$q) {
+            \$p = \$ref->getProperty(\$q);
+            \$p->setAccessible(true);
+            \$v = \$p->getValue(\$bus);
+            if (isset(\$v['mount'])) foreach (\$v['mount'] as \$l) \$allListeners[] = \$l;
+        }
+        for (\$i = 0; \$i < 25; \$i++) {
+            try { (\$allListeners[\$i])(\$component, [], 'k', null); } catch (\\Throwable \$e) {}
+        }
+        echo sprintf("Hooks 0-24: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+
+        \$attrs = \$component->getAttributes();
+        \$urlAttrs = \$attrs->filter(fn(\$a) => \$a instanceof \\Livewire\\Attributes\\Url)->values();
+        echo sprintf("Url attrs: %d, mounting first %d\\n", \$urlAttrs->count(), \$count);
+
+        for (\$i = 0; \$i < min(\$count, \$urlAttrs->count()); \$i++) {
+            \$attr = \$urlAttrs[\$i];
+            \$t = microtime(true);
+            echo sprintf("  mount #%d %s... ", \$i, \$attr->getName());
+            \$attr->mount();
+            echo sprintf("%.1fms\\n", (microtime(true) - \$t) * 1000);
+        }
+
+        echo sprintf("\\nTotal: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+        exit(0);
+    }
+    if (preg_match('/^mnt3-(\\d+)$/', \$diag, \$m)) {
+        // Ultra-minimal test: mount Url attr #0, then try to mount Url attr #N
+        \$second = (int)\$m[1];
+        require '/app/vendor/autoload.php';
+        \$app = require '/app/bootstrap/app.php';
+        \$request = \\Illuminate\\Http\\Request::create('/dashboard/login', 'GET');
+        \$app->instance('request', \$request);
+        \$app->bootstrapWith([
+            \\Illuminate\\Foundation\\Bootstrap\\LoadEnvironmentVariables::class,
+            \\Illuminate\\Foundation\\Bootstrap\\LoadConfiguration::class,
+            \\Illuminate\\Foundation\\Bootstrap\\HandleExceptions::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterFacades::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterProviders::class,
+            \\Illuminate\\Foundation\\Bootstrap\\BootProviders::class,
+        ]);
+        \$filament = \$app->make(\\Filament\\FilamentManager::class);
+        \$filament->setCurrentPanel(\$filament->getPanel('cachet'));
+        \$filament->bootCurrentPanel();
+
+        \$registry = \$app->make(\\Livewire\\Mechanisms\\ComponentRegistry::class);
+        \$component = \$registry->new('filament.auth.pages.login');
+        \$component->setId('test-id');
+
+        \$bus = \$app->make(\\Livewire\\EventBus::class);
+        \$ref = new \\ReflectionObject(\$bus);
+        \$allListeners = [];
+        foreach (['listenersBefore', 'listeners', 'listenersAfter'] as \$q) {
+            \$p = \$ref->getProperty(\$q);
+            \$p->setAccessible(true);
+            \$v = \$p->getValue(\$bus);
+            if (isset(\$v['mount'])) foreach (\$v['mount'] as \$l) \$allListeners[] = \$l;
+        }
+        for (\$i = 0; \$i < 25; \$i++) {
+            try { (\$allListeners[\$i])(\$component, [], 'k', null); } catch (\\Throwable \$e) {}
+        }
+
+        \$attrs = \$component->getAttributes();
+        \$urlAttrs = \$attrs->filter(fn(\$a) => \$a instanceof \\Livewire\\Attributes\\Url)->values();
+
+        // Mount first Url attr
+        echo sprintf("Mounting #0 (%s)... ", \$urlAttrs[0]->getName());
+        \$urlAttrs[0]->mount();
+        echo "OK\\n";
+
+        if (\$second === 0) {
+            echo "Skipping second mount\\n";
+        } else {
+            // Try mounting second Url attr
+            \$idx = min(\$second, \$urlAttrs->count() - 1);
+            echo sprintf("Mounting #%d (%s)... ", \$idx, \$urlAttrs[\$idx]->getName());
+            \$urlAttrs[\$idx]->mount();
+            echo "OK\\n";
+        }
+
+        echo sprintf("Total: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+        exit(0);
+    }
+    if (\$diag === 'nomnt') {
+        // Just iterate Url attributes without mounting
+        require '/app/vendor/autoload.php';
+        \$app = require '/app/bootstrap/app.php';
+        \$request = \\Illuminate\\Http\\Request::create('/dashboard/login', 'GET');
+        \$app->instance('request', \$request);
+        \$app->bootstrapWith([
+            \\Illuminate\\Foundation\\Bootstrap\\LoadEnvironmentVariables::class,
+            \\Illuminate\\Foundation\\Bootstrap\\LoadConfiguration::class,
+            \\Illuminate\\Foundation\\Bootstrap\\HandleExceptions::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterFacades::class,
+            \\Illuminate\\Foundation\\Bootstrap\\RegisterProviders::class,
+            \\Illuminate\\Foundation\\Bootstrap\\BootProviders::class,
+        ]);
+        \$filament = \$app->make(\\Filament\\FilamentManager::class);
+        \$filament->setCurrentPanel(\$filament->getPanel('cachet'));
+        \$filament->bootCurrentPanel();
+
+        \$registry = \$app->make(\\Livewire\\Mechanisms\\ComponentRegistry::class);
+        \$component = \$registry->new('filament.auth.pages.login');
+        \$component->setId('test-id');
+
+        \$bus = \$app->make(\\Livewire\\EventBus::class);
+        \$ref = new \\ReflectionObject(\$bus);
+        \$allListeners = [];
+        foreach (['listenersBefore', 'listeners', 'listenersAfter'] as \$q) {
+            \$p = \$ref->getProperty(\$q);
+            \$p->setAccessible(true);
+            \$v = \$p->getValue(\$bus);
+            if (isset(\$v['mount'])) foreach (\$v['mount'] as \$l) \$allListeners[] = \$l;
+        }
+        for (\$i = 0; \$i < 25; \$i++) {
+            try { (\$allListeners[\$i])(\$component, [], 'k', null); } catch (\\Throwable \$e) {}
+        }
+
+        \$attrs = \$component->getAttributes();
+        \$filtered = \$attrs->filter(fn(\$a) => \$a instanceof \\Livewire\\Features\\SupportAttributes\\Attribute);
+        echo sprintf("Total attrs: %d\\n", \$filtered->count());
+        foreach (\$filtered as \$idx => \$attr) {
+            echo sprintf("  #%d %s name=%s has_mount=%s\\n", \$idx, get_class(\$attr), \$attr->getName(), method_exists(\$attr, 'mount') ? 'Y' : 'N');
+        }
+        echo sprintf("Total: %.0fms\\n", (microtime(true) - \$_SERVER['__PHP_T0']) * 1000);
+        exit(0);
+    }
+    echo "Unknown: \$diag\\n";
+    exit(0);
+}`);
+
   // Include class preloader if it exists (generated by laraworker:build)
   stubs.push(`
 // Class preloader — eliminates per-class autoloader lookups in WASM
 if (file_exists('/app/bootstrap/preload.php')) {
     require_once '/app/bootstrap/preload.php';
-}`);
+}
+
+// Autoloader timing — track how much time is spent loading classes
+\$_SERVER['__AUTOLOAD_COUNT'] = 0;
+\$_SERVER['__AUTOLOAD_TIME'] = 0.0;
+spl_autoload_register(function(\$class) {
+    \$t = microtime(true);
+    // Let the real autoloader do its thing by returning false
+    return;
+}, true, true);
+// Wrap the existing autoloader to measure class loading time
+\$_SERVER['__AUTOLOAD_WRAP'] = function() {
+    \$loaders = spl_autoload_functions();
+    // Remove our timing loader (it's first due to prepend=true)
+    spl_autoload_unregister(\$loaders[0]);
+    // Replace the Composer autoloader with a timing wrapper
+    if (count(\$loaders) > 1) {
+        \$original = \$loaders[1];
+        spl_autoload_unregister(\$original);
+        spl_autoload_register(function(\$class) use (\$original) {
+            \$_SERVER['__AUTOLOAD_COUNT']++;
+            \$n = \$_SERVER['__AUTOLOAD_COUNT'];
+            \$now = microtime(true);
+            \$total = (\$now - \$_SERVER['__PHP_T0']) * 1000;
+            // Detect long gaps between class loads (>2 seconds)
+            if (\$_SERVER['__PHP_LAST_MILESTONE'] > 0) {
+                \$gap = (\$now - \$_SERVER['__PHP_LAST_MILESTONE']) * 1000;
+                if (\$gap > 2000) {
+                    error_log(sprintf('[php-gap] %.0fms gap before class #%d: %s', \$gap, \$n, \$class));
+                }
+            }
+            \$_SERVER['__PHP_LAST_MILESTONE'] = \$now;
+            // After class #650, log BEFORE loading to catch hanging class
+            if (\$n > 650) {
+                error_log(sprintf('[php-loading] #%d at %.0fms: %s', \$n, \$total, \$class));
+            }
+            \$t = microtime(true);
+            \$original(\$class);
+            \$elapsed = microtime(true) - \$t;
+            \$_SERVER['__AUTOLOAD_TIME'] += \$elapsed;
+            // Log every 25th class
+            if (\$n % 25 === 0) {
+                \$total = (microtime(true) - \$_SERVER['__PHP_T0']) * 1000;
+                error_log(sprintf('[php-autoload] #%d at %.0fms: %s (%.0fms)',
+                    \$n, \$total, \$class, \$elapsed * 1000));
+            }
+            if (\$elapsed > 0.05) {
+                error_log(sprintf('[php-slow-class] %s took %.0fms', \$class, \$elapsed * 1000));
+            }
+        });
+    }
+};
+\$_SERVER['__AUTOLOAD_WRAP']();
+
+register_shutdown_function(function() {
+    \$total = (microtime(true) - \$_SERVER['__PHP_T0']) * 1000;
+    \$autoload = \$_SERVER['__AUTOLOAD_TIME'] * 1000;
+    \$autoloadCount = \$_SERVER['__AUTOLOAD_COUNT'];
+    error_log(sprintf('[php-time] total=%.0fms autoload=%.0fms classes=%d uri=%s',
+        \$total, \$autoload, \$autoloadCount, \$_SERVER['REQUEST_URI'] ?? '?'));
+});`);
 
   // The WASM PHP tokenizer is broken: token_get_all() treats all code after <?php
   // as a single T_STRING token instead of properly tokenizing. This breaks both:
@@ -790,13 +2399,53 @@ namespace Illuminate\\View\\Compilers {
 }
 `;
 
+  // uniqid() hangs on the 2nd call within a single WASM process because the native
+  // C implementation calls usleep(1) internally and usleep is broken under Emscripten
+  // Asyncify. PHP resolves bare function calls to the current namespace first, so we
+  // define a safe uniqid() in every namespace that calls it at runtime.
+  //
+  // The global helper __wasm_safe_uniqid() lives in the global namespace and produces
+  // output identical to native uniqid(): prefix + 13 hex chars (+ ".XXXXXXXX" with
+  // more_entropy). A static counter ensures uniqueness even when microtime hasn't
+  // advanced between calls.
+  const uniqidNamespaces = ["Livewire\\Features\\SupportQueryString", "Illuminate\\Cache"];
+  const wasmUniqidFix =
+    `
+namespace {
+    function __wasm_safe_uniqid(string $prefix = '', bool $more_entropy = false): string {
+        static $counter = 0;
+        $counter++;
+        $time = microtime(true);
+        $sec = (int)$time;
+        $usec = (int)(($time - $sec) * 1000000);
+        $result = $prefix . sprintf('%08x%05x', $sec, $usec + $counter);
+        if ($more_entropy) {
+            $result .= sprintf('.%08d', mt_rand(0, 99999999));
+        }
+        return $result;
+    }
+}
+` +
+    uniqidNamespaces
+      .map(
+        (ns) => `
+namespace ${ns} {
+    function uniqid(string $prefix = '', bool $more_entropy = false): string {
+        return \\__wasm_safe_uniqid($prefix, $more_entropy);
+    }
+}
+`,
+      )
+      .join("");
+
   return (
     "<?php\n// Auto-generated PHP stubs for missing extensions\n// Extensions enabled: " +
     JSON.stringify(extensions) +
     "\nnamespace {\n" +
     stubs.join("\n") +
     "\n}\n" +
-    bladeTokenizerFix
+    bladeTokenizerFix +
+    wasmUniqidFix
   );
 }
 
