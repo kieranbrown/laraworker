@@ -55,7 +55,7 @@ jobs:
         working-directory: playground
         run: |
           composer config repositories.laraworker path ../
-          composer install --no-interaction
+          composer update kieranbrown/laraworker --no-interaction
 
       - name: Install frontend dependencies
         working-directory: playground
