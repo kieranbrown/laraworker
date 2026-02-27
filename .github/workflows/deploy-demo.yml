@@ -1,0 +1,73 @@
+name: Deploy Demo
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: deploy-demo
+  cancel-in-progress: false
+
+jobs:
+  deploy-demo:
+    name: Deploy Demo
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Point playground at local laraworker package
+        working-directory: playground
+        run: |
+          composer config repositories.laraworker path ../
+          composer update kieranbrown/laraworker --no-interaction
+
+      - name: Install frontend dependencies
+        working-directory: playground
+        run: bun install
+
+      - name: Configure environment
+        working-directory: playground
+        run: |
+          cp .env.example .env
+          php artisan key:generate --no-interaction
+          {
+            echo "CLOUDFLARE_ACCOUNT_ID=$CLOUDFLARE_ACCOUNT_ID"
+            echo "LARAWORKER_NAME=laraworker"
+          } >> .env
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Configure custom domain
+        working-directory: playground
+        run: |
+          php -r "
+            \$config = file_get_contents('config/laraworker.php');
+            \$config = str_replace(\"'routes' => [],\", \"'routes' => [['pattern' => 'laraworker.kswb.dev', 'custom_domain' => true]],\", \$config);
+            file_put_contents('config/laraworker.php', \$config);
+          "
+
+      - name: Build frontend assets
+        working-directory: playground
+        run: bun run build
+
+      - name: Install laraworker
+        working-directory: playground
+        run: php artisan laraworker:install --no-interaction
+
+      - name: Deploy
+        working-directory: playground
+        run: php artisan laraworker:deploy --no-interaction
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
