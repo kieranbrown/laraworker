@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.0](https://github.com/kieranbrown/laraworker/compare/v1.4.0...v1.5.0) (2026-02-27)
+
+
+### Features
+
+* build optimisations ([#17](https://github.com/kieranbrown/laraworker/issues/17)) ([bc0eee9](https://github.com/kieranbrown/laraworker/commit/bc0eee98934c871d0fe0e95a6cc9352f8a282037))
+* **demo:** update OPcache stats live when clicking Try It ([#15](https://github.com/kieranbrown/laraworker/issues/15)) ([5966058](https://github.com/kieranbrown/laraworker/commit/59660581388997e72e035f27eec73a0d017f6c73))
+
 ## [1.4.0](https://github.com/kieranbrown/laraworker/compare/v1.3.3...v1.4.0) (2026-02-27)
 
 
