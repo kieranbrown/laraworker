@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.1](https://github.com/kieranbrown/laraworker/compare/v1.2.0...v1.2.1) (2026-02-27)
+
+
+### Bug Fixes
+
+* correct stackSave WASM export mapping after rebuild ([f7ad710](https://github.com/kieranbrown/laraworker/commit/f7ad710026df279a74179b588dce702023647995))
+
+
+### Build System
+
+* increase WASM binary budget from 3MB to 4MB ([56199f0](https://github.com/kieranbrown/laraworker/commit/56199f0df351037357239164a0a8e32cd88e57a6))
+
 ## [1.2.0](https://github.com/kieranbrown/laraworker/compare/v1.1.2...v1.2.0) (2026-02-26)
 
 
