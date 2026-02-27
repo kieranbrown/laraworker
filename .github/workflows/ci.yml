@@ -1,4 +1,4 @@
-name: Deploy Demo
+name: CI
 
 on:
   workflow_dispatch:
@@ -7,14 +7,35 @@ on:
       - main
 
 concurrency:
-  group: ${{ github.workflow }}
-  cancel-in-progress: true
+  group: ci
+  cancel-in-progress: false
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
+  issues: write
 
 jobs:
-  deploy:
+  tests:
+    name: Tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Run tests
+        run: vendor/bin/pest
+
+  deploy-demo:
     name: Deploy Demo
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -76,3 +97,29 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+  release-please:
+    name: Release Please
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      releases_created: ${{ steps.release.outputs.releases_created }}
+      pr: ${{ steps.release.outputs.pr }}
+    steps:
+      - id: release
+        uses: googleapis/release-please-action@16a9c90856f42705d54a6fda1823352bdc62cf38 # v4.4.0
+
+  auto-release:
+    name: Auto Release
+    needs: [tests, deploy-demo, release-please]
+    if: ${{ !failure() && needs.release-please.outputs.pr }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Auto-merge release PR
+        run: gh pr merge ${{ needs.release-please.outputs.pr }} --squash --auto
+        env:
+          GH_TOKEN: ${{ github.token }}
