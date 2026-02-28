@@ -116,10 +116,13 @@ export async function renderInertiaSSR(
 }
 
 function decodeHtmlEntities(str: string): string {
-  return str
-    .replace(/&quot;/g, '"')
-    .replace(/&#039;/g, "'")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&amp;/g, "&");
+  const entities: Record<string, string> = {
+    "&quot;": '"',
+    "&#039;": "'",
+    "&lt;": "<",
+    "&gt;": ">",
+    "&amp;": "&",
+  };
+
+  return str.replace(/&(?:quot|#039|lt|gt|amp);/g, (match) => entities[match] ?? match);
 }
