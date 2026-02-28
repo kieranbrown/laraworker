@@ -60,9 +60,9 @@ interface Env {
    * OPcache and internal state. This forces a cold start (tar extraction +
    * PHP recompilation) which is expensive and can trigger Error 1102.
    *
-   * With ALLOW_TABLE_GROWTH=1 in the WASM binary, function table overflow
-   * is no longer a concern, so recycling is disabled by default.
-   * Set to "0" to disable (recommended). Default: 0.
+   * The CGI persistent module patch (cgi-persistent-module.sh) keeps the PHP
+   * module alive across requests without needing table growth, so recycling
+   * is disabled by default. Set to "0" to disable (recommended). Default: 0.
    */
   WORKER_MAX_REQUESTS?: string;
 }
@@ -84,8 +84,48 @@ function logMemory(label: string, instance: PhpCgiCloudflare | null): void {
   console.log(parts.join(' '));
 }
 
+/**
+ * Get WASM linear memory size in bytes from the Emscripten module.
+ */
+function getWasmHeapBytes(instance: PhpCgiCloudflare | null): number | null {
+  try {
+    const mod = (instance as any)?._phpModule ?? (instance as any)?.phpModule;
+    if (mod?.HEAP8?.buffer) {
+      return mod.HEAP8.buffer.byteLength;
+    }
+  } catch {}
+  return null;
+}
+
+/**
+ * Walk MEMFS under /app and sum file sizes to estimate memory filesystem usage.
+ */
+function getMemfsSize(FS: any): number {
+  let total = 0;
+  function walk(path: string): void {
+    try {
+      const entries = FS.readdir(path).filter((e: string) => e !== '.' && e !== '..');
+      for (const entry of entries) {
+        const full = `${path}/${entry}`;
+        try {
+          const stat = FS.stat(full);
+          // Check if directory: S_IFDIR = 0o040000 = 16384
+          if ((stat.mode & 61440) === 16384) {
+            walk(full);
+          } else {
+            total += stat.size;
+          }
+        } catch {}
+      }
+    } catch {}
+  }
+  walk('/app');
+  return total;
+}
+
 let php: PhpCgiCloudflare | null = null;
 let requestCount = 0;
+let refreshCount = 0;
 
 async function ensureInitialized(env: Env): Promise<PhpCgiCloudflare> {
   if (!php) {
@@ -109,9 +149,9 @@ async function ensureInitialized(env: Env): Promise<PhpCgiCloudflare> {
     });
   }
 
-  // PhpCgiBase.request() calls refresh() when PHP exits with non-zero code,
-  // which creates a brand new Emscripten module with empty MEMFS. This wipes
-  // all previously extracted files. Check if MEMFS needs (re-)initialization.
+  // PhpCgiCloudflare.refresh() is a no-op (guards against unnecessary module
+  // rebuilds). MEMFS only needs init on first boot or after the worker discards
+  // a corrupted instance (php=null) and creates a fresh one.
   const FS = await php.getFS();
   if (!FS.analyzePath('/app/public/index.php').exists) {
     await initializeFilesystem(php, env);
@@ -124,6 +164,7 @@ async function initializeFilesystem(
   php: PhpCgiCloudflare,
   env: Env,
 ): Promise<void> {
+  refreshCount++;
   const FS = await php.getFS();
 
   // Disable MEMFS permission enforcement entirely. Our tar unpacker doesn't
@@ -186,6 +227,18 @@ async function initializeFilesystem(
       } catch {}
     }
   }
+
+  // Write lightweight diagnostic PHP script for OPcache/memory stats.
+  // Used by /__memory-report endpoint and memory debug headers.
+  FS.writeFile(
+    '/app/public/__lw-diag.php',
+    new TextEncoder().encode(
+      '<?php header("Content-Type: application/json");'
+      + '$oc=function_exists("opcache_get_status")?opcache_get_status(false):null;'
+      + 'echo json_encode(["opcache"=>$oc,"memory_peak"=>memory_get_peak_usage(true),'
+      + '"memory_current"=>memory_get_usage(true)]);',
+    ),
+  );
 }
 
 function mkdirp(
@@ -278,6 +331,55 @@ export default {
       });
     }
 
+    // Full memory report endpoint — protected by env var
+    if (url.pathname === '/__memory-report' && env.MEMORY_DEBUG === 'true') {
+      const report: Record<string, unknown> = { requestCount, refreshCount };
+
+      const heapBytes = getWasmHeapBytes(php);
+      if (heapBytes !== null) {
+        report.wasmHeap = { bytes: heapBytes, mb: +(heapBytes / 1024 / 1024).toFixed(1) };
+      }
+
+      try {
+        const instance = await ensureInitialized(env);
+        const FS = await instance.getFS();
+        const memfsBytes = getMemfsSize(FS);
+        report.memfs = { bytes: memfsBytes, mb: +(memfsBytes / 1024 / 1024).toFixed(1) };
+      } catch {}
+
+      // OPcache + PHP memory stats via internal PHP request
+      try {
+        const instance = await ensureInitialized(env);
+        const diagResponse = await instance.request(
+          new Request(new URL('/__lw-diag.php', request.url)),
+        );
+        if (diagResponse.ok) {
+          const phpData: any = await diagResponse.json();
+          if (phpData?.opcache?.memory_usage) {
+            const mem = phpData.opcache.memory_usage;
+            const used = mem.used_memory ?? 0;
+            const free = mem.free_memory ?? 0;
+            const wasted = mem.wasted_memory ?? 0;
+            report.opcache = {
+              usedBytes: used,
+              totalBytes: used + free + wasted,
+              hitRate: phpData.opcache.opcache_statistics?.opcache_hit_rate ?? 0,
+              scripts: phpData.opcache.opcache_statistics?.num_cached_scripts ?? 0,
+            };
+          }
+          report.phpMemory = {
+            currentBytes: phpData.memory_current ?? 0,
+            peakBytes: phpData.memory_peak ?? 0,
+          };
+        }
+      } catch {}
+
+      return new Response(JSON.stringify(report, null, 2), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     // OPcache diagnostic endpoint — protected by env var
     if (url.pathname === '/__opcache-status' && env.OPCACHE_DEBUG === 'true') {
       try {
@@ -318,23 +420,55 @@ export default {
       // Clone request for potential retry — body can only be read once
       const retryRequest = request.clone();
 
+      // Capture state before request to detect refresh/exit code issues.
+      // PhpCgiBase.count only increments on exitCode === 0; refresh() is
+      // called on non-zero exit code (intercepted by PhpCgiCloudflare).
+      const countBefore = (instance as any).count ?? 0;
+      const refreshesBefore = instance.refreshCount;
+
       // All requests go through PHP - static assets are served
       // by Cloudflare Static Assets before the worker is invoked
       let response = await instance.request(request);
 
-      // Detect WASM crash: PhpCgiBase catches RuntimeError (e.g. "table index
-      // is out of bounds"), returns 500, and calls refresh() which wipes MEMFS.
-      // If the filesystem was wiped, the module crashed — re-init and retry once.
-      if (response.status === 500) {
-        const FS = await instance.getFS();
-        if (!FS.analyzePath('/app/public/index.php').exists) {
-          console.warn('[wasm] Module crash detected, reinitializing and retrying request');
-          await initializeFilesystem(instance, env);
-          requestCount = 0;
-          // @ts-expect-error — overriding Location with URL for PhpCgiBase
-          globalThis.location = new URL(retryRequest.url);
-          response = await instance.request(retryRequest);
-        }
+      // Detect non-zero exit code or module refresh after request
+      const countAfter = (instance as any).count ?? 0;
+      const refreshesAfter = instance.refreshCount;
+      const lastExitCode: number = (instance as any).lastExitCode ?? -1;
+      const refreshRequested = refreshesAfter > refreshesBefore;
+
+      if (refreshRequested) {
+        const level = instance.needsRestart ? 'error' : 'warn';
+        console[level](
+          `[php-wasm] ${instance.needsRestart ? 'WASM crash' : 'PHP non-zero exit'} ` +
+          `on ${url.pathname}. exitCode=${lastExitCode}, ` +
+          `refreshes=${refreshesBefore}→${refreshesAfter}, ` +
+          `phpCount=${countBefore}→${countAfter}, ` +
+          `needsRestart=${instance.needsRestart}`
+        );
+        // Capture stderr — still available until next request clears it
+        try {
+          const stderrBuf = (instance as any).error;
+          if (stderrBuf && stderrBuf.length > 0) {
+            const stderr = new TextDecoder().decode(new Uint8Array(stderrBuf).buffer);
+            if (stderr.trim()) {
+              console.warn('[php-wasm] stderr:', stderr.substring(0, 4000));
+            }
+          }
+        } catch {}
+      }
+
+      // Detect WASM crash: PhpCgiCloudflare.refresh() intercepts PhpCgiBase's
+      // refresh calls. count >= 2 means both catch (RuntimeError) and finally
+      // (non-zero exit) fired — genuine module corruption. count === 1 means
+      // only PHP exited non-zero (app error) — module is fine, OPcache preserved.
+      if (instance.needsRestart) {
+        console.warn('[wasm] WASM crash detected, recycling module and retrying request');
+        php = null;
+        requestCount = 0;
+        instance = await ensureInitialized(env);
+        // @ts-expect-error — overriding Location with URL for PhpCgiBase
+        globalThis.location = new URL(retryRequest.url);
+        response = await instance.request(retryRequest);
       }
 
       const tPhp = performance.now();
@@ -379,10 +513,45 @@ export default {
         `total;dur=${(tSsr - t0).toFixed(1)}`,
       ].join(', '));
       headers.set('X-Request-Count', String(++requestCount));
+      headers.set('X-Php-Exit-Code', String(lastExitCode));
+      if (refreshRequested) {
+        headers.set('X-Refresh-Requested', instance.needsRestart ? 'crash' : 'php-error');
+      }
+
+      // Memory profiling headers — only when MEMORY_DEBUG is enabled
+      if (env.MEMORY_DEBUG === 'true') {
+        const heapBytes = getWasmHeapBytes(instance);
+        if (heapBytes !== null) {
+          headers.set('X-Wasm-Heap-Used', String(heapBytes));
+        }
+        headers.set('X-Module-Refreshes', String(refreshCount));
+
+        try {
+          const FS = await instance.getFS();
+          headers.set('X-Memfs-Size', String(getMemfsSize(FS)));
+        } catch {}
+
+        // OPcache memory stats via lightweight internal PHP request
+        try {
+          const diagResponse = await instance.request(
+            new Request(new URL('/__lw-diag.php', request.url)),
+          );
+          if (diagResponse.ok) {
+            const phpData: any = await diagResponse.json();
+            if (phpData?.opcache?.memory_usage) {
+              const mem = phpData.opcache.memory_usage;
+              headers.set('X-OPcache-Memory-Used', String(mem.used_memory ?? 0));
+              headers.set('X-OPcache-Memory-Total', String(
+                (mem.used_memory ?? 0) + (mem.free_memory ?? 0) + (mem.wasted_memory ?? 0),
+              ));
+            }
+          }
+        } catch {}
+      }
 
       // Optional module recycling: discard the WASM module after N requests.
-      // Disabled by default (0) — ALLOW_TABLE_GROWTH=1 in the WASM binary
-      // prevents function table overflow, so recycling is unnecessary.
+      // Disabled by default (0) — the CGI persistent module patch keeps PHP
+      // alive across requests without needing table growth, so recycling is unnecessary.
       // Each recycle forces a full cold start (tar extraction + OPcache rebuild).
       const maxRequests = parseInt(env.WORKER_MAX_REQUESTS || '0', 10);
       if (maxRequests > 0 && requestCount >= maxRequests) {

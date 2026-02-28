@@ -35,6 +35,8 @@ interface PhpCgiCloudflareOptions {
 export class PhpCgiCloudflare extends PhpCgiBase {
   private _pendingHeaders: Headers | null = null;
   private _previousHeaderEnvKeys: string[] = [];
+  private _refreshCount = 0;
+  private _refreshCallCount = 0;
 
   constructor(options: PhpCgiCloudflareOptions = {}) {
     const {
@@ -79,11 +81,51 @@ export class PhpCgiCloudflare extends PhpCgiBase {
   }
 
   /**
+   * Override PhpCgiBase.refresh() to prevent unnecessary module rebuilds.
+   *
+   * PhpCgiBase calls refresh() on ANY non-zero exit code, destroying the
+   * WASM module and OPcache SHM. Most non-zero exits are recoverable PHP
+   * errors (fatals, uncaught exceptions) that don't corrupt the module —
+   * only WASM RuntimeErrors indicate genuine corruption.
+   *
+   * Detection: PhpCgiBase calls refresh() from two places:
+   * - catch block (~L691): after catching a JS error (RuntimeError, etc.)
+   * - finally block (~L701): when exitCode !== 0
+   *
+   * A WASM crash triggers BOTH calls (count >= 2).
+   * A PHP application error triggers ONLY the finally call (count === 1).
+   *
+   * We intercept all calls (no-op) and expose `needsRestart` so the worker
+   * can recycle the module only when genuinely corrupted.
+   */
+  refresh(): void {
+    this._refreshCount++;
+    this._refreshCallCount++;
+  }
+
+  /**
+   * Total number of times PhpCgiBase requested a refresh (for diagnostics).
+   */
+  get refreshCount(): number {
+    return this._refreshCount;
+  }
+
+  /**
+   * True when the last request caused a WASM RuntimeError (module corruption).
+   * The caller should discard this instance and create a fresh one.
+   */
+  get needsRestart(): boolean {
+    return this._refreshCallCount >= 2;
+  }
+
+  /**
    * Forward incoming request headers to PHP CGI env vars.
-   * Stores headers from the Request so _beforeRequest() can set them via putEnv.
+   * Resets the per-request refresh counter so needsRestart reflects only
+   * the current request.
    */
   async request(request: Request): Promise<Response> {
     this._pendingHeaders = request.headers;
+    this._refreshCallCount = 0;
     return super.request(request);
   }
 

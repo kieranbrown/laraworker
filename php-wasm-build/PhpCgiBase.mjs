@@ -141,6 +141,7 @@ export class PhpCgiBase {
   output = [];
   error = [];
   count = 0;
+  lastExitCode = -1;
 
   queue = [];
 
@@ -668,7 +669,11 @@ export class PhpCgiBase {
         return response;
       });
     } catch (error) {
-      console.error(error);
+      const isRuntimeError = error instanceof WebAssembly.RuntimeError;
+      console.error(
+        `[php-wasm] ${isRuntimeError ? "WASM RuntimeError" : "JS exception"} during request:`,
+        error,
+      );
 
       const response = new Response(
         `500: Internal Server Error.\n` +
@@ -692,6 +697,8 @@ export class PhpCgiBase {
 
       return response;
     } finally {
+      this.lastExitCode = exitCode;
+
       if (exitCode === 0) {
         this._afterRequest();
       } else {
