@@ -39,6 +39,23 @@ export class PhpCgiCloudflare extends PhpCgiBase {
   private _refreshCallCount = 0;
   private _initialized = false;
 
+  // Static readonly Set to skip headers already handled by PhpCgiBase — avoid per-request allocation
+  private static readonly SKIP_HEADERS = new Set(['host', 'cookie', 'content-type', 'content-length']);
+
+  // Pre-computed HTTP header env name conversions for common headers (memoization for frequent headers)
+  private static readonly HEADER_ENV_CACHE: Map<string, string> = new Map([
+    ['accept', 'HTTP_ACCEPT'],
+    ['accept-encoding', 'HTTP_ACCEPT_ENCODING'],
+    ['accept-language', 'HTTP_ACCEPT_LANGUAGE'],
+    ['authorization', 'HTTP_AUTHORIZATION'],
+    ['connection', 'HTTP_CONNECTION'],
+    ['referer', 'HTTP_REFERER'],
+    ['user-agent', 'HTTP_USER_AGENT'],
+    ['x-requested-with', 'HTTP_X_REQUESTED_WITH'],
+    ['x-forwarded-for', 'HTTP_X_FORWARDED_FOR'],
+    ['x-forwarded-proto', 'HTTP_X_FORWARDED_PROTO'],
+  ]);
+
   constructor(options: PhpCgiCloudflareOptions = {}) {
     const {
       docroot = '/app/public',
@@ -182,12 +199,16 @@ export class PhpCgiCloudflare extends PhpCgiBase {
       }
     }
 
-    // Headers already set by PhpCgiBase — skip to avoid double-setting
-    const skip = new Set(['host', 'cookie', 'content-type', 'content-length']);
-
+    // Headers already set by PhpCgiBase — skip to avoid double-setting (use static readonly Set)
     for (const [name, value] of headers.entries()) {
-      if (skip.has(name)) continue;
-      const envName = 'HTTP_' + name.toUpperCase().replace(/-/g, '_');
+      if (PhpCgiCloudflare.SKIP_HEADERS.has(name)) continue;
+      // Check memoized common headers, otherwise compute + cache
+      let envName = PhpCgiCloudflare.HEADER_ENV_CACHE.get(name);
+      if (envName === undefined) {
+        envName = 'HTTP_' + name.toUpperCase().replace(/-/g, '_');
+        // Cache for reuse on subsequent requests with same header
+        PhpCgiCloudflare.HEADER_ENV_CACHE.set(name, envName);
+      }
       putEnv(envName, value);
       this._previousHeaderEnvKeys.push(envName);
     }
