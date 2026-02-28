@@ -28,7 +28,7 @@ Comprehensive analysis identified multiple optimization opportunities across the
 - **Change**: Changed zlib level from 9 to 6. Level 6 is 30-50% faster with <2% size increase
 - **Impact**: Faster builds, slightly faster cold start decompression
 - **Complexity**: trivial
-- **Commit**: (pending)
+- **Commit**: 9d690880
 
 ### 5. Inertia SSR: Single-Pass HTML Replacement
 - **File**: `stubs/inertia-ssr.ts` (lines 107-125)
@@ -43,11 +43,12 @@ Comprehensive analysis identified multiple optimization opportunities across the
 - **Complexity**: simple
 - **Commit**: fab8310e
 
-### 7. Build Pipeline: Combined Icon Tree-Shaking Pass
+### 7. Build Pipeline: Combined Icon Tree-Shaking Pass ✅
 - **File**: `stubs/build-app.mjs` (lines 1378-1449)
-- **Change**: Merge the two separate PHP file scans (literal heroicon-* refs + Heroicon:: enum refs) into a single pass
+- **Change**: Merged the two separate PHP file scans (literal heroicon-* refs + Heroicon:: enum refs) into a single pass
 - **Impact**: ~10-15% faster tree-shaking phase
 - **Complexity**: simple
+- **Commit**: 9d690880
 
 ### 8. Wrangler: Reduce Default Observability Sampling
 - **File**: `stubs/wrangler.jsonc.stub` (line 17)
