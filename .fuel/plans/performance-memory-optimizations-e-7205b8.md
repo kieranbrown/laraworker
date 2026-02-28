@@ -23,11 +23,12 @@ Comprehensive analysis identified multiple optimization opportunities across the
 - **Impact**: ~15-25% build time reduction
 - **Complexity**: moderate
 
-### 4. Gzip Compression Level: 9 → 6
-- **File**: `stubs/build-app.mjs` (line 1591)
-- **Change**: Change zlib level from 9 to 6. Level 6 is 30-50% faster with <2% size increase
+### 4. Gzip Compression Level: 9 → 6 ✅
+- **File**: `stubs/build-app.mjs` (line 1597)
+- **Change**: Changed zlib level from 9 to 6. Level 6 is 30-50% faster with <2% size increase
 - **Impact**: Faster builds, slightly faster cold start decompression
 - **Complexity**: trivial
+- **Commit**: (pending)
 
 ### 5. Inertia SSR: Single-Pass HTML Replacement
 - **File**: `stubs/inertia-ssr.ts` (lines 107-125)
@@ -35,11 +36,12 @@ Comprehensive analysis identified multiple optimization opportunities across the
 - **Impact**: ~5-15ms per SSR request
 - **Complexity**: simple
 
-### 6. PHP Bridge: Static Skip Headers Set + Header Memoization
+### 6. PHP Bridge: Static Skip Headers Set + Header Memoization ✅
 - **File**: `stubs/php.ts.stub` (lines 186-192)
-- **Change**: Make the `skip` Set a `static readonly` class property instead of allocating per-request. Pre-compute or memoize common HTTP header env name conversions
+- **Change**: Make the `skip` Set a `static readonly` class property instead of allocating per-request. Pre-compute common HTTP header env name conversions in `HEADER_ENV_CACHE` Map with runtime memoization for new headers.
 - **Impact**: ~1-3ms per request, reduced GC pressure
 - **Complexity**: simple
+- **Commit**: fab8310e
 
 ### 7. Build Pipeline: Combined Icon Tree-Shaking Pass
 - **File**: `stubs/build-app.mjs` (lines 1378-1449)
