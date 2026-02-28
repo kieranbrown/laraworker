@@ -37,6 +37,7 @@ export class PhpCgiCloudflare extends PhpCgiBase {
   private _previousHeaderEnvKeys: string[] = [];
   private _refreshCount = 0;
   private _refreshCallCount = 0;
+  private _initialized = false;
 
   constructor(options: PhpCgiCloudflareOptions = {}) {
     const {
@@ -88,6 +89,11 @@ export class PhpCgiCloudflare extends PhpCgiBase {
    * errors (fatals, uncaught exceptions) that don't corrupt the module —
    * only WASM RuntimeErrors indicate genuine corruption.
    *
+   * CRITICAL: PhpCgiBase's constructor calls this.refresh() to initialize
+   * this.binary. We MUST delegate to super.refresh() on that first call,
+   * otherwise the Emscripten module is never created and getFS() fails
+   * with "Cannot read properties of undefined (reading 'FS')".
+   *
    * Detection: PhpCgiBase calls refresh() from two places:
    * - catch block (~L691): after catching a JS error (RuntimeError, etc.)
    * - finally block (~L701): when exitCode !== 0
@@ -95,10 +101,15 @@ export class PhpCgiCloudflare extends PhpCgiBase {
    * A WASM crash triggers BOTH calls (count >= 2).
    * A PHP application error triggers ONLY the finally call (count === 1).
    *
-   * We intercept all calls (no-op) and expose `needsRestart` so the worker
-   * can recycle the module only when genuinely corrupted.
+   * We intercept post-init calls (no-op) and expose `needsRestart` so the
+   * worker can recycle the module only when genuinely corrupted.
    */
   refresh(): void {
+    if (!this._initialized) {
+      this._initialized = true;
+      super.refresh();
+      return;
+    }
     this._refreshCount++;
     this._refreshCallCount++;
   }

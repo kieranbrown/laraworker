@@ -1,0 +1,13 @@
+{
+  "resources/js/Layouts/AppLayout.vue": [],
+  "resources/js/Layouts/AppLayout.vue?vue&type=script&setup=true&lang.ts": [],
+  "resources/js/Pages/Architecture.vue": [],
+  "resources/js/Pages/Architecture.vue?vue&type=script&setup=true&lang.ts": [],
+  "resources/js/Pages/Features.vue": [],
+  "resources/js/Pages/Features.vue?vue&type=script&setup=true&lang.ts": [],
+  "resources/js/Pages/Home.vue": [],
+  "resources/js/Pages/Home.vue?vue&type=script&setup=true&lang.ts": [],
+  "resources/js/Pages/Performance.vue": [],
+  "resources/js/Pages/Performance.vue?vue&type=script&setup=true&lang.ts": [],
+  "resources/js/ssr.ts": []
+}

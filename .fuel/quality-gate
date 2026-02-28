@@ -3,13 +3,31 @@ set -euo pipefail
 
 # Filter staged files by extension
 PHP_FILES=()
+STUB_FILES=()
 if [ -n "${FUEL_STAGED_FILES:-}" ]; then
     while IFS= read -r file; do
         [ -z "$file" ] && continue
         case "$file" in
             *.php) [ -e "$file" ] && PHP_FILES+=("$file") ;;
+            stubs/*.stub | stubs/*.mjs) STUB_FILES+=("$file") ;;
         esac
     done <<< "$FUEL_STAGED_FILES"
+fi
+
+# ── Worker stub smoke test ──────────────────────────────────────────
+# When worker/PHP stubs are modified, rebuild the playground and run the
+# local smoke test to catch fatal initialization errors (e.g. the
+# refresh() override that broke getFS()). This runs against wrangler dev.
+if [ "${#STUB_FILES[@]}" -gt 0 ]; then
+    echo "Worker stubs changed — running playground smoke test..."
+    if [ -x "./scripts/playground-smoke-test.sh" ]; then
+        if ! ./scripts/playground-smoke-test.sh 2>&1; then
+            echo "Playground smoke test failed"
+            exit 1
+        fi
+    else
+        echo "WARNING: scripts/playground-smoke-test.sh not found or not executable, skipping smoke test"
+    fi
 fi
 
 # Exit early if no PHP files are staged
