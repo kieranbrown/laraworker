@@ -41,12 +41,33 @@ The WORKER_MAX_REQUESTS comment says "With ALLOW_TABLE_GROWTH=1 in the WASM bina
 
 ## Tasks
 
-### Task 1: Diagnose why PHP returns non-zero exit code on demo site
+### Task 1: Diagnose why PHP returns non-zero exit code on demo site ✅
 - **Complexity**: moderate
-- Deploy a debug build or add temporary logging to capture the actual exit code and stderr from PhpCgiBase
-- Check if the rebuilt WASM binary (bbe63d92) has the persistent module patch working correctly
-- Verify `_wasm_module_started` variable behavior in the compiled WASM
-- Check if `refresh()` is being called on every request by adding a console.warn
+- **Status**: Done (f-23f67f)
+- **Files modified**:
+  - `php-wasm-build/PhpCgiBase.mjs` — Added `lastExitCode` property, `this.lastExitCode = exitCode` in finally block, RuntimeError vs JS exception distinction in catch block
+  - `stubs/php.ts.stub` — Added `refresh()` override with logging + `_refreshCount` tracker + `refreshCount` getter
+  - `stubs/worker.ts.stub` — Added pre/post-request tracking (countBefore/After, refreshesBefore/After), `X-Php-Exit-Code` and `X-Module-Refreshed` response headers, stderr capture on refresh
+- **Diagnostic signals available after deploy**:
+  - `X-Php-Exit-Code` header: 0 = success, >0 = PHP fatal, -1 = JS exception before main() returned
+  - `X-Module-Refreshed: true` header: present when refresh() was called during request
+  - `X-Request-Count` header: should increment; resets to 1 if module was rebuilt
+  - Console: `[php-wasm] refresh() #N — module rebuild` with exit code and stderr
+  - Console: `[php-wasm] WASM RuntimeError` vs `[php-wasm] JS exception` distinguishes crash types
+  - Console: `[php-wasm] Module refreshed during request to /path` with full diagnostics
+- **Key findings**:
+  - `_wasm_module_started` is a C `static int` in WASM linear memory (not JS-visible), but build.sh applies the patch and the build verification confirms it's present
+  - `shouldRunNow = false` in Emscripten wrapper means `callMain()` is NOT called during module init — `main()` is only invoked via `ccall("main")` from PhpCgiBase
+  - **Double-refresh bug**: On the exception path (catch block), `refresh()` is called at line 696, then `finally` block also calls `refresh()` at line 704 because `exitCode` stays -1. Two rebuilds instead of one.
+  - The exit code semantics: `0` = PHP handled request successfully (even 500 HTTP status from app error), `non-zero` = PHP fatal/startup failure, `-1` = exception thrown before `main()` returned
+- **Gotchas**:
+  - `lastExitCode` is set in the finally block, so it captures the exit code even when catch runs first
+  - `this.error` (stderr buffer) is NOT cleared by `refresh()` — it persists until next request's `this.error = []` at line 589
+  - `PhpCgiCloudflare.refresh()` is called from both PhpCgiBase's catch and finally blocks — the override logs both calls
+- **Next steps** (for Task 6):
+  - In the catch block, only call `refresh()` for `WebAssembly.RuntimeError` (actual WASM corruption)
+  - In the finally block, consider NOT calling `refresh()` on non-zero exit code — PHP fatals don't necessarily corrupt the module
+  - Fix the double-refresh by either removing the catch-block `refresh()` call or setting a flag to skip the finally-block one
 
 ### Task 2: Reduce OPcache memory to fit within budget
 - **Complexity**: simple
@@ -73,24 +94,34 @@ The WORKER_MAX_REQUESTS comment says "With ALLOW_TABLE_GROWTH=1 in the WASM bina
   - X-Request-Count check allows for CF multi-isolate routing (different isolates have different counts) but fails if ALL responses show count=1
   - Uses `curl -D` for header capture instead of `-w` for reliability
 
-### Task 5: Add WASM memory profiling tooling
+### Task 5: Add WASM memory profiling tooling ✅
 - **Complexity**: moderate
-- Create a diagnostic mode that reports:
-  - WASM linear memory usage (current heap size vs initial)
-  - OPcache SHM utilization (used vs allocated)
-  - MEMFS usage (tar extracted size)
-  - JS heap estimate (if available via performance.measureUserAgentSpecificMemory or similar)
-  - Number of refresh() calls (module rebuilds)
-- Surface this via response headers when MEMORY_DEBUG=true
-- Add a `/__memory-report` diagnostic endpoint
+- **Status**: Done (f-4be28b)
+- **File**: `stubs/worker.ts.stub`
+- **Response headers** (when `MEMORY_DEBUG=true`):
+  - `X-Wasm-Heap-Used`: WASM linear memory bytes (via `HEAP8.buffer.byteLength`)
+  - `X-OPcache-Memory-Used` / `X-OPcache-Memory-Total`: from `opcache_get_status(false)`
+  - `X-Memfs-Size`: total bytes under `/app` in MEMFS (recursive walk)
+  - `X-Module-Refreshes`: count of `initializeFilesystem()` calls (proxy for refresh count)
+- **Endpoint**: `/__memory-report` returns full JSON breakdown (wasmHeap, memfs, opcache, phpMemory, requestCount, refreshCount)
+- **Key decisions**:
+  - OPcache stats fetched via lightweight `__lw-diag.php` written to MEMFS during `initializeFilesystem()` — avoids modifying the app tarball or php-stubs.php
+  - `refreshCount` tracks `initializeFilesystem()` calls rather than PhpCgiBase.refresh() directly, since the worker can only observe FS wipes (which require re-init)
+  - MEMFS size walks `/app` only (not entire FS) to avoid Emscripten internal nodes
+  - OPcache header fetch is an internal PHP request per main request — acceptable overhead since MEMORY_DEBUG is a debug-only feature
+- **Gotchas**:
+  - `__lw-diag.php` must be re-created after every FS re-init (it's in MEMFS which gets wiped on refresh)
+  - The internal PHP request for OPcache stats runs AFTER the main request completes; if PHP crashed and FS was re-inited, the file is re-created by `initializeFilesystem()`
+  - `getMemfsSize()` uses stat.mode bitmask `(mode & 61440) === 16384` for directory detection (Emscripten FS.isDir may not be exposed)
 
-### Task 6: Guard against unnecessary refresh() calls
+### Task 6: Guard against unnecessary refresh() calls ✅
 - **Complexity**: moderate
-- In the worker stub's catch block, distinguish between:
-  - WASM RuntimeError (actual crash → refresh is needed)
-  - PHP returning non-zero exit code due to application error (refresh may not be needed)
-- Consider patching PhpCgiBase.mjs or overriding in PhpCgiCloudflare to not call refresh() on non-zero exit codes unless it's a RuntimeError
-- This prevents OPcache destruction on recoverable PHP errors
+- **Status**: Done (f-6c4613)
+- **Files**: `stubs/php.ts.stub`, `stubs/worker.ts.stub`
+- **Approach**: Override `refresh()` in PhpCgiCloudflare as no-op counting calls.
+  WASM crash = count >= 2 (catch + finally). PHP app error = count === 1 (finally only).
+- **API**: `needsRestart` getter, `refreshCount` getter, `request()` resets per-request counter.
+- **Worker**: checks `instance.needsRestart`, discards instance on crash, preserves OPcache on PHP errors.
 
 ## Priority Order
 
