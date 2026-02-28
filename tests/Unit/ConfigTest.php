@@ -121,8 +121,8 @@ test('config has opcache settings', function () {
 test('config opcache defaults are sensible', function () {
     expect(config('laraworker.opcache.enabled'))->toBeTrue();
     expect(config('laraworker.opcache.enable_cli'))->toBeTrue();
-    expect(config('laraworker.opcache.memory_consumption'))->toBe(24);
-    expect(config('laraworker.opcache.interned_strings_buffer'))->toBe(4);
+    expect(config('laraworker.opcache.memory_consumption'))->toBe(16);
+    expect(config('laraworker.opcache.interned_strings_buffer'))->toBe(2);
     expect(config('laraworker.opcache.max_accelerated_files'))->toBe(1000);
     expect(config('laraworker.opcache.validate_timestamps'))->toBeFalse();
     expect(config('laraworker.opcache.jit'))->toBeFalse();
