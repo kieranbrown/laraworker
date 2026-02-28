@@ -1117,7 +1117,7 @@ function createTar(files, { stripWhitespace = false, strippedContents = new Map(
         }
       }
 
-      // Track vendor vs app bytes for reporting
+      // Track per-category uncompressed content bytes
       if (file.path.startsWith("vendor/")) {
         vendorBytes += content.length;
       } else {
@@ -1378,84 +1378,81 @@ for (const iconSet of BLADE_ICON_SETS) {
   );
   if (svgFiles.length === 0) continue;
 
-  // Scan all PHP, Blade, and compiled view files for literal icon references
+  // Scan all PHP, Blade, and compiled view files for icon references
   const usedIcons = new Set();
   const iconRefPattern = new RegExp(
     iconSet.prefix.replace(/-/g, "[-.]") + "([a-z0-9][-a-z0-9]*)",
     "g",
   );
 
-  for (const f of allFiles) {
-    if (f.isDir || !f.fullPath) continue;
-    if (
-      !(
-        f.path.endsWith(".php") ||
-        f.path.endsWith(".blade.php") ||
-        f.path.startsWith("storage/framework/views/")
-      )
-    )
-      continue;
-    try {
-      const content = readFileSync(f.fullPath, "utf8");
-      for (const match of content.matchAll(iconRefPattern)) {
-        // match[0] = "heroicon-o-check", match[1] = "o-check"
-        // SVG filename is the part after the prefix: "o-check.svg"
-        usedIcons.add(match[1] + ".svg");
-      }
-    } catch {}
-  }
-
-  // Scan for dynamically-referenced icons via enum (e.g. Filament's Heroicon::Eye)
-  // These are resolved at runtime by getIconForSize() to heroicon-{size}-{value}
+  // Pre-parse enum file if available for dynamic references
+  const caseMap = new Map();
   if (iconSet.enumFile) {
     const enumEntry = allFiles.find((f) => !f.isDir && f.path === iconSet.enumFile);
     if (enumEntry?.fullPath) {
       try {
         const enumContent = readFileSync(enumEntry.fullPath, "utf8");
-        // Parse all "case CaseName = 'value';" entries
-        const caseMap = new Map();
         for (const m of enumContent.matchAll(/case\s+(\w+)\s*=\s*'([^']+)'/g)) {
           caseMap.set(m[1], m[2]);
         }
-
-        if (caseMap.size > 0) {
-          // Scan PHP files for Heroicon::CaseName references
-          const referencedValues = new Set();
-          for (const f of allFiles) {
-            if (f.isDir || !f.fullPath || !f.path.endsWith(".php")) continue;
-            try {
-              const content = readFileSync(f.fullPath, "utf8");
-              for (const m of content.matchAll(iconSet.enumRefPattern)) {
-                const value = caseMap.get(m[1]);
-                if (value) referencedValues.add(value);
-              }
-            } catch {}
-          }
-
-          // For each referenced enum value, generate all size variant SVG filenames
-          let enumIconsAdded = 0;
-          for (const value of referencedValues) {
-            if (value.startsWith("o-")) {
-              // Outlined variants use the value directly
-              usedIcons.add(value + ".svg");
-              enumIconsAdded++;
-            } else {
-              // Non-outlined: generate all size variants (m-, s-, c-)
-              for (const sizePrefix of ["m-", "s-", "c-"]) {
-                usedIcons.add(sizePrefix + value + ".svg");
-              }
-              enumIconsAdded += 3;
-            }
-          }
-
-          if (enumIconsAdded > 0) {
-            console.log(
-              `  Found ${referencedValues.size} Heroicon enum references → ${enumIconsAdded} SVG variants preserved`,
-            );
-          }
-        }
       } catch {}
     }
+  }
+
+  const referencedValues = new Set();
+
+  for (const f of allFiles) {
+    if (f.isDir || !f.fullPath) continue;
+
+    // Only process relevant PHP/Blade/view files
+    const isPhpFile = f.path.endsWith(".php");
+    const isBladeFile = f.path.endsWith(".blade.php");
+    const isCompiledView = f.path.startsWith("storage/framework/views/");
+
+    if (!(isPhpFile || isBladeFile || isCompiledView)) continue;
+
+    try {
+      const content = readFileSync(f.fullPath, "utf8");
+
+      // Pass 1: Find literal icon references (e.g., heroicon-o-check)
+      for (const match of content.matchAll(iconRefPattern)) {
+        // match[0] = "heroicon-o-check", match[1] = "o-check"
+        // SVG filename is the part after the prefix: "o-check.svg"
+        usedIcons.add(match[1] + ".svg");
+      }
+
+      // Pass 2: Find dynamic enum references (e.g., Heroicon::Eye)
+      // These are resolved at runtime by getIconForSize() to heroicon-{size}-{value}
+      if (isPhpFile && caseMap.size > 0 && iconSet.enumRefPattern) {
+        for (const m of content.matchAll(iconSet.enumRefPattern)) {
+          const value = caseMap.get(m[1]);
+          if (value) referencedValues.add(value);
+        }
+      }
+    } catch {}
+  }
+
+  // Process referenced enum values into SVG filenames
+  // For each referenced enum value, generate all size variant SVG filenames
+  let enumIconsAdded = 0;
+  for (const value of referencedValues) {
+    if (value.startsWith("o-")) {
+      // Outlined variants use the value directly
+      usedIcons.add(value + ".svg");
+      enumIconsAdded++;
+    } else {
+      // Non-outlined: generate all size variants (m-, s-, c-)
+      for (const sizePrefix of ["m-", "s-", "c-"]) {
+        usedIcons.add(sizePrefix + value + ".svg");
+      }
+      enumIconsAdded += 3;
+    }
+  }
+
+  if (enumIconsAdded > 0) {
+    console.log(
+      `  Found ${referencedValues.size} Heroicon enum references → ${enumIconsAdded} SVG variants preserved`,
+    );
   }
 
   if (usedIcons.size === 0) {
@@ -1598,20 +1595,21 @@ if (STRIP_WHITESPACE && strippedCount > 0) {
   );
 }
 
-const gzipped = gzipSync(tar, { level: 9 });
+const gzipped = gzipSync(tar, { level: 6 });
 
 mkdirSync(DIST_DIR, { recursive: true });
 writeFileSync(OUTPUT, gzipped);
 
-// For compressed sizes per category, we estimate based on compression ratio
-const compressionRatio = gzipped.length / tar.length;
-const vendorCompressed = Math.floor(vendorBytes * compressionRatio);
-const appCompressed = Math.floor(appBytes * compressionRatio);
-
 const totalCompressed = gzipped.length;
 const totalUncompressed = tar.length;
-const vendorUncompressed = vendorBytes;
-const appUncompressed = appBytes;
+const totalContentBytes = vendorBytes + appBytes;
+
+// Estimate per-category compressed sizes using the overall compression ratio.
+// Individual gzip streams wouldn't sum to total anyway (shared dictionary), so
+// ratio-based estimates are equally meaningful and avoid 2 extra tar+gzip passes.
+const compressionRatio = totalContentBytes > 0 ? totalCompressed / totalContentBytes : 1;
+const vendorCompressedEst = Math.round(vendorBytes * compressionRatio);
+const appCompressedEst = Math.round(appBytes * compressionRatio);
 
 // PHP 8.5 WASM binary (gzipped). Measured from PHP 8.5.2 build: 3.27 MB gz.
 // PHP WASM is loaded as a separate Cloudflare Workers binding (not bundled in script).
@@ -1630,13 +1628,13 @@ console.log("");
 console.log("  ┌──────────────────────────────────────────────────────────────────────┐");
 console.log("  │                        Build Report                                 │");
 console.log("  ├──────────────────────────┬──────────┬───────────────┬───────────────┤");
-console.log("  │ Category                 │ Files    │ Uncompressed  │ Compressed    │");
+console.log("  │ Category                 │ Files    │ Uncompressed  │ ~Compressed   │");
 console.log("  ├──────────────────────────┼──────────┼───────────────┼───────────────┤");
 console.log(
-  `  │ vendor/                  │ ${String(vendorFileCount).padStart(6)} │ ${fmt(vendorUncompressed).padStart(13)} │ ${fmt(vendorCompressed).padStart(13)} │`,
+  `  │ vendor/                  │ ${String(vendorFileCount).padStart(6)} │ ${fmt(vendorBytes).padStart(13)} │ ${("~" + fmt(vendorCompressedEst)).padStart(13)} │`,
 );
 console.log(
-  `  │ app (non-vendor)         │ ${String(appFileCount).padStart(6)} │ ${fmt(appUncompressed).padStart(13)} │ ${fmt(appCompressed).padStart(13)} │`,
+  `  │ app (non-vendor)         │ ${String(appFileCount).padStart(6)} │ ${fmt(appBytes).padStart(13)} │ ${("~" + fmt(appCompressedEst)).padStart(13)} │`,
 );
 console.log("  ├──────────────────────────┼──────────┼───────────────┼───────────────┤");
 console.log(
