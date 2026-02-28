@@ -1088,6 +1088,8 @@ function createTar(files, { stripWhitespace = false, strippedContents = new Map(
   const chunks = [];
   let strippedCount = 0;
   let bytesSaved = 0;
+  let vendorBytes = 0;
+  let appBytes = 0;
 
   for (const file of files) {
     if (file.isDir) {
@@ -1114,6 +1116,13 @@ function createTar(files, { stripWhitespace = false, strippedContents = new Map(
         }
       }
 
+      // Track per-category uncompressed content bytes
+      if (file.path.startsWith("vendor/")) {
+        vendorBytes += content.length;
+      } else {
+        appBytes += content.length;
+      }
+
       chunks.push(createTarHeader(file.path, content.length, false));
       chunks.push(new Uint8Array(content));
 
@@ -1134,7 +1143,7 @@ function createTar(files, { stripWhitespace = false, strippedContents = new Map(
     offset += chunk.length;
   }
 
-  return { tar: result, strippedCount, bytesSaved };
+  return { tar: result, strippedCount, bytesSaved, vendorBytes, appBytes };
 }
 
 const fmt = (bytes) => {
@@ -1577,7 +1586,7 @@ if (STRIP_WHITESPACE) {
   strippedContents = await stripPhpFilesParallel(allFiles);
 }
 
-const { tar, strippedCount, bytesSaved } = createTar(allFiles, {
+const { tar, strippedCount, bytesSaved, vendorBytes, appBytes } = createTar(allFiles, {
   stripWhitespace: STRIP_WHITESPACE,
   strippedContents,
 });
@@ -1593,32 +1602,16 @@ const gzipped = gzipSync(tar, { level: 9 });
 mkdirSync(DIST_DIR, { recursive: true });
 writeFileSync(OUTPUT, gzipped);
 
-// Compute compressed sizes per category for report
-const vendorOnlyFiles = allFiles.filter((f) => !f.isDir && f.path.startsWith("vendor/"));
-const appOnlyFiles = allFiles.filter((f) => !f.isDir && !f.path.startsWith("vendor/"));
-const {
-  tar: vendorTar,
-  strippedCount: _,
-  bytesSaved: __,
-} = createTar(vendorOnlyFiles, {
-  stripWhitespace: STRIP_WHITESPACE,
-  strippedContents,
-});
-const vendorGz = gzipSync(vendorTar, { level: 9 });
-const {
-  tar: appTar,
-  strippedCount: ___,
-  bytesSaved: ____,
-} = createTar(appOnlyFiles, {
-  stripWhitespace: STRIP_WHITESPACE,
-  strippedContents,
-});
-const appGz = gzipSync(appTar, { level: 9 });
-
 const totalCompressed = gzipped.length;
 const totalUncompressed = tar.length;
-const vendorUncompressed = vendorTar.length;
-const appUncompressed = appTar.length;
+const totalContentBytes = vendorBytes + appBytes;
+
+// Estimate per-category compressed sizes using the overall compression ratio.
+// Individual gzip streams wouldn't sum to total anyway (shared dictionary), so
+// ratio-based estimates are equally meaningful and avoid 2 extra tar+gzip passes.
+const compressionRatio = totalContentBytes > 0 ? totalCompressed / totalContentBytes : 1;
+const vendorCompressedEst = Math.round(vendorBytes * compressionRatio);
+const appCompressedEst = Math.round(appBytes * compressionRatio);
 
 // PHP 8.5 WASM binary (gzipped). Measured from PHP 8.5.2 build: 3.27 MB gz.
 // PHP WASM is loaded as a separate Cloudflare Workers binding (not bundled in script).
@@ -1637,13 +1630,13 @@ console.log("");
 console.log("  ┌──────────────────────────────────────────────────────────────────────┐");
 console.log("  │                        Build Report                                 │");
 console.log("  ├──────────────────────────┬──────────┬───────────────┬───────────────┤");
-console.log("  │ Category                 │ Files    │ Uncompressed  │ Compressed    │");
+console.log("  │ Category                 │ Files    │ Uncompressed  │ ~Compressed   │");
 console.log("  ├──────────────────────────┼──────────┼───────────────┼───────────────┤");
 console.log(
-  `  │ vendor/                  │ ${String(vendorFileCount).padStart(6)} │ ${fmt(vendorUncompressed).padStart(13)} │ ${fmt(vendorGz.length).padStart(13)} │`,
+  `  │ vendor/                  │ ${String(vendorFileCount).padStart(6)} │ ${fmt(vendorBytes).padStart(13)} │ ${("~" + fmt(vendorCompressedEst)).padStart(13)} │`,
 );
 console.log(
-  `  │ app (non-vendor)         │ ${String(appFileCount).padStart(6)} │ ${fmt(appUncompressed).padStart(13)} │ ${fmt(appGz.length).padStart(13)} │`,
+  `  │ app (non-vendor)         │ ${String(appFileCount).padStart(6)} │ ${fmt(appBytes).padStart(13)} │ ${("~" + fmt(appCompressedEst)).padStart(13)} │`,
 );
 console.log("  ├──────────────────────────┼──────────┼───────────────┼───────────────┤");
 console.log(
