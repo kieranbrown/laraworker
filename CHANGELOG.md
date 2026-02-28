@@ -1,5 +1,45 @@
 # Changelog
 
+## [1.6.0](https://github.com/kieranbrown/laraworker/compare/v1.5.4...v1.6.0) (2026-02-28)
+
+
+### Features
+
+* add continuous stress test for memory limits and OPcache monitoring ([6a581a3](https://github.com/kieranbrown/laraworker/commit/6a581a3b31f48e695b4f12847e76cf4fba6d57e1))
+* add smoke test script for deployed Cloudflare Workers ([412bb10](https://github.com/kieranbrown/laraworker/commit/412bb10f6e09d573fce192c3aeeec76254599a92))
+
+
+### Bug Fixes
+
+* Cannot read properties of undefined ([9816fcd](https://github.com/kieranbrown/laraworker/commit/9816fcd58d8a14dfe04c1a64428b300d8859028a))
+* disable ALLOW_TABLE_GROWTH and module recycling to prevent OOM on cold starts ([286e5b1](https://github.com/kieranbrown/laraworker/commit/286e5b189f77e60675a5e488f83446b4cd715982))
+* guard PhpCgiBase.refresh() to prevent unnecessary OPcache destruction ([84b91fe](https://github.com/kieranbrown/laraworker/commit/84b91fe22c0fe28cb97a1feb61e6ddde1cf9edf5))
+* increase WASM function table from 4908 to 8192 entries ([eb2d905](https://github.com/kieranbrown/laraworker/commit/eb2d9054578594667b8d7e90ff66afa9292f2270))
+* merge epic e-ec3148 — OPcache 0% hit rate + Error 1102 on demo site ([46b119a](https://github.com/kieranbrown/laraworker/commit/46b119a5b566220b9565536150807dc2ebd23db7))
+* reduce OPcache memory from 24MB to 16MB and interned strings from 4MB to 2MB ([17700e1](https://github.com/kieranbrown/laraworker/commit/17700e1d7d5d5b6d50da4a3251ea92d14c109640))
+* vendorUncompressed and appUncompressed undefined in build-app.mjs ([d543016](https://github.com/kieranbrown/laraworker/commit/d5430166593a6c6561a7a1bf137fac20309a83ff))
+
+
+### Performance Improvements
+
+* **php-bridge:** static skip-headers Set and header memoization ([fab8310](https://github.com/kieranbrown/laraworker/commit/fab8310e7a61901f2dc320d9ad674d6596d645ef))
+* reduce gzip compression from level 9 to 6 ([9d69088](https://github.com/kieranbrown/laraworker/commit/9d6908802ab3c6fb2ebcd324646d12c4be43a5ec))
+* single-pass HTML entity decode in inertia-ssr.ts ([93f4f65](https://github.com/kieranbrown/laraworker/commit/93f4f657e422603ca6f972a7dadace8ef81bb3b0))
+* single-pass TAR stats instead of triple creation in build pipeline ([71ff585](https://github.com/kieranbrown/laraworker/commit/71ff585a3464d791acd0d48bbb9e9386776524de))
+
+
+### Miscellaneous Chores
+
+* merge epic e-7205b8 — Performance & Memory Optimizations ([2e7c51a](https://github.com/kieranbrown/laraworker/commit/2e7c51a2e3222d37c20515f5c1a4aa1a0a8f3865))
+* update reality index ([52a1ba0](https://github.com/kieranbrown/laraworker/commit/52a1ba07dcc995b45fa1a9d00df7ef6bca974700))
+
+
+### Documentation
+
+* add epic plan for memory regression fix (e-ec3148) ([3c2ac52](https://github.com/kieranbrown/laraworker/commit/3c2ac528caac4fbe32b6d15949b1acc8eaabc673))
+* add epic plan for Performance & Memory Optimizations (e-7205b8) ([500727d](https://github.com/kieranbrown/laraworker/commit/500727de9e5cb65a2b9eb89aff52b42e1c295119))
+* update performance plan with completed tasks [#4](https://github.com/kieranbrown/laraworker/issues/4) and [#7](https://github.com/kieranbrown/laraworker/issues/7) ([4cd971f](https://github.com/kieranbrown/laraworker/commit/4cd971f69e4d6540f773d234aa7fe5604b8d20fc))
+
 ## [1.5.4](https://github.com/kieranbrown/laraworker/compare/v1.5.3...v1.5.4) (2026-02-27)
 
 
