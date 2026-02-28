@@ -60,9 +60,9 @@ interface Env {
    * OPcache and internal state. This forces a cold start (tar extraction +
    * PHP recompilation) which is expensive and can trigger Error 1102.
    *
-   * With ALLOW_TABLE_GROWTH=1 in the WASM binary, function table overflow
-   * is no longer a concern, so recycling is disabled by default.
-   * Set to "0" to disable (recommended). Default: 0.
+   * The CGI persistent module patch (cgi-persistent-module.sh) keeps the PHP
+   * module alive across requests without needing table growth, so recycling
+   * is disabled by default. Set to "0" to disable (recommended). Default: 0.
    */
   WORKER_MAX_REQUESTS?: string;
 }
@@ -381,8 +381,8 @@ export default {
       headers.set('X-Request-Count', String(++requestCount));
 
       // Optional module recycling: discard the WASM module after N requests.
-      // Disabled by default (0) — ALLOW_TABLE_GROWTH=1 in the WASM binary
-      // prevents function table overflow, so recycling is unnecessary.
+      // Disabled by default (0) — the CGI persistent module patch keeps PHP
+      // alive across requests without needing table growth, so recycling is unnecessary.
       // Each recycle forces a full cold start (tar extraction + OPcache rebuild).
       const maxRequests = parseInt(env.WORKER_MAX_REQUESTS || '0', 10);
       if (maxRequests > 0 && requestCount >= maxRequests) {
