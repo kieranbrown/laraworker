@@ -107,11 +107,11 @@ WITH_INTL=0
 INITIAL_MEMORY=67108864
 ALLOW_MEMORY_GROWTH=0
 
-# ── Function table: growable ──
-# The persistent module patch (cgi-persistent-module.sh) keeps PHP alive across
-# requests. PHP's internal function pointer registries (closures, autoloaders,
-# callbacks) persist and can accumulate entries in the WASM indirect function
-# table. Without ALLOW_TABLE_GROWTH, the table is fixed-size at link time and
-# overflows with "table index is out of bounds" RuntimeError after N requests.
-# Enabling table growth prevents hard crashes from table exhaustion.
-ALLOW_TABLE_GROWTH=1
+# ── Function table: fixed size ──
+# ALLOW_TABLE_GROWTH=1 adds ~2 MB memory overhead during cold starts, pushing
+# combined WASM + JS heap past Cloudflare Workers' 128 MB limit → Error 1102.
+# The "table index out of bounds" crashes were caused by profiling code that
+# manipulated spl_autoload internals (removed in 33bc88e1), not by table
+# exhaustion. With that code removed, the fixed-size table is sufficient.
+# Also in build.sh: remove -sALLOW_TABLE_GROWTH=1 from EXTRA_FLAGS if present.
+ALLOW_TABLE_GROWTH=0

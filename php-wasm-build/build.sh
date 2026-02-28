@@ -78,17 +78,15 @@ rm -f "$BUILD_DIR/Makefile.bak"
 # the configure flags directly. The patch script above already places the source
 # in ext/, so configure will find the config.m4 files.
 #
-# ALLOW_TABLE_GROWTH: The persistent module patch keeps PHP alive across
-# requests, accumulating function pointer registrations (closures, callbacks)
-# in the WASM indirect function table. Without growable tables, the fixed-size
-# table overflows after N requests with "table index is out of bounds". The
-# -sALLOW_TABLE_GROWTH=1 flag lets the table grow dynamically.
 # NOTE: LDFLAGS is NOT referenced by EXTRA_LDFLAGS_PROGRAM in the upstream
 # Makefile. EXTRA_FLAGS IS expanded inside EXTRA_LDFLAGS_PROGRAM (line ~441),
-# so we append the table growth flag there to ensure it reaches the linker.
+# so we append extension defines there to ensure they reach the linker.
+# ALLOW_TABLE_GROWTH intentionally omitted — it adds ~2 MB cold start overhead
+# that pushes Workers past the 128 MB memory limit. The fixed table is fine
+# now that the spl_autoload profiling code has been removed (33bc88e1).
 sed -i.bak '1 a\
 CONFIGURE_FLAGS+= --enable-pdo-cfd1 --enable-vrzno\
-EXTRA_FLAGS+= -D WITH_PDO_CFD1=1 -D WITH_VRZNO=1 -sALLOW_TABLE_GROWTH=1' \
+EXTRA_FLAGS+= -D WITH_PDO_CFD1=1 -D WITH_VRZNO=1' \
   "$BUILD_DIR/Makefile"
 rm -f "$BUILD_DIR/Makefile.bak"
 
